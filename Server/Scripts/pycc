@@ -1,0 +1,3 @@
+#!D:\SeaBattleAPI\Scripts\python.exe
+from numba.pycc import main
+main()
