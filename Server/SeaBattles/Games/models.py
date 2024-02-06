@@ -1,6 +1,25 @@
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
+from django.core.validators import MinLengthValidator
 
-# Create your models here.
+"""
+    ForeignKey = Many items to one item(many ship parts to one ship)
+"""
+
+class User(models.Model):
+    user_name = models.CharField(max_length=20, validators=[MinLengthValidator(4)])
+    user_password = models.CharField(max_length=25, validators=[MinLengthValidator(8)])
+    user_id = models.CharField(max_length=30, validators=[MinLengthValidator(30)])
+    user_email = models.CharField(max_length=40, validators=[MinLengthValidator(5)])
+
+    class Meta:
+        verbose_name = "User"
+        verbose_name_plural = "Users"
+    
+    def __str__(self):
+        return f"{self.user_name} {self.user_id} {self.user_password} {self.user_email}"
+
+
 class Game(models.Model):
     game_id = models.CharField(max_length=30)
     user_id_turn = models.CharField(max_length=30)
@@ -50,3 +69,24 @@ class ShipPart(models.Model):
 
     def __str__(self):
         return f"[{self.x_pos}, {self.y_pos}]"
+
+
+class UserWeapons(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+
+class WeaponType(models.Model):
+    class Types(models.TextChoices):
+        AIRPLANE = "Самолёт"
+        NUKE_BOMB = "Ядерная бомба"
+
+    weapon_type_name = models.CharField(max_length=50, choices=Types.choices)
+    weapon_range = ArrayField(models.IntegerField(), blank=True)
+    weapon_price = models.FloatField(default=0.0)
+
+
+class Weapon(models.Model):
+    weapon_amount = models.IntegerField(default=0)
+
+    weapon_type = models.ForeignKey(WeaponType, on_delete=models.CASCADE)
+    user_weapon = models.ForeignKey(UserWeapons, on_delete=models.CASCADE)
