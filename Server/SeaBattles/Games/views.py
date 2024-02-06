@@ -1,4 +1,3 @@
-from urllib import response
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -6,7 +5,7 @@ from django.db.models import F
 
 import random
 
-from .models import Game, Field, Ship, ShipPart, MarkedCell
+from .models import Game, Field, Ship, ShipPart, MarkedCell, User
 from .serializers import GameSerializer, FieldSerializer, ShipSerializer
 
 MAX_LIMIT = 1000
@@ -24,6 +23,9 @@ SHIP_LENGTHS_NAMES = {
     3: 'three_deck',
     4: 'four_deck'
 }
+
+# DEBUG
+known_ips = list()
 
 # TODO
 """
@@ -148,13 +150,12 @@ class ShipViewSet(ViewSet):
         return Response(serialzer.data)
 
     @action(detail=False, methods=['post'])
-    def delete_ships(self, requests) -> Response:
+    def delete_ships(self, request) -> Response:
         Ship.objects.all().delete()
         Field.objects.all().delete()
         Game.objects.all().delete()
 
-        return Response(
-        {
+        return Response({
             "deleted": True
         })
 
@@ -202,8 +203,7 @@ class FieldViewSet(ViewSet):
         try:
             user_id = request.data['user_id']
         except KeyError:
-            return Response(
-            {
+            return Response({
                 'Error': 'Not enough arguments'
             })
 
@@ -288,14 +288,12 @@ class FieldViewSet(ViewSet):
         for cell in cells:
             x, y = cell
             if x < 0 or x > 9 or y < 0 or y > 9:
-                return Response(
-                {
+                return Response({
                     "Error": "Out of bounds"
                 })
 
         if not cells:
-            return Response(
-            {
+            return Response({
                 "Error": "No ships to place"
             })
 
@@ -303,21 +301,17 @@ class FieldViewSet(ViewSet):
         first_cell = cells[0]
         for cell in cells:
             if cell[0] != first_cell[0] and cell[1] != first_cell[1]:
-                return Response(
-                {
+                return Response({
                     "Error": "Ship is too wide:)"
                 })
-
         data["cells"] = cells
 
         # Проверка длины корабля
         ship_length = len(cells)
         if ship_length > 4:
-            return Response(
-            {
+            return Response({
                 "Error": "Ship is too long"
             })
-
         field = Field.objects.get(owner_id=owner_id)
 
         # Проверка осталось ли столько кораблей
@@ -724,7 +718,45 @@ class GameViewSet(ViewSet):
     def delete_games(self, request) -> Response:
         Game.objects.all().delete()
 
-        return Response(
-        {
+        return Response({
             "deleted": True
         })
+
+
+class UserViewSet(ViewSet):
+    @action(detail=False, methods=["post"])
+    def login(self, request):
+        try:
+            user_id = int(request.data['user_id'])
+        except ValueError:
+            return Response({"login_successful": False})
+        password = request.data['password']
+
+        print(user_id)
+        print(password)
+
+        try:
+            user = User.objects.get(user_id=user_id, user_password=password)
+        except User.DoesNotExist:
+            return Response({"login_successful": False})
+
+        return Response({
+                "login_successful": True,
+                "username": user.user_name
+            })
+
+    @action(detail=False, methods=["post"])
+    def registrate(self, request):
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        
+        if ip in known_ips:
+            return Response({
+                "registrate_successful": False
+            })
+        
+        known_ips.append(ip)
+        last_user = User.objects.get()

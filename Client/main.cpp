@@ -1,13 +1,13 @@
 #include "mainwindow.h"
-#include "mainmenu.h"
-#include "inputgameid.h"
+#include "loginform.h"
 
 #include <QApplication>
+
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    MainMenu w;
-    w.show();
+    LoginForm form;
+    form.show();
     return a.exec();
 }

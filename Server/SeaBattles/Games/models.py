@@ -2,9 +2,11 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MinLengthValidator
 
+
 """
     ForeignKey = Many items to one item(many ship parts to one ship)
 """
+
 
 class User(models.Model):
     user_name = models.CharField(max_length=20, validators=[MinLengthValidator(4)])

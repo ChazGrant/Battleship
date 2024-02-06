@@ -22,8 +22,6 @@ MainMenu::MainMenu(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainMenu)
 {
-    QJsonArray arr = {1, 0};
-
     ui->setupUi(this);
 
     m_manager = new QNetworkAccessManager(this);
@@ -72,9 +70,7 @@ void MainMenu::connectToCreatedGame(QNetworkReply *reply)
         msgBox.setText("ID вашей игры:\n" + gameId);
         msgBox.exec();
         this->openMainWindow(gameId);
-    }
-    else if(jsonResponse.contains("Error"))
-    {
+    } else if (jsonResponse.contains("Error")) {
         QString error = jsonResponse["Error"].toString();
         QMessageBox msgBox;
         msgBox.setText("Возникли ошибки:\n" + error);
@@ -97,5 +93,4 @@ void MainMenu::openMainWindow(QString gameId)
 
     window->show();
     this->close();
-
 }

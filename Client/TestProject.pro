@@ -19,6 +19,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     inputgameid.cpp \
+    loginform.cpp \
     main.cpp \
     mainmenu.cpp \
     mainwindow.cpp \
@@ -26,12 +27,14 @@ SOURCES += \
 
 HEADERS += \
     inputgameid.h \
+    loginform.h \
     mainmenu.h \
     mainwindow.h \
     ship.h
 
 FORMS += \
     inputgameid.ui \
+    loginform.ui \
     mainmenu.ui \
     mainwindow.ui
 

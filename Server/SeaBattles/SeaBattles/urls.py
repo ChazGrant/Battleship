@@ -18,13 +18,14 @@ from django.urls import path, include
 
 from rest_framework.routers import DefaultRouter
 
-from Games.views import GameViewSet, FieldViewSet, ShipViewSet
+from Games.views import GameViewSet, FieldViewSet, ShipViewSet, UserViewSet
 
 
 router = DefaultRouter()
 router.register(r'games', GameViewSet, basename='game')
 router.register(r'fields', FieldViewSet, basename='field')
 router.register(r'ships', ShipViewSet, basename='ship')
+router.register(r'users', UserViewSet, basename='user')
 
 urlpatterns = [
     path('', include('rest_framework.urls')),
