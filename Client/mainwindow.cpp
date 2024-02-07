@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+// #include "additionalfunctions.cpp"
+
 const QColor WHITE = QColorConstants::White;
 const QColor GREEN = QColorConstants::DarkGreen;
 const QColor YELLOW = QColorConstants::DarkYellow;
@@ -11,22 +13,6 @@ const int ROW_COUNT = 10;
 const int COLUMN_COUNT = 10;
 
 
-void showError(QString errorText, QString windowTitleText="Ошибка")
-{
-    QMessageBox msgBox;
-    msgBox.setWindowTitle(windowTitleText);
-    msgBox.setText(errorText);
-    msgBox.exec();
-}
-
-void showMessage(QString messageText)
-{
-    QMessageBox msgBox;
-    msgBox.setWindowTitle("Информация");
-    msgBox.setText(messageText);
-    msgBox.exec();
-}
-
 MainWindow::MainWindow(QWidget *parent, QString gameId, QString userId)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -35,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent, QString gameId, QString userId)
     this->userId = userId;
     this->closeEventIsAccepted = false;
 
-    showMessage("Ваше айди: " + this->userId);
+    showMessage("Ваше айди: " + this->userId, QMessageBox::Icon::Information);
 
     ui->setupUi(this);
 
@@ -224,11 +210,11 @@ void MainWindow::getGameOverState(QNetworkReply *reply)
 
         if (jsonObject["winner"].toString() == this->userId)
         {
-            showMessage("Игра закончена и победу одержали Вы");
+            showMessage("Игра закончена и победу одержали Вы", QMessageBox::Icon::Information);
         }
         else
         {
-            showError("Игра закончена и Вы проиграли");
+            showMessage("Игра закончена и Вы проиграли", QMessageBox::Icon::Information);
         }
         this->close();
     }
@@ -298,7 +284,7 @@ bool MainWindow::getErrorMessage(QJsonObject jsonObj)
 {
     if (jsonObj.contains("Error"))
     {
-        showError(jsonObj["Error"].toString());
+        showMessage(jsonObj["Error"].toString(), QMessageBox::Icon::Critical);
         return true;
     }
     if (jsonObj.contains("Critical Error"))
@@ -306,7 +292,7 @@ bool MainWindow::getErrorMessage(QJsonObject jsonObj)
         timerForUserTurn->stop();
         QObject::disconnect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getUserIdTurn(QNetworkReply* )));
 
-        showError(jsonObj["Critical Error"].toString());
+        showMessage(jsonObj["Critical Error"].toString(), QMessageBox::Icon::Critical);
         this->close();
         return true;
     }
@@ -334,7 +320,7 @@ void MainWindow::getGameState(QNetworkReply* reply)
 
         ui->fireButton->show();
         ui->placeShipButton->hide();
-        showMessage("Игра начата, ожидайте свой ход");
+        showMessage("Игра начата, ожидайте свой ход", QMessageBox::Icon::Information);
     }
 
 }
@@ -383,7 +369,7 @@ void MainWindow::setShipsAmountLabel(QNetworkReply* reply)
 
     if ((fourDeckLeft + threeDeckLeft + twoDeckLeft + oneDeckLeft) == 0)
     {
-        showMessage("Корабли закончились, ожидаем соперника");
+        showMessage("Корабли закончились, ожидаем соперника", QMessageBox::Icon::Information);
         this->setDisabled(true);
         // Ставим таймер на функцию, в которой ожидаем когда игра будет начата
 
@@ -480,7 +466,7 @@ void MainWindow::placeShip(QNetworkReply* reply)
 void MainWindow::on_placeShipButton_clicked()
 {
     if (!(ui->yourField->selectedItems().length()))
-        return showError("Ячейки не выбраны");
+        return showMessage("Ячейки не выбраны", QMessageBox::Icon::Critical);
 
     this->setDisabled(true);
 
@@ -621,7 +607,7 @@ void MainWindow::shoot()
     */
 
     if (!ui->opponentField->selectedItems().length())
-        return showError("Клетки не были выбраны");
+        return showMessage("Клетки не были выбраны", QMessageBox::Icon::Critical);
 
     QTableWidgetItem* selectedCell = ui->opponentField->selectedItems()[0];
 

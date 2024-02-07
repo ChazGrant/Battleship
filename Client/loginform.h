@@ -10,8 +10,12 @@
 #include <QNetworkReply>
 #include <QUrlQuery>
 
+#include <QMouseEvent>
+
 #include <QJsonObject>
 #include <QJsonDocument>
+
+#include "additionalfunctions.h"
 
 
 namespace Ui {
@@ -31,6 +35,9 @@ private slots:
     void getRegistrateStatus(QNetworkReply *reply);
 
 private:
+    QPoint m_mouse_point;
+    void mouseMoveEvent(QMouseEvent *event);
+    void mousePressEvent(QMouseEvent* event);
     Ui::LoginForm *ui;
 
     QNetworkAccessManager *m_manager;

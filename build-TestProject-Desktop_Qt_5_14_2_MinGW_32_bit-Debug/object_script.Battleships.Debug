@@ -1,0 +1,10 @@
+debug/inputgameid.o
+debug/loginform.o
+debug/main.o
+debug/mainmenu.o
+debug/mainwindow.o
+debug/ship.o
+debug/moc_inputgameid.o
+debug/moc_loginform.o
+debug/moc_mainmenu.o
+debug/moc_mainwindow.o

@@ -21,6 +21,7 @@
 #include <QUrlQuery>
 
 #include <string>
+#include "additionalfunctions.cpp"
 
 class QNetworkReply;
 class QNetworkAccessManager;

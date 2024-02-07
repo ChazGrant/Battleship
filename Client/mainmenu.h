@@ -16,6 +16,7 @@
 #include <QtNetwork/QHttpPart>
 
 #include "mainwindow.h"
+#include "additionalfunctions.h"
 
 namespace Ui {
 class MainMenu;

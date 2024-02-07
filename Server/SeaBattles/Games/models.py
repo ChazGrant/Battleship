@@ -9,10 +9,10 @@ from django.core.validators import MinLengthValidator
 
 
 class User(models.Model):
-    user_name = models.CharField(max_length=20, validators=[MinLengthValidator(4)])
+    user_name = models.CharField(max_length=20, validators=[MinLengthValidator(4)], unique=True)
     user_password = models.CharField(max_length=25, validators=[MinLengthValidator(8)])
-    user_id = models.CharField(max_length=30, validators=[MinLengthValidator(30)])
-    user_email = models.CharField(max_length=40, validators=[MinLengthValidator(5)])
+    user_id = models.CharField(max_length=30, validators=[MinLengthValidator(30)], unique=True)
+    user_email = models.CharField(max_length=40, validators=[MinLengthValidator(5)], unique=True)
 
     class Meta:
         verbose_name = "User"

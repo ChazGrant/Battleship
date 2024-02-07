@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.db.models import F
 
+from django.db.utils import IntegrityError
+
 import random
 
 from .models import Game, Field, Ship, ShipPart, MarkedCell, User
@@ -747,16 +749,38 @@ class UserViewSet(ViewSet):
 
     @action(detail=False, methods=["post"])
     def registrate(self, request):
-        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-        if x_forwarded_for:
-            ip = x_forwarded_for.split(',')[0]
-        else:
-            ip = request.META.get('REMOTE_ADDR')
+        # x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        # if x_forwarded_for:
+        #     ip = x_forwarded_for.split(',')[0]
+        # else:
+        #     ip = request.META.get('REMOTE_ADDR')
         
-        if ip in known_ips:
+        # if ip in known_ips:
+        #     return Response({
+        #         "registrate_successful": False
+        #     })
+        
+        # known_ips.append(ip)
+        user_name = request.data["user_name"]
+        password = request.data["password"]
+        email = request.data["email"]
+        try:
+            last_user_id = int(User.objects.latest("user_id").user_id)
+        except User.DoesNotExist:
+            last_user_id = 0
+
+        try:
+            created_user = User.objects.create(user_name=user_name, 
+                                               user_password=password, 
+                                               user_email=email,
+                                               user_id=last_user_id + 1)
+        except IntegrityError:
             return Response({
-                "registrate_successful": False
+                "registrate_successful": False,
+                "error_message": "Данное имя пользователя занято"
             })
-        
-        known_ips.append(ip)
-        last_user = User.objects.get()
+
+        return Response({
+            "registrate_successful": True,
+            "user_id": created_user.user_id
+        })

@@ -1,0 +1,10 @@
+release/inputgameid.o
+release/loginform.o
+release/main.o
+release/mainmenu.o
+release/mainwindow.o
+release/ship.o
+release/moc_inputgameid.o
+release/moc_loginform.o
+release/moc_mainmenu.o
+release/moc_mainwindow.o
