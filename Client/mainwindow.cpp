@@ -1,13 +1,12 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-// #include "additionalfunctions.cpp"
 
-const QColor WHITE = QColorConstants::White;
-const QColor GREEN = QColorConstants::DarkGreen;
-const QColor YELLOW = QColorConstants::DarkYellow;
-const QColor RED = QColorConstants::DarkRed;
-const QColor GRAY = QColorConstants::DarkGray;
+const QColor WHITE = QColor("white");
+const QColor GREEN = QColor("darkgreen");
+const QColor YELLOW = QColor("darkyellow");
+const QColor RED = QColor("darkred");
+const QColor GRAY = QColor("darkgray");
 
 const int ROW_COUNT = 10;
 const int COLUMN_COUNT = 10;

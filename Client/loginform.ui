@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>219</width>
-    <height>175</height>
+    <height>188</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
      <x>0</x>
      <y>0</y>
      <width>221</width>
-     <height>181</height>
+     <height>191</height>
     </rect>
    </property>
    <property name="currentIndex">
@@ -83,6 +83,19 @@
       <string>Войти</string>
      </property>
     </widget>
+    <widget class="QPushButton" name="exit_pushButton">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>130</y>
+       <width>111</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Выход</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QWidget" name="tab_2">
     <attribute name="title">
@@ -138,6 +151,19 @@
      </property>
      <property name="placeholderText">
       <string>Введите Вашу почту</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="exit2_pushButton">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>130</y>
+       <width>131</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Выход</string>
      </property>
     </widget>
    </widget>

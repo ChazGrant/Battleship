@@ -13,6 +13,9 @@ LoginForm::LoginForm(QWidget *parent) :
 
     connect(ui->login_pushButton, &QPushButton::clicked, this, &LoginForm::login);
     connect(ui->registrate_pushButton, &QPushButton::clicked, this, &LoginForm::registrate);
+
+    connect(ui->exit_pushButton, &QPushButton::clicked, this, &LoginForm::close);
+    connect(ui->exit2_pushButton, &QPushButton::clicked, this, &LoginForm::close);
 }
 
 LoginForm::~LoginForm()

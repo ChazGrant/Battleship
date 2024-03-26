@@ -10,6 +10,8 @@ import random
 from .models import Game, Field, Ship, ShipPart, MarkedCell, User
 from .serializers import GameSerializer, FieldSerializer, ShipSerializer
 
+from typing import List
+
 MAX_LIMIT = 1000
 
 SHIP_LENGTHS = {
@@ -20,10 +22,10 @@ SHIP_LENGTHS = {
 }
 
 SHIP_LENGTHS_NAMES = {
-    1: 'one_deck',
-    2: 'two_deck',
-    3: 'three_deck',
-    4: 'four_deck'
+    1: "one_deck",
+    2: "two_deck",
+    3: "three_deck",
+    4: "four_deck"
 }
 
 # DEBUG
@@ -55,8 +57,18 @@ known_ips = list()
 """
 
 
-def createMarkedCellsAroundShip(ship: Ship, field: Field) -> list:
-    missed_cells = list()
+def createMarkedCellsAroundShip(ship: Ship, field: Field) -> List[str]:
+    """
+        Создаёт помеченные части поля вокруг уничтоженного корабля и возвращает их координаты
+
+        Аргументы:
+            ship - Корабль, который был уничтожен
+            field - Поле, к которому относится игра
+
+        Возвращает:
+            Список координат, разделённых через пробел
+    """
+    marked_cells = list()
     dead_ship_parts = ShipPart.objects.filter(ship=ship)
     for dead_part in dead_ship_parts:
         x_pos = dead_part.x_pos
@@ -69,27 +81,49 @@ def createMarkedCellsAroundShip(ship: Ship, field: Field) -> list:
                 if x < 0 or y < 0 or x > 9 or y > 9:
                     continue
                 
-                # Если координаты совпадают с координатами части корабля, то часть не является missed
+                # Если координаты совпадают с координатами части корабля - пропускаем
                 if x_pos == x and y_pos == y:
                     continue
 
-                # Добавляем 'серую' клетку
-                missed_cells.append(f"{x} {y}")
+                # Добавляем "серую" клетку
+                marked_cells.append(f"{x} {y}")
                 # Создаём MarkedCell, если такой ещё нет
                 try:
                     MarkedCell.objects.get(field=field, x_pos=x, y_pos=y)
                 except MarkedCell.DoesNotExist:
                     MarkedCell.objects.create(field=field, x_pos=x, y_pos=y)
 
-    return missed_cells
+    return marked_cells
 
-def generateGameId():
+def generateGameId() -> str:
+    """
+        Создаёт идентификатор игры
+
+        Возврашает:
+            Строку, содержащую идентификатор для созданной игры
+    """
     return "".join(str(random.randint(0, MAX_LIMIT)) for i in range(8))
 
 def allShipsHasBeenPlaced(field: Field) -> bool:
+    """
+        Проверяет все ли корабли закончились и расставлены на поле
+
+        Аргументы:
+            field - Поле, на котором размещены корабли
+        Возвращает:
+            True или False в зависимости от расстановки всех кораблей
+    """
     return (field.four_deck + field.three_deck + field.two_deck + field.one_deck) == 0
 
-def getDamagedShipPartsPositions(ship: Ship) -> list:
+def getDamagedShipPartsPositions(ship: Ship) -> List[str]:
+    """
+        Получает все части корабля, которые были повреждены
+
+        Аргументы:
+            ship - Корабль, части которого нужно найти
+        Возвращает:
+            Список из координат повреждённых частей корабля, разделённых пробелом
+    """
     parts_positions = list()
     damaged_ship_parts = ShipPart.objects.filter(ship=ship, is_damaged=True)
 
@@ -100,23 +134,43 @@ def getDamagedShipPartsPositions(ship: Ship) -> list:
     return parts_positions
 
 def shipIsDead(ship: Ship) -> bool:
+    """
+        Возвращает является ли корабль уничтоженным
+        Аргументы:
+            ship - Корабль, который нужно проверить на уничтоженность
+    """
     ship_parts = ShipPart.objects.filter(ship=ship)
     return all(map(lambda part: part.is_damaged, ship_parts))
 
 def allShipsAreDead(field: Field) -> bool:
+    """
+        Проверяет все корабли были уничтожены или нет
+        Аргументы:
+            field - Поле, на котором нужно провести проверку
+        Возвращает:
+            True если все части всех кораблей были уничтожены, в ином случае False
+    """
     ships = Ship.objects.filter(field=field)
     # Если все корабли мертвы, то возвращает True
     return all(map(lambda ship: ship.is_dead, ships))
 
 def getWinner(game: Game) -> str:
+    """
+        Получает победителя заданной игры
+
+        Аргументы:
+            game - Объект игры
+        Возвращает:
+            Строку, содержащую id победителя
+    """
     # Если у игры уже есть победитель, значит второй игрок закончил игру
     # и его поле удалено
     if game.has_winner:
-        # Возвращаем любую строку, т.к. id пользователя с этой строкой точно совпадать
+        # Возвращаем 0, т.к. id пользователя с этой строкой точно совпадать
         # не будет, а соответственно клиент будет считать себя проигравшим
-        return "not you"
+        return "0"
 
-    # Если у 0 поля все корабли погибли, то победило 1 поле
+    # Если у 1 поля все корабли погибли, то победило 2 поле
     fields = Field.objects.filter(game=game)
 
     for idx, field in enumerate(fields):
@@ -127,12 +181,20 @@ def getWinner(game: Game) -> str:
             game.has_winner = True
             game.save()
 
+            # Возвращаем противоположный проигравшему идентификатор 
             return fields[not idx].owner_id
     return ""
 
 def swapGameUserIdTurn(game: Game) -> None:
+    """
+        Меняет ход текущего игрока на противоположный
+
+        Аргументы:
+            game - Объект игры, в которой нужно поменять ход
+        Возвращает:
+            None
+    """
     fields = Field.objects.filter(game=game)
-    game_id = game.game_id
 
     owners_id = [field.owner_id for field in fields]
 
@@ -142,17 +204,101 @@ def swapGameUserIdTurn(game: Game) -> None:
     game.user_id_turn = owners_id[not user_id_turn]
     game.save()
 
+def createShip(cells: List[List[int]], field: Field) -> bool:
+    """
+        Создаёт корабль
 
+        Аргументы:
+            cells - Список координат частей корабля
+            field - Поле, на котором создаётся корабль
+        Возвращает:
+            True если корабль был создан, иначе False
+    """
+    ship_length = len(cells)
+
+    try:
+        ship = Ship.objects.create(field=field, ship_length=ship_length)
+    except Exception as e:
+        return False
+    
+    for cell in cells:
+        x, y = cell
+        try:
+            ShipPart.objects.create(ship=ship, x_pos=x, y_pos=y)
+        except Exception as e:
+            return False
+
+    ship_length_str = SHIP_LENGTHS_NAMES[ship_length]
+
+    # Это был просто эксперимент, было интересно найти способ передавать в update
+    # поле которое нужно изменить и его новое значение
+    # В итоге передаётся обычный словарь kwargs, в которой указано название поля и его новое значение
+    kwargs = {
+        ship_length_str: F(ship_length_str) - 1
+    }
+    Field.objects.filter(owner_id=field.owner_id).update(**kwargs)
+
+    return True
+
+def hasCollisions(ships: List[Ship], cells: List[List[int]]) -> bool:
+    """
+        Проверяет наличие кораблей в области вокруг указанных клеток
+
+        Аргументы:
+            ships - Список имеющихся кораблей на поле
+            cells - Список координат клеток, где пользователь хочет разместить следующий корабль
+        Возвращает:
+            True, если в области вокруг клеток есть корабль, иначе False
+        
+        @TODO Оптимизировать цикл поиска коллизий
+    """
+    # Поиск клеток, заполненных кораблями
+    for ship in ships:
+        ship_parts = ShipPart.objects.filter(ship=ship)
+        for ship_part in ship_parts:
+            for cell in cells:
+                cell_x, cell_y = cell
+
+                if ship_part.x_pos in [cell_x - 1, cell_x + 1, cell_x] \
+                and ship_part.y_pos in [cell_y - 1, cell_y + 1, cell_y]:
+                    return True
+
+    return False
+
+"""
+    ViewSet кораблей
+
+    Описывает поведение при запросе на адрес адрес_сервера/ships/имя_метода
+
+    @author     ChazGrant
+    @version    1.0
+"""
 class ShipViewSet(ViewSet):
-    @action(detail=False, methods=['post'])
-    def return_ships(self, request) -> Response:
+    @action(detail=False, methods=["post"])
+    def get_ships(self, request) -> Response:
+        """
+            Возвращает все корабли
+
+            *DEBUG
+            
+            Возвращает:
+                Сериализованный класс Ship
+        """
         ships = Ship.objects.all()
         serialzer = ShipSerializer(ships, many=True)
 
         return Response(serialzer.data)
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def delete_ships(self, request) -> Response:
+        """
+            Удаляет все корабли
+
+            *DEBUG
+
+            Возвращает:
+                Результат удаления
+        """
         Ship.objects.all().delete()
         Field.objects.all().delete()
         Game.objects.all().delete()
@@ -162,51 +308,33 @@ class ShipViewSet(ViewSet):
         })
 
 
+"""
+    ViewSet игровых полей
+
+    Описывает поведение при запросе на адрес адрес_сервера/fields/имя_метода
+
+    @author     ChazGrant
+    @version    1.0
+"""
 class FieldViewSet(ViewSet):
-    def createShip(self, cells: list, field: Field) -> None:
-        ship_length = len(cells)
-        ship = Ship.objects.create(field=field, ship_length=ship_length)
-        for cell in cells:
-            x, y = cell
-            ShipPart.objects.create(ship=ship, x_pos=x, y_pos=y)
-
-        ship_length_str = SHIP_LENGTHS_NAMES[ship_length]
-
-        # Это был просто эксперимент, было интересно найти способ передавать в update
-        # поле которое нужно изменить и его новое значение
-        # В итоге передаётся обычный словарь kwargs, в которой указано название поля и его новое значение
-        kwargs = {
-            ship_length_str: F(ship_length_str) - 1
-        }
-        Field.objects.filter(owner_id=field.owner_id).update(**kwargs)
-
-    def hasCollisions(self, ships: list, cells: list) -> bool:
-        # Закэшировать, т.к. объёмные вычисления
-        marked_cells = list()
-        # Поиск клеток, заполненных кораблями
-        for ship in ships:
-            ship_parts = ShipPart.objects.filter(ship=ship)
-            for ship_part in ship_parts:
-                for cell in cells:
-                    cell_x, cell_y = cell
-
-                    if ship_part.x_pos in [cell_x - 1, cell_x + 1, cell_x] \
-                    and ship_part.y_pos in [cell_y - 1, cell_y + 1, cell_y]:
-                        return True
-
-        return False
-
     # 5)
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def get_damaged_cells(self, request) -> Response:
-        '''
-            user_id
-        '''            
+        """
+            Возвращает все погибшие корабли, повреждённые части кораблей и промахи на поле
+            указанного пользователя 
+
+            Аргументы:
+                user_id - Идентификтор пользователя, погибишие корабли которого нужно вернуть
+            Возвращает:
+                Ответ от сервера, содержащего сообщение об ошибки или погибшие корабли, повреждённые 
+                их части и промахи на поле
+        """            
         try:
-            user_id = request.data['user_id']
+            user_id = request.data["user_id"]
         except KeyError:
             return Response({
-                'Error': 'Not enough arguments'
+                "Error": "Not enough arguments"
             })
 
         field = Field.objects.get(owner_id=user_id)
@@ -241,9 +369,20 @@ class FieldViewSet(ViewSet):
         return Response(data)
 
     # 2)
-    @action(detail=False, methods=['post', 'get'])
-    def return_field(self, request) -> Response:
-        if 'owner_id' not in request.data:
+    @action(detail=False, methods=["get"])
+    def get_field(self, request) -> Response:
+        """
+            Возвращает поле указанного пользвателя если передан аргумент owner_id
+            или все поля
+
+            *DEBUG
+
+            Аргументы:
+                owner_id - Идентификатор владельца поля
+            Возвращает:
+                Поле владельца или все существующие поля
+        """
+        if "owner_id" not in request.data:
             field = Field.objects.all()
             serializer = FieldSerializer(field, many=True)
             return Response(serializer.data)
@@ -264,22 +403,28 @@ class FieldViewSet(ViewSet):
         return Response(serialzer.data)
 
     # 2)
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def place_ship(self, request) -> Response:
-        '''
-            owner_id, game_id
-        '''
+        """
+            Устанавливает корабль на поле игрока
+
+            Аргументы:
+                owner_id - Идентификатор владельца поля
+                game_id - Идентификатор игры
+            Возвращает:
+                Словарь, содержащий ошибку, или массив клеток, на которых были установлены корабли
+                Так же возвращает булевое значение если все корабли были расставлены
+        """
         cells = list()
         data = dict()            
         try:
-            owner_id = request.data['owner_id']
-            game_id = request.data['game_id']
+            owner_id = request.data["owner_id"]
+            game_id = request.data["game_id"]
             # [[5, 7], [5, 8], [5, 9]]
-            cells = request.data['cells'].split(" ")
+            cells = request.data["cells"].split(" ")
         except KeyError:
-            return Response(
-            {
-                'Error': 'Not enough arguments'
+            return Response({
+                "Error": "Not enough arguments"
             })
 
         cells = list(map(lambda lst: lst.split(","), cells))
@@ -346,38 +491,61 @@ class FieldViewSet(ViewSet):
  
         return Response(data)
 
+"""
+    ViewSet игры
 
+    Описывает поведение при запросе на адрес адрес_сервера/games/имя_метода
+
+    @author     ChazGrant
+    @version    1.0
+"""
 class GameViewSet(ViewSet):
     def deleteGame(self, game_id: str) -> None:
-        Game.objects.filter(game_id=game_id).delete()
+        """
+            Удаляет игру с заданным идентификатором
 
-    @action(detail=False, methods=['post'])
-    def disconnect(self, request) -> Response:
-        '''
-            user_id, game_id
-        '''          
+            Аргументы:
+                game_id - Строка, содержащая в себе идентификатор игры
+            Возвращает:
+                True если игра удалена, иначе False
+        """
         try:
-            game_id = request.data['game_id']
-            user_id = request.data['user_id']
+            Game.objects.filter(game_id=game_id).delete()
+        except Exception as e:
+            return False
+        
+        return True
+
+    @action(detail=False, methods=["post"])
+    def disconnect(self, request) -> Response:
+        """
+            Отключает пользователя от указанной игры
+
+            Аргументы:
+                user_id - Идентификатор пользователя
+                game_id - Идентификатор игры
+            Возвращает:
+                Запрос, содержащий в себе результат отключения и сообщение об ошибке если она произошла
+        """          
+        try:
+            game_id = request.data["game_id"]
+            user_id = request.data["user_id"]
         except KeyError:
-            return Response(
-            {
+            return Response({
                 "Error": "Not enough arguments"
             })
 
         try:
             game = Game.objects.get(game_id=game_id)
         except Game.DoesNotExist:
-            return Response(
-            {
+            return Response({
                 "Critical Error": "Game doesn't exist"
             })
 
         try:
             Field.objects.filter(game=game, owner_id=user_id).delete()
         except Field.DoesNotExist:
-            return Response(
-            {
+            return Response({
                 "Critical Error": "Field doesn't exist"
             })
 
@@ -387,25 +555,33 @@ class GameViewSet(ViewSet):
         except Field.DoesNotExist:
             Game.objects.filter(game_id=game_id).delete()
 
-        return Response(
-        {
+        return Response({
             "Disconnected": True
         })
 
     # 6)
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def game_is_over(self, request) -> Response:
-        '''
-            game_id, user_id
-        '''
-        # Если игра окончена, значит поля можно удалять
-        # сначала удаляется поле победителя, затем второй игрок удаляет своё поле
+        """
+            Возвращает информацию о том была ли завершена игра
 
-        # У игры 2 состояния
-        # 1: Игра окончена, но победителя нет
-        # 2: Игра окончена, и победитель есть
+            Если игра окончена, значит поля можно удалять
+            сначала удаляется поле победителя, затем второй игрок удаляет своё поле
 
-        game_id = request.data['game_id']
+            У игры 3 состояния
+                1: Игра окончена, но победителя нет
+                2: Игра окончена, и победитель есть
+                3: Игра не закончена
+            
+            Аргументы:
+                game_id - Идентификатор игры 
+                user_id - Идентификатор пользователя
+            Возвращает:
+                Статус о том завершена игра или нет и идентификатор победителя если он есть
+        """
+
+
+        game_id = request.data["game_id"]
         try:
             game = Game.objects.get(game_id=game_id)
         except Game.DoesNotExist:
@@ -415,7 +591,7 @@ class GameViewSet(ViewSet):
             })
 
         data = dict()
-        user_id = request.data['user_id']
+        user_id = request.data["user_id"]
         winner = getWinner(game=game)
 
         if (winner):
@@ -432,12 +608,13 @@ class GameViewSet(ViewSet):
         return Response(data)
 
     # 3)
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def get_user_id_turn(self, request) -> Response:
-        '''
+        """
+            Возвращает идентификатор игрока, который сейчас ходит
             game_id
-        '''
-        game_id = request.data['game_id']
+        """
+        game_id = request.data["game_id"]
         try:
             game = Game.objects.get(game_id=game_id)
         except Game.DoesNotExist:
@@ -466,13 +643,13 @@ class GameViewSet(ViewSet):
         })
 
     # 2)
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def game_is_started(self, request) -> Response:
-        '''
+        """
             game_id
-        '''
+        """
         # Если корабли у обеих полей закончены то игра начата
-        game_id = request.data['game_id']
+        game_id = request.data["game_id"]
         game = Game.objects.get(game_id=game_id)
 
         fields = Field.objects.filter(game=game)
@@ -495,10 +672,10 @@ class GameViewSet(ViewSet):
         })
 
     # 1)
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def create_game(self, request) -> Response:
         try:  
-            user_id = request.data['user_id']
+            user_id = request.data["user_id"]
         except KeyError:
             return Response(
             {
@@ -521,7 +698,7 @@ class GameViewSet(ViewSet):
             return Response(game_serializer.data)
 
     # 4)
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def fire(self, request) -> Response:
         """
             game_id, user_id, x, y
@@ -530,7 +707,7 @@ class GameViewSet(ViewSet):
 
         # Получаем игру, в которой находится игрок и его айди, а также координаты, по которым он стреляет
         try:
-            game_id = request.data['game_id']
+            game_id = request.data["game_id"]
             user_id = request.data["user_id"]
             x = int(request.data["x"])
             y = int(request.data["y"])
@@ -604,13 +781,13 @@ class GameViewSet(ViewSet):
                     # Мёртвые части
                     dead_parts = [f"{part.x_pos} {part.y_pos}" for part in ship_parts]
 
-                    missed_cells = createMarkedCellsAroundShip(ship=ship, field=field)
+                    marked_cells = createMarkedCellsAroundShip(ship=ship, field=field)
 
                     return Response(
                     {
                         "ship_is_killed": True,
                         "dead_parts": dead_parts,
-                        "missed_cells": missed_cells,
+                        "marked_cells": marked_cells,
                     })
                 # Иначе возвращаем повреждённую часть корабля
                 else:
@@ -626,11 +803,10 @@ class GameViewSet(ViewSet):
         # Нужно проверить, стреляли по этой клетке уже или нет
         try:
             # Ищем клетку в базе
-            marked_cell = MarkedCell.objects.get(field=field, x_pos=x, y_pos=y)
+            MarkedCell.objects.get(field=field, x_pos=x, y_pos=y)
 
             # Если она в базе, значит по ней уже стреляли
-            return Response(
-            {
+            return Response({
                 "Error": "Cell is already damaged"
             })
 
@@ -640,31 +816,34 @@ class GameViewSet(ViewSet):
             # Меняем ход игрока, т.к. попаданий не было
             swapGameUserIdTurn(game=game)
 
-            return Response(
-            {
+            return Response({
                 "missed": True,
                 "missed_cell": f"{x} {y}"
             })
 
-    @action(detail=False, methods=['get', 'post'])
-    def return_games(self, request) -> Response:
+    @action(detail=False, methods=["get", "post"])
+    def get_games(self, request) -> Response:
+        """
+            Возвращает все игры
+
+            *DEBUG
+        """
         queryset = Game.objects.all()
         serialzer = GameSerializer(queryset, many=True)
 
         return Response(serialzer.data)
 
     # 1)
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def connect_to_game(self, request) -> Response:
         """
             game_id, user_id
         """
         try:
-            game_id = request.data['game_id']
-            user_id = request.data['user_id']
+            game_id = request.data["game_id"]
+            user_id = request.data["user_id"]
         except KeyError:
-            return Response(
-            {
+            return Response({
                 "Error": "Not enough arguments"
             })
 
@@ -672,51 +851,44 @@ class GameViewSet(ViewSet):
             game = Game.objects.get(game_id=game_id)
             fields = Field.objects.filter(game=game)
         except Game.DoesNotExist:
-            return Response(
-            {
+            return Response({
                 "Error": "Current game does not exist"
             })
 
-
         # В комнате уже 2 поля, соответственно 2 игрока
         if len(fields) == 2:
-            return Response(
-            {
+            return Response({
                 "Error": "Game is full"
             })
 
         # Проверка на то, что игрок с таким же id подключается
         if fields[0].owner_id == user_id:
-            return Response(
-            {
+            return Response({
                 "Error": "Game cannot contain players with 2 same id"
             })
         
         Field.objects.create(game=game, owner_id=user_id)
 
-        return Response(
-        {
+        return Response({
             "game_id": game_id
         })
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def delete_game(self, request) -> Response:     
         try:
             game_id = request.data["game_id"]
         except KeyError:
-            return Response(
-            {
+            return Response({
                 "Error": "Not enough arguments"
             })
 
         Game.objects.filter(game_id=game_id).delete()
 
-        return Response(
-        {
+        return Response({
             "deleted": True
         })
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def delete_games(self, request) -> Response:
         Game.objects.all().delete()
 
@@ -726,16 +898,14 @@ class GameViewSet(ViewSet):
 
 
 class UserViewSet(ViewSet):
+
     @action(detail=False, methods=["post"])
     def login(self, request):
         try:
-            user_id = int(request.data['user_id'])
+            user_id = int(request.data["user_id"])
         except ValueError:
             return Response({"login_successful": False})
-        password = request.data['password']
-
-        print(user_id)
-        print(password)
+        password = request.data["password"]
 
         try:
             user = User.objects.get(user_id=user_id, user_password=password)
@@ -749,11 +919,11 @@ class UserViewSet(ViewSet):
 
     @action(detail=False, methods=["post"])
     def registrate(self, request):
-        # x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        # x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
         # if x_forwarded_for:
-        #     ip = x_forwarded_for.split(',')[0]
+        #     ip = x_forwarded_for.split(",")[0]
         # else:
-        #     ip = request.META.get('REMOTE_ADDR')
+        #     ip = request.META.get("REMOTE_ADDR")
         
         # if ip in known_ips:
         #     return Response({

@@ -1,0 +1,7 @@
+build-*/
+Lib/
+Scripts/
+pyvenv.cfg
+__pycache__/
+*.pro.user
+*.pro.user.*
