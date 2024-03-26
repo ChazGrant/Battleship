@@ -1,0 +1,3339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>Games.views API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>Games.views</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">from rest_framework.viewsets import ViewSet
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from django.db.models import F
+
+from django.db.utils import IntegrityError
+
+import random
+
+from .models import Game, Field, Ship, ShipPart, MarkedCell, User
+from .serializers import GameSerializer, FieldSerializer, ShipSerializer
+
+from typing import List
+
+MAX_LIMIT = 1000
+
+SHIP_LENGTHS = {
+    1: lambda field: field.one_deck,
+    2: lambda field: field.two_deck,
+    3: lambda field: field.three_deck,
+    4: lambda field: field.four_deck
+}
+
+SHIP_LENGTHS_NAMES = {
+    1: &#34;one_deck&#34;,
+    2: &#34;two_deck&#34;,
+    3: &#34;three_deck&#34;,
+    4: &#34;four_deck&#34;
+}
+
+# DEBUG
+known_ips = list()
+
+# TODO
+&#34;&#34;&#34;
+    Впервые произошла полностью рабочая игра, в которой показали победителя и проигравшего
+
+    Теперь нужно искать баги, один из которых является багом Шрёддингера:
+        Иногда, зачастую во время первых ходов, игроку не отрисовываются те корабли, по которым попал противник
+    Ещё один баг заключается в том, что при создании серых частей вокруг мёрвтого корабля, условие пропускается
+    из-за чего создаётся серая часть в месте, где находится мёртвая часть корабля
+&#34;&#34;&#34;
+
+&#34;&#34;&#34;
+    1) Игрок подключается к игре, получая её id
+    2) Игрок ставит все свои корабли и ожидает пока не подключиться другой игрок или другой игрок не выставит
+    все корабли
+    3) Игрок получает информацию о том, чей сейчас ход
+    4) Игрок стреляет по кораблям, при промахе ход меняется, при попадании сервер возвращает поля,
+    по которым попал игрок
+    5) Второй игрок получает информацию о том, по каким клеткам попал первый игрок
+    6) Когда все корабли уничтожены, игрок получает информацию об этом и на основе этого узнаёт кто победил
+    7) Игра заканчивается и удаляется вместе с полями, кораблями и частями кораблей при следующих условиях:
+        - Один из игроков покинул игру, т.е. закрыл окно с игрой
+        - Корабли одного из игроков были полностью уничтожены
+        - Один из игроков не сделал ничего в течении минуты, из-за чего был кикнут с игры
+&#34;&#34;&#34;
+
+
+def createMarkedCellsAroundShip(ship: Ship, field: Field) -&gt; List[str]:
+    &#34;&#34;&#34;
+        Создаёт помеченные части поля вокруг уничтоженного корабля и возвращает их координаты
+
+        Аргументы:
+            ship - Корабль, который был уничтожен
+            field - Поле, к которому относится игра
+
+        Возвращает:
+            Список координат, разделённых через пробел
+    &#34;&#34;&#34;
+    marked_cells = list()
+    dead_ship_parts = ShipPart.objects.filter(ship=ship)
+    for dead_part in dead_ship_parts:
+        x_pos = dead_part.x_pos
+        y_pos = dead_part.y_pos
+
+        # Проходимся по квадрату вокруг мёртвой клетки
+        for x in range(x_pos - 1, x_pos + 2):
+            for y in range(y_pos - 1, y_pos + 2):
+                # Клетка за пределами поля
+                if x &lt; 0 or y &lt; 0 or x &gt; 9 or y &gt; 9:
+                    continue
+                
+                # Если координаты совпадают с координатами части корабля - пропускаем
+                if x_pos == x and y_pos == y:
+                    continue
+
+                # Добавляем &#34;серую&#34; клетку
+                marked_cells.append(f&#34;{x} {y}&#34;)
+                # Создаём MarkedCell, если такой ещё нет
+                try:
+                    MarkedCell.objects.get(field=field, x_pos=x, y_pos=y)
+                except MarkedCell.DoesNotExist:
+                    MarkedCell.objects.create(field=field, x_pos=x, y_pos=y)
+
+    return marked_cells
+
+def generateGameId() -&gt; str:
+    &#34;&#34;&#34;
+        Создаёт идентификатор игры
+
+        Возврашает:
+            Строку, содержащую идентификатор для созданной игры
+    &#34;&#34;&#34;
+    return &#34;&#34;.join(str(random.randint(0, MAX_LIMIT)) for i in range(8))
+
+def allShipsHasBeenPlaced(field: Field) -&gt; bool:
+    &#34;&#34;&#34;
+        Проверяет все ли корабли закончились и расставлены на поле
+
+        Аргументы:
+            field - Поле, на котором размещены корабли
+
+        Возвращает:
+            True или False в зависимости от расстановки всех кораблей
+    &#34;&#34;&#34;
+    return (field.four_deck + field.three_deck + field.two_deck + field.one_deck) == 0
+
+def getDamagedShipPartsPositions(ship: Ship) -&gt; List[str]:
+    &#34;&#34;&#34;
+        Получает все части корабля, которые были повреждены
+
+        Аргументы:
+            ship - Корабль, части которого нужно найти
+
+        Возвращает:
+            Список из координат повреждённых частей корабля, разделённых пробелом
+    &#34;&#34;&#34;
+    parts_positions = list()
+    damaged_ship_parts = ShipPart.objects.filter(ship=ship, is_damaged=True)
+
+    for damaged_ship_part in damaged_ship_parts:
+        # Делаем так, потому что в Qt легче обработать массив из строк(через split каждого элемента)
+        parts_positions.append(f&#34;{damaged_ship_part.x_pos} {damaged_ship_part.y_pos}&#34;)
+
+    return parts_positions
+
+def shipIsDead(ship: Ship) -&gt; bool:
+    &#34;&#34;&#34;
+        Возвращает является ли корабль уничтоженным
+        Аргументы:
+            ship - Корабль, который нужно проверить на уничтоженность
+    &#34;&#34;&#34;
+    ship_parts = ShipPart.objects.filter(ship=ship)
+    return all(map(lambda part: part.is_damaged, ship_parts))
+
+def allShipsAreDead(field: Field) -&gt; bool:
+    &#34;&#34;&#34;
+        Проверяет все корабли были уничтожены или нет
+        Аргументы:
+            field - Поле, на котором нужно провести проверку
+
+        Возвращает:
+            True если все части всех кораблей были уничтожены, в ином случае False
+    &#34;&#34;&#34;
+    ships = Ship.objects.filter(field=field)
+    # Если все корабли мертвы, то возвращает True
+    return all(map(lambda ship: ship.is_dead, ships))
+
+def getWinner(game: Game) -&gt; str:
+    &#34;&#34;&#34;
+        Получает победителя заданной игры
+
+        Аргументы:
+            game - Объект игры
+
+        Возвращает:
+            Строку, содержащую id победителя
+    &#34;&#34;&#34;
+    # Если у игры уже есть победитель, значит второй игрок закончил игру
+    # и его поле удалено
+    if game.has_winner:
+        # Возвращаем 0, т.к. id пользователя с этой строкой точно совпадать
+        # не будет, а соответственно клиент будет считать себя проигравшим
+        return &#34;0&#34;
+
+    # Если у 1 поля все корабли погибли, то победило 2 поле
+    fields = Field.objects.filter(game=game)
+
+    for idx, field in enumerate(fields):
+        if allShipsAreDead(field):
+            swapGameUserIdTurn(game=game)
+            # Заканчиваем игру
+            game.game_is_over = True
+            game.has_winner = True
+            game.save()
+
+            # Возвращаем противоположный проигравшему идентификатор 
+            return fields[not idx].owner_id
+    return &#34;&#34;
+
+def swapGameUserIdTurn(game: Game) -&gt; None:
+    &#34;&#34;&#34;
+        Меняет ход текущего игрока на противоположный
+
+        Аргументы:
+            game - Объект игры, в которой нужно поменять ход
+
+        Возвращает:
+            None
+    &#34;&#34;&#34;
+    fields = Field.objects.filter(game=game)
+
+    owners_id = [field.owner_id for field in fields]
+
+    # Получаем индекс id игрока, которого сейчас ход
+    user_id_turn = owners_id.index(game.user_id_turn)
+
+    game.user_id_turn = owners_id[not user_id_turn]
+    game.save()
+
+def createShip(cells: List[List[int]], field: Field) -&gt; bool:
+    &#34;&#34;&#34;
+        Создаёт корабль
+
+        Аргументы:
+            cells - Список координат частей корабля
+            field - Поле, на котором создаётся корабль
+
+        Возвращает:
+            True если корабль был создан, иначе False
+    &#34;&#34;&#34;
+    ship_length = len(cells)
+
+    try:
+        ship = Ship.objects.create(field=field, ship_length=ship_length)
+    except Exception as e:
+        return False
+    
+    for cell in cells:
+        x, y = cell
+        try:
+            ShipPart.objects.create(ship=ship, x_pos=x, y_pos=y)
+        except Exception as e:
+            return False
+
+    ship_length_str = SHIP_LENGTHS_NAMES[ship_length]
+
+    # Это был просто эксперимент, было интересно найти способ передавать в update
+    # поле которое нужно изменить и его новое значение
+    # В итоге передаётся обычный словарь kwargs, в которой указано название поля и его новое значение
+    kwargs = {
+        ship_length_str: F(ship_length_str) - 1
+    }
+    Field.objects.filter(owner_id=field.owner_id).update(**kwargs)
+
+    return True
+
+def hasCollisions(ships: List[Ship], cells: List[List[int]]) -&gt; bool:
+    &#34;&#34;&#34;
+        Проверяет наличие кораблей в области вокруг указанных клеток
+
+        Аргументы:
+            ships - Список имеющихся кораблей на поле
+            cells - Список координат клеток, где пользователь хочет разместить следующий корабль
+
+        Возвращает:
+            True, если в области вокруг клеток есть корабль, иначе False
+        
+        @TODO Оптимизировать цикл поиска коллизий
+    &#34;&#34;&#34;
+    # Поиск клеток, заполненных кораблями
+    for ship in ships:
+        ship_parts = ShipPart.objects.filter(ship=ship)
+        for ship_part in ship_parts:
+            for cell in cells:
+                cell_x, cell_y = cell
+
+                if ship_part.x_pos in [cell_x - 1, cell_x + 1, cell_x] \
+                and ship_part.y_pos in [cell_y - 1, cell_y + 1, cell_y]:
+                    return True
+
+    return False
+
+&#34;&#34;&#34;
+    ViewSet кораблей
+
+    Описывает поведение при запросе на адрес адрес_сервера/ships/имя_метода
+
+    @author     ChazGrant
+    @version    1.0
+&#34;&#34;&#34;
+class ShipViewSet(ViewSet):
+    @action(detail=False, methods=[&#34;post&#34;])
+    def get_ships(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Возвращает все корабли
+
+            *DEBUG
+            
+            Возвращает:
+                Сериализованный класс Ship
+        &#34;&#34;&#34;
+        ships = Ship.objects.all()
+        serialzer = ShipSerializer(ships, many=True)
+
+        return Response(serialzer.data)
+
+    @action(detail=False, methods=[&#34;post&#34;])
+    def delete_ships(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Удаляет все корабли
+
+            *DEBUG
+
+            Возвращает:
+                Результат удаления
+        &#34;&#34;&#34;
+        Ship.objects.all().delete()
+        Field.objects.all().delete()
+        Game.objects.all().delete()
+
+        return Response({
+            &#34;deleted&#34;: True
+        })
+
+
+&#34;&#34;&#34;
+    ViewSet игровых полей
+
+    Описывает поведение при запросе на адрес адрес_сервера/fields/имя_метода
+
+    @author     ChazGrant
+    @version    1.0
+&#34;&#34;&#34;
+class FieldViewSet(ViewSet):
+    # 5)
+    @action(detail=False, methods=[&#34;post&#34;])
+    def get_damaged_cells(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Возвращает все погибшие корабли, повреждённые части кораблей и промахи на поле
+            указанного пользователя 
+
+            Аргументы:
+                user_id - Идентификтор пользователя, погибишие корабли которого нужно вернуть
+
+            Возвращает:
+                Ответ от сервера, содержащего сообщение об ошибки или погибшие корабли, повреждённые 
+                их части и промахи на поле
+        &#34;&#34;&#34;            
+        try:
+            user_id = request.data[&#34;user_id&#34;]
+        except KeyError:
+            return Response({
+                &#34;error&#34;: &#34;Not enough arguments&#34;
+            })
+
+        field = Field.objects.get(owner_id=user_id)
+
+        data = dict()
+        # Получаем все погибшие корабли
+        dead_ships = Ship.objects.filter(field=field, is_dead=True)
+        dead_parts = list()
+        for dead_ship in dead_ships:
+            for dead_part in getDamagedShipPartsPositions(dead_ship):
+                dead_parts.append(dead_part)
+
+        dead_parts = [dead_part for dead_part in dead_parts if dead_part]
+        data[&#34;dead_parts&#34;] = dead_parts
+
+        # Получаем все корабли
+        ships = Ship.objects.filter(field=field, is_dead=False)
+        damaged_parts: List[str] = list()
+        for ship in ships:
+            for damaged_part in getDamagedShipPartsPositions(ship):
+                damaged_parts.append(damaged_part)
+
+        damaged_parts = [damaged_part for damaged_part in damaged_parts if damaged_part]
+        data[&#34;damaged_parts&#34;] = damaged_parts
+
+        # Получаем все повреждённые клетки
+        marked_cells = MarkedCell.objects.filter(field=field)
+        if marked_cells:
+            marked_cells = [f&#34;{cell.x_pos} {cell.y_pos}&#34; for cell in marked_cells]
+            data[&#34;marked_cells&#34;] = marked_cells
+        
+        return Response(data)
+
+    # 2)
+    @action(detail=False, methods=[&#34;get&#34;])
+    def get_field(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Возвращает поле указанного пользвателя если передан аргумент owner_id
+            или все поля
+
+            Аргументы:
+                owner_id - Идентификатор владельца поля
+
+            Возвращает:
+                Поле владельца или все существующие поля
+        &#34;&#34;&#34;
+        if &#34;owner_id&#34; not in request.data:
+            field = Field.objects.all()
+            serializer = FieldSerializer(field, many=True)
+            # *DEBUG
+            return Response(serializer.data)
+            return Response({
+                &#34;error&#34;: &#34;Not enough arguments&#34;
+            })
+
+        try:
+            field = Field.objects.get(owner_id=request.data[&#34;owner_id&#34;])
+        except Field.DoesNotExist:
+            return Response({
+                &#34;critical_error&#34;: &#34;Field does not exist&#34;
+            })
+
+        serialzer = FieldSerializer(field)
+        return Response(serialzer.data)
+
+    # 2)
+    @action(detail=False, methods=[&#34;post&#34;])
+    def place_ship(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Устанавливает корабль на поле игрока
+
+            Аргументы:
+                owner_id - Идентификатор владельца поля
+                game_id - Идентификатор игры
+
+            Возвращает:
+                Словарь, содержащий ошибку, или массив клеток, на которых были установлены корабли
+                Так же возвращает булевое значение если все корабли были расставлены
+        &#34;&#34;&#34;
+        cells = list()
+        data = dict()            
+        try:
+            owner_id = request.data[&#34;owner_id&#34;]
+            game_id = request.data[&#34;game_id&#34;]
+            # [[5, 7], [5, 8], [5, 9]]
+            cells = request.data[&#34;cells&#34;].split(&#34; &#34;)
+        except KeyError:
+            return Response({
+                &#34;error&#34;: &#34;Not enough arguments&#34;
+            })
+
+        cells = list(map(lambda lst: lst.split(&#34;,&#34;), cells))
+        cells = [cell for cell in cells if any(cell)]
+        cells = [list(map(int, cell)) for cell in cells]
+
+        # Проверка на выход за поле
+        for cell in cells:
+            x, y = cell
+            if x &lt; 0 or x &gt; 9 or y &lt; 0 or y &gt; 9:
+                return Response({
+                    &#34;error&#34;: &#34;Out of bounds&#34;
+                })
+
+        if not cells:
+            return Response({
+                &#34;error&#34;: &#34;No ships to place&#34;
+            })
+
+        # Проверка ширины корабля
+        first_cell = cells[0]
+        for cell in cells:
+            if cell[0] != first_cell[0] and cell[1] != first_cell[1]:
+                return Response({
+                    &#34;error&#34;: &#34;Ship is too wide:)&#34;
+                })
+        data[&#34;cells&#34;] = cells
+
+        # Проверка длины корабля
+        ship_length = len(cells)
+        if ship_length &gt; 4:
+            return Response({
+                &#34;error&#34;: &#34;Ship is too long&#34;
+            })
+        field = Field.objects.get(owner_id=owner_id)
+
+        # Проверка осталось ли столько кораблей
+        if not SHIP_LENGTHS[ship_length](field=field):
+            return Response(
+            {
+                &#34;error&#34;: f&#34;There no {ship_length}-deck ships last&#34;
+            })
+
+        # Получаем все корабли на поле
+        ships = Ship.objects.filter(field=field)
+
+        # Если кораблей нет, то нет и коллизий
+        if not ships:
+            self.createShip(cells=cells, field=field)
+
+            return Response(data)
+        else:
+            if (self.hasCollisions(ships=ships, cells=cells)):
+                return Response(
+                {
+                    &#34;error&#34;: &#34;Collisions&#34;
+                })
+            else:
+                self.createShip(cells=cells, field=field)
+
+        # Если все корабли заполнены - вернуть в ответе
+        if allShipsHasBeenPlaced(field=field):
+            data[&#34;all_ships_has_been_placed&#34;] = True
+ 
+        return Response(data)
+
+&#34;&#34;&#34;
+    ViewSet игры
+
+    Описывает поведение при запросе на адрес адрес_сервера/games/имя_метода
+
+    @author     ChazGrant
+    @version    1.0
+&#34;&#34;&#34;
+class GameViewSet(ViewSet):
+    def deleteGame(self, game_id: str) -&gt; None:
+        &#34;&#34;&#34;
+            Удаляет игру с заданным идентификатором
+
+            Аргументы:
+                game_id - Строка, содержащая в себе идентификатор игры
+
+            Возвращает:
+                True если игра удалена, иначе False
+        &#34;&#34;&#34;
+        try:
+            Game.objects.filter(game_id=game_id).delete()
+        except Exception as e:
+            return False
+        
+        return True
+
+    @action(detail=False, methods=[&#34;post&#34;])
+    def disconnect(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Отключает пользователя от указанной игры
+
+            Аргументы:
+                user_id - Идентификатор пользователя
+                game_id - Идентификатор игры
+
+            Возвращает:
+                Запрос, содержащий в себе результат отключения и сообщение об ошибке если она произошла
+        &#34;&#34;&#34;          
+        try:
+            game_id = request.data[&#34;game_id&#34;]
+            user_id = request.data[&#34;user_id&#34;]
+        except KeyError:
+            return Response({
+                &#34;error&#34;: &#34;Not enough arguments&#34;
+            })
+
+        try:
+            game = Game.objects.get(game_id=game_id)
+        except Game.DoesNotExist:
+            return Response({
+                &#34;critical_error&#34;: &#34;Game doesn&#39;t exist&#34;
+            })
+
+        try:
+            Field.objects.filter(game=game, owner_id=user_id).delete()
+        except Field.DoesNotExist:
+            return Response({
+                &#34;critical_error&#34;: &#34;Field doesn&#39;t exist&#34;
+            })
+
+        # Если полей у это игры нет, значит оба игрока вышли и игру можно удалять
+        try:
+            Field.objects.get(game=game)
+        except Field.DoesNotExist:
+            Game.objects.filter(game_id=game_id).delete()
+
+        return Response({
+            &#34;Disconnected&#34;: True
+        })
+
+    # 6)
+    @action(detail=False, methods=[&#34;post&#34;])
+    def game_is_over(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Возвращает информацию о том была ли завершена игра
+
+            Если игра окончена, значит поля можно удалять
+            сначала удаляется поле победителя, затем второй игрок удаляет своё поле
+
+            У игры 3 состояния
+                1: Игра окончена, но победителя нет
+                2: Игра окончена, и победитель есть
+                3: Игра не закончена
+            
+            Аргументы:
+                game_id - Идентификатор игры 
+                user_id - Идентификатор пользователя
+
+            Возвращает:
+                Статус о том завершена игра или нет и идентификатор победителя если он есть
+        &#34;&#34;&#34;
+
+
+        game_id = request.data[&#34;game_id&#34;]
+        try:
+            game = Game.objects.get(game_id=game_id)
+        except Game.DoesNotExist:
+            return Response(
+            {
+                &#34;critical_error&#34;: &#34;Game does not exist&#34;
+            })
+
+        data = dict()
+        user_id = request.data[&#34;user_id&#34;]
+        winner = getWinner(game=game)
+
+        if (winner):
+            data[&#34;winner&#34;] = winner
+
+            # Удаляем поле, т.к. у игрока игра закрывается
+            Field.objects.filter(game=game, owner_id=user_id).delete()
+        
+        data[&#34;game_is_over&#34;] = game.game_is_over
+
+        # Если полей нет, значит все вышли и игру можно удалять
+        if (len(Field.objects.filter(game=game)) == 0):
+            self.deleteGame(game_id=game_id)
+        return Response(data)
+
+    # 3)
+    @action(detail=False, methods=[&#34;post&#34;])
+    def get_user_id_turn(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Возвращает идентификатор игрока, который сейчас ходит
+
+            Аргументы:
+                game_id - Идентификатор игры
+
+            Возвращает:
+                Запрос, содержащий текст ошибки, если произошла ошибка или параметр 
+                game_is_started, отвечающий за начало игры
+        &#34;&#34;&#34;
+        game_id = request.data[&#34;game_id&#34;]
+        try:
+            game = Game.objects.get(game_id=game_id)
+        except Game.DoesNotExist:
+            # Если игры не существует, то она не была создана
+            return Response({
+                &#34;critical_error&#34;: &#34;Game doesn&#39;t exist&#34;
+            })
+
+
+        # Если у игры не 2 поля, значит второй игрок закрыл игру
+        fields = Field.objects.filter(game=game)
+
+        # Если поле 1 и у игры есть победитель, значит победил второй игрок
+        # Иначе второй игрок вышел
+        if len(fields) &lt; 2 and not game.has_winner:
+            return Response({
+                &#34;critical_error&#34;: &#34;Current game has less than 2 fields&#34;
+            })
+
+        print(game.user_id_turn)
+        return Response({
+            &#34;user_id_turn&#34;: game.user_id_turn
+        })
+
+    # 2)
+    @action(detail=False, methods=[&#34;post&#34;])
+    def game_is_started(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Возвращает метку о том началась ли игра с указанным идентификатором
+
+            Аргументы:
+                game_id - Идентификатор игры
+
+            Возвращает:
+                Параметр game_is_started, отвечающий за начало игры
+        &#34;&#34;&#34;
+        # Если корабли у обеих полей закончены то игра начата
+        game_id = request.data[&#34;game_id&#34;]
+        try:
+            game = Game.objects.get(game_id=game_id)
+        except Game.DoesNotExist:
+            return Response({
+                &#34;critical_error&#34;: &#34;Данной игры не существует&#34;
+            })
+
+        fields = Field.objects.filter(game=game)
+
+        if len(fields) != 2:
+            return Response({
+                &#34;game_is_started&#34;: False
+            })
+
+        if (allShipsHasBeenPlaced(fields[0]) and allShipsHasBeenPlaced(fields[1])):
+            return Response({
+                &#34;game_is_started&#34;: True
+            })
+
+        return Response({
+            &#34;game_is_started&#34;: False
+        })
+
+    # 1)
+    @action(detail=False, methods=[&#34;post&#34;])
+    def create_game(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Создаёт игру
+
+            Аргументы:
+                user_id - Идентификатор игрока, который создал игру
+                
+            Возвращает:
+                Текст ошибки или сериализованный класс Game
+        &#34;&#34;&#34;
+        try:  
+            user_id = request.data[&#34;user_id&#34;]
+        except KeyError:
+            return Response(
+            {
+                &#34;error&#34;: &#34;Not enough arguments&#34;
+            })
+
+        try:
+            Field.objects.get(owner_id=user_id)
+
+            return Response({
+                &#34;error&#34;: &#34;User already has a game&#34;
+            })
+        except Field.DoesNotExist:
+            game_id = generateGameId()
+            game = Game.objects.create(game_id=game_id, user_id_turn=user_id)
+            Field.objects.create(owner_id=user_id, game=game)
+
+            game_serializer = GameSerializer(game)
+            return Response(game_serializer.data)
+
+    # 4)
+    @action(detail=False, methods=[&#34;post&#34;])
+    def fire(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Стреляет по указанной точке на поле
+
+            Если убивает последний корабль, то возвращаем информацию о том, что игра закончена
+            
+            Аргументы:
+                game_id - Идентификатор игры
+                user_id - Идентификатор пользователя, который стреляет
+                x, y - Координаты на поле
+
+            Возвращает:
+                Ошибку или результат об мёртвом корабле 
+                или координаты части корабля по которой попали 
+                или координаты точки, по которой не попали
+        &#34;&#34;&#34;
+        # Получаем игру, в которой находится игрок и его айди, 
+        # а также координаты, по которым он стреляет
+        try:
+            game_id = request.data[&#34;game_id&#34;]
+            user_id = request.data[&#34;user_id&#34;]
+            x = int(request.data[&#34;x&#34;])
+            y = int(request.data[&#34;y&#34;])
+        except KeyError:
+            return Response({
+                &#34;error&#34;: &#34;Not enough arguments&#34;
+            })
+
+        # Получаем игру, в которой находится пользователь
+        try:
+            game = Game.objects.get(game_id=game_id)
+        except Game.DoesNotExist:
+            return Response({
+                &#34;critical_error&#34;: &#34;Game does not exist&#34;
+            })
+
+
+        # Если ход не его, то стрелять он не может
+        if not game.user_id_turn == user_id:
+            return Response({
+                &#34;error&#34;: &#34;It&#39;s not your turn&#34;
+            })
+
+
+        # Получаем поле противника
+        # путём исключения из полей поля с id пользователя
+        field = Field.objects.filter(game=game).exclude(owner_id=user_id)
+
+        # Обработка, при нахождении более одного поля
+        if len(field) &gt; 1:
+            return Response({
+                &#34;critical_error&#34;: &#34;Found more than one player&#39;s field&#34;
+            })
+        field = field[0]      
+
+        # Получаем все корабли противника
+        ships = Ship.objects.filter(field=field)
+
+        # Проходимся по кораблям
+        for ship in ships:
+            try:
+                needed_ship_part = ShipPart.objects.get(ship=ship, x_pos=x, y_pos=y)
+
+                if needed_ship_part.is_damaged:
+                    return Response({
+                        &#34;error&#34;: &#34;Ship part is already damaged&#34;
+                    })
+
+                needed_ship_part.is_damaged = True
+                needed_ship_part.save()
+
+                # Проверяем все ли части корабля повреждены
+                ship_is_dead = shipIsDead(ship)
+
+                # Если корабль мёртв, то возвращаем его части и всю область вокруг него
+                if ship_is_dead:
+                    # Делаем его мёртвым
+                    ship.is_dead = True
+                    ship.save()
+
+                    ship_parts = ShipPart.objects.filter(ship=ship)
+                    # Мёртвые части
+                    dead_parts = [f&#34;{part.x_pos} {part.y_pos}&#34; for part in ship_parts]
+
+                    marked_cells = createMarkedCellsAroundShip(ship=ship, field=field)
+
+                    return Response({
+                        &#34;ship_is_killed&#34;: True,
+                        &#34;dead_parts&#34;: dead_parts,
+                        &#34;marked_cells&#34;: marked_cells,
+                    })
+                # Иначе возвращаем повреждённую часть корабля
+                else:
+                    return Response({
+                            &#34;ship_is_damaged&#34;: True,
+                            &#34;damaged_part&#34;: f&#34;{x} {y}&#34;
+                        })       
+            # Если части нет, значит не попали
+            except ShipPart.DoesNotExist:
+                pass
+
+        # Нужно проверить, стреляли по этой клетке уже или нет
+        try:
+            # Ищем клетку в базе
+            MarkedCell.objects.get(field=field, x_pos=x, y_pos=y)
+
+            # Если она в базе, значит по ней уже стреляли
+            return Response({
+                &#34;error&#34;: &#34;Cell is already damaged&#34;
+            })
+
+        except MarkedCell.DoesNotExist:
+            MarkedCell.objects.create(field=field, x_pos=x, y_pos=y)
+
+            # Меняем ход игрока, т.к. попаданий не было
+            swapGameUserIdTurn(game=game)
+
+            return Response({
+                &#34;missed&#34;: True,
+                &#34;missed_cell&#34;: f&#34;{x} {y}&#34;
+            })
+
+    @action(detail=False, methods=[&#34;get&#34;, &#34;post&#34;])
+    def get_games(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Возвращает все игры
+
+            *DEBUG
+        &#34;&#34;&#34;
+        queryset = Game.objects.all()
+        serialzer = GameSerializer(queryset, many=True)
+
+        return Response(serialzer.data)
+
+    # 1)
+    @action(detail=False, methods=[&#34;post&#34;])
+    def connect_to_game(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Подключается пользователя к игре
+
+            Аргументы:
+                game_id - Идентификатор игры
+                user_id - Идентификатор пользователя
+
+            Возвращает:
+                Текст ошибки или идентификатор игры, к которой подключился пользователь
+        &#34;&#34;&#34;
+        try:
+            game_id = request.data[&#34;game_id&#34;]
+            user_id = request.data[&#34;user_id&#34;]
+        except KeyError:
+            return Response({
+                &#34;error&#34;: &#34;Not enough arguments&#34;
+            })
+
+        try:
+            game = Game.objects.get(game_id=game_id)
+            fields = Field.objects.filter(game=game)
+        except Game.DoesNotExist:
+            return Response({
+                &#34;error&#34;: &#34;Current game does not exist&#34;
+            })
+
+        # В комнате уже 2 поля, соответственно 2 игрока
+        if len(fields) == 2:
+            return Response({
+                &#34;error&#34;: &#34;Game is full&#34;
+            })
+
+        # Проверка на то, что игрок с таким же id подключается
+        if fields[0].owner_id == user_id:
+            return Response({
+                &#34;error&#34;: &#34;Game cannot contain players with 2 same id&#34;
+            })
+        
+        Field.objects.create(game=game, owner_id=user_id)
+
+        return Response({
+            &#34;game_id&#34;: game_id
+        })
+
+    @action(detail=False, methods=[&#34;get&#34;])
+    def delete_game(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Удаляет игру с заданным идентификатором
+
+            *DEBUG
+        &#34;&#34;&#34;
+        try:
+            game_id = request.data[&#34;game_id&#34;]
+        except KeyError:
+            return Response({
+                &#34;error&#34;: &#34;Not enough arguments&#34;
+            })
+
+        Game.objects.filter(game_id=game_id).delete()
+
+        return Response({
+            &#34;deleted&#34;: True
+        })
+
+    @action(detail=False, methods=[&#34;get&#34;])
+    def delete_games(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Удаляет все игры
+
+            *DEBUG
+        &#34;&#34;&#34;
+        Game.objects.all().delete()
+
+        return Response({
+            &#34;deleted&#34;: True
+        })
+
+
+&#34;&#34;&#34;
+    ViewSet пользователя
+
+    Описывает поведение при запросе на адрес адрес_сервера/users/имя_метода
+
+    @author     ChazGrant
+    @version    1.0
+&#34;&#34;&#34;
+class UserViewSet(ViewSet):
+    @action(detail=False, methods=[&#34;post&#34;])
+    def login(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Входит в аккаунт пользователя с заданными данными
+
+            Аргументы:
+                user_id - Идентификатор пользователя
+
+            Возвращает:
+                Текст ошибки и/или результат о логине
+                *DEBUG возвращает имя пользователя
+        &#34;&#34;&#34;
+        try:
+            user_id = int(request.data[&#34;user_id&#34;])
+            password = request.data[&#34;password&#34;]
+        except ValueError:
+            return Response({
+                &#34;login_successful&#34;: False,
+                &#34;error&#34;: &#34;Неверный тип идентификатора пользователя(ожидается целочисленное число)&#34;
+            })
+        except KeyError:
+            return Response({
+                &#34;login_successful&#34;: False,
+                &#34;error&#34;: &#34;Недостаточно аргументов&#34;
+            }) 
+
+        try:
+            user = User.objects.get(user_id=user_id, user_password=password)
+        except User.DoesNotExist:
+            return Response({
+                &#34;login_successful&#34;: False
+            })
+
+        return Response({
+                &#34;login_successful&#34;: True,
+                &#34;username&#34;: user.user_name
+            })
+
+    @action(detail=False, methods=[&#34;post&#34;])
+    def registrate(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Регистрирует пользователя
+
+            Аргументы:
+                user_name - Имя пользователя
+                password - Пароль
+                email - Электронная почта
+
+            Возвращает:
+                Информацию об успешной регистрации или текст ошибки
+
+            @TODO принимать хэш пароля а не сам пароль
+        &#34;&#34;&#34;
+        # x_forwarded_for = request.META.get(&#34;HTTP_X_FORWARDED_FOR&#34;)
+        # if x_forwarded_for:
+        #     ip = x_forwarded_for.split(&#34;,&#34;)[0]
+        # else:
+        #     ip = request.META.get(&#34;REMOTE_ADDR&#34;)
+        
+        # if ip in known_ips:
+        #     return Response({
+        #         &#34;registration_successful&#34;: False
+        #     })
+        
+        # known_ips.append(ip)
+        user_name = request.data[&#34;user_name&#34;]
+        password = request.data[&#34;password&#34;]
+        email = request.data[&#34;email&#34;]
+        try:
+            last_user_id = int(User.objects.latest(&#34;user_id&#34;).user_id)
+        except User.DoesNotExist:
+            last_user_id = 0
+
+        try:
+            created_user = User.objects.create(user_name=user_name, 
+                                               user_password=password, 
+                                               user_email=email,
+                                               user_id=last_user_id + 1)
+        except IntegrityError:
+            return Response({
+                &#34;registration_successful&#34;: False,
+                &#34;error&#34;: &#34;Данное имя пользователя занято&#34;
+            })
+
+        return Response({
+            &#34;registration_successful&#34;: True
+        })</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-variables">Global variables</h2>
+<dl>
+<dt id="Games.views.known_ips"><code class="name">var <span class="ident">known_ips</span></code></dt>
+<dd>
+<div class="desc"><p>Впервые произошла полностью рабочая игра, в которой показали победителя и проигравшего</p>
+<p>Теперь нужно искать баги, один из которых является багом Шрёддингера:
+Иногда, зачастую во время первых ходов, игроку не отрисовываются те корабли, по которым попал противник
+Ещё один баг заключается в том, что при создании серых частей вокруг мёрвтого корабля, условие пропускается
+из-за чего создаётся серая часть в месте, где находится мёртвая часть корабля</p></div>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="Games.views.allShipsAreDead"><code class="name flex">
+<span>def <span class="ident">allShipsAreDead</span></span>(<span>field: Games.models.Field) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Проверяет все корабли были уничтожены или нет
+Аргументы:
+field - Поле, на котором нужно провести проверку</p>
+<p>Возвращает:
+True если все части всех кораблей были уничтожены, в ином случае False</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def allShipsAreDead(field: Field) -&gt; bool:
+    &#34;&#34;&#34;
+        Проверяет все корабли были уничтожены или нет
+        Аргументы:
+            field - Поле, на котором нужно провести проверку
+
+        Возвращает:
+            True если все части всех кораблей были уничтожены, в ином случае False
+    &#34;&#34;&#34;
+    ships = Ship.objects.filter(field=field)
+    # Если все корабли мертвы, то возвращает True
+    return all(map(lambda ship: ship.is_dead, ships))</code></pre>
+</details>
+</dd>
+<dt id="Games.views.allShipsHasBeenPlaced"><code class="name flex">
+<span>def <span class="ident">allShipsHasBeenPlaced</span></span>(<span>field: Games.models.Field) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Проверяет все ли корабли закончились и расставлены на поле</p>
+<p>Аргументы:
+field - Поле, на котором размещены корабли</p>
+<p>Возвращает:
+True или False в зависимости от расстановки всех кораблей</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def allShipsHasBeenPlaced(field: Field) -&gt; bool:
+    &#34;&#34;&#34;
+        Проверяет все ли корабли закончились и расставлены на поле
+
+        Аргументы:
+            field - Поле, на котором размещены корабли
+
+        Возвращает:
+            True или False в зависимости от расстановки всех кораблей
+    &#34;&#34;&#34;
+    return (field.four_deck + field.three_deck + field.two_deck + field.one_deck) == 0</code></pre>
+</details>
+</dd>
+<dt id="Games.views.createMarkedCellsAroundShip"><code class="name flex">
+<span>def <span class="ident">createMarkedCellsAroundShip</span></span>(<span>ship: Games.models.Ship, field: Games.models.Field) ‑> List[str]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Создаёт помеченные части поля вокруг уничтоженного корабля и возвращает их координаты</p>
+<p>Аргументы:
+ship - Корабль, который был уничтожен
+field - Поле, к которому относится игра</p>
+<p>Возвращает:
+Список координат, разделённых через пробел</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def createMarkedCellsAroundShip(ship: Ship, field: Field) -&gt; List[str]:
+    &#34;&#34;&#34;
+        Создаёт помеченные части поля вокруг уничтоженного корабля и возвращает их координаты
+
+        Аргументы:
+            ship - Корабль, который был уничтожен
+            field - Поле, к которому относится игра
+
+        Возвращает:
+            Список координат, разделённых через пробел
+    &#34;&#34;&#34;
+    marked_cells = list()
+    dead_ship_parts = ShipPart.objects.filter(ship=ship)
+    for dead_part in dead_ship_parts:
+        x_pos = dead_part.x_pos
+        y_pos = dead_part.y_pos
+
+        # Проходимся по квадрату вокруг мёртвой клетки
+        for x in range(x_pos - 1, x_pos + 2):
+            for y in range(y_pos - 1, y_pos + 2):
+                # Клетка за пределами поля
+                if x &lt; 0 or y &lt; 0 or x &gt; 9 or y &gt; 9:
+                    continue
+                
+                # Если координаты совпадают с координатами части корабля - пропускаем
+                if x_pos == x and y_pos == y:
+                    continue
+
+                # Добавляем &#34;серую&#34; клетку
+                marked_cells.append(f&#34;{x} {y}&#34;)
+                # Создаём MarkedCell, если такой ещё нет
+                try:
+                    MarkedCell.objects.get(field=field, x_pos=x, y_pos=y)
+                except MarkedCell.DoesNotExist:
+                    MarkedCell.objects.create(field=field, x_pos=x, y_pos=y)
+
+    return marked_cells</code></pre>
+</details>
+</dd>
+<dt id="Games.views.createShip"><code class="name flex">
+<span>def <span class="ident">createShip</span></span>(<span>cells: List[List[int]], field: Games.models.Field) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Создаёт корабль</p>
+<p>Аргументы:
+cells - Список координат частей корабля
+field - Поле, на котором создаётся корабль</p>
+<p>Возвращает:
+True если корабль был создан, иначе False</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def createShip(cells: List[List[int]], field: Field) -&gt; bool:
+    &#34;&#34;&#34;
+        Создаёт корабль
+
+        Аргументы:
+            cells - Список координат частей корабля
+            field - Поле, на котором создаётся корабль
+
+        Возвращает:
+            True если корабль был создан, иначе False
+    &#34;&#34;&#34;
+    ship_length = len(cells)
+
+    try:
+        ship = Ship.objects.create(field=field, ship_length=ship_length)
+    except Exception as e:
+        return False
+    
+    for cell in cells:
+        x, y = cell
+        try:
+            ShipPart.objects.create(ship=ship, x_pos=x, y_pos=y)
+        except Exception as e:
+            return False
+
+    ship_length_str = SHIP_LENGTHS_NAMES[ship_length]
+
+    # Это был просто эксперимент, было интересно найти способ передавать в update
+    # поле которое нужно изменить и его новое значение
+    # В итоге передаётся обычный словарь kwargs, в которой указано название поля и его новое значение
+    kwargs = {
+        ship_length_str: F(ship_length_str) - 1
+    }
+    Field.objects.filter(owner_id=field.owner_id).update(**kwargs)
+
+    return True</code></pre>
+</details>
+</dd>
+<dt id="Games.views.generateGameId"><code class="name flex">
+<span>def <span class="ident">generateGameId</span></span>(<span>) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Создаёт идентификатор игры</p>
+<p>Возврашает:
+Строку, содержащую идентификатор для созданной игры</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generateGameId() -&gt; str:
+    &#34;&#34;&#34;
+        Создаёт идентификатор игры
+
+        Возврашает:
+            Строку, содержащую идентификатор для созданной игры
+    &#34;&#34;&#34;
+    return &#34;&#34;.join(str(random.randint(0, MAX_LIMIT)) for i in range(8))</code></pre>
+</details>
+</dd>
+<dt id="Games.views.getDamagedShipPartsPositions"><code class="name flex">
+<span>def <span class="ident">getDamagedShipPartsPositions</span></span>(<span>ship: Games.models.Ship) ‑> List[str]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Получает все части корабля, которые были повреждены</p>
+<p>Аргументы:
+ship - Корабль, части которого нужно найти</p>
+<p>Возвращает:
+Список из координат повреждённых частей корабля, разделённых пробелом</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def getDamagedShipPartsPositions(ship: Ship) -&gt; List[str]:
+    &#34;&#34;&#34;
+        Получает все части корабля, которые были повреждены
+
+        Аргументы:
+            ship - Корабль, части которого нужно найти
+
+        Возвращает:
+            Список из координат повреждённых частей корабля, разделённых пробелом
+    &#34;&#34;&#34;
+    parts_positions = list()
+    damaged_ship_parts = ShipPart.objects.filter(ship=ship, is_damaged=True)
+
+    for damaged_ship_part in damaged_ship_parts:
+        # Делаем так, потому что в Qt легче обработать массив из строк(через split каждого элемента)
+        parts_positions.append(f&#34;{damaged_ship_part.x_pos} {damaged_ship_part.y_pos}&#34;)
+
+    return parts_positions</code></pre>
+</details>
+</dd>
+<dt id="Games.views.getWinner"><code class="name flex">
+<span>def <span class="ident">getWinner</span></span>(<span>game: Games.models.Game) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Получает победителя заданной игры</p>
+<p>Аргументы:
+game - Объект игры</p>
+<p>Возвращает:
+Строку, содержащую id победителя</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def getWinner(game: Game) -&gt; str:
+    &#34;&#34;&#34;
+        Получает победителя заданной игры
+
+        Аргументы:
+            game - Объект игры
+
+        Возвращает:
+            Строку, содержащую id победителя
+    &#34;&#34;&#34;
+    # Если у игры уже есть победитель, значит второй игрок закончил игру
+    # и его поле удалено
+    if game.has_winner:
+        # Возвращаем 0, т.к. id пользователя с этой строкой точно совпадать
+        # не будет, а соответственно клиент будет считать себя проигравшим
+        return &#34;0&#34;
+
+    # Если у 1 поля все корабли погибли, то победило 2 поле
+    fields = Field.objects.filter(game=game)
+
+    for idx, field in enumerate(fields):
+        if allShipsAreDead(field):
+            swapGameUserIdTurn(game=game)
+            # Заканчиваем игру
+            game.game_is_over = True
+            game.has_winner = True
+            game.save()
+
+            # Возвращаем противоположный проигравшему идентификатор 
+            return fields[not idx].owner_id
+    return &#34;&#34;</code></pre>
+</details>
+</dd>
+<dt id="Games.views.hasCollisions"><code class="name flex">
+<span>def <span class="ident">hasCollisions</span></span>(<span>ships: List[Games.models.Ship], cells: List[List[int]]) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Проверяет наличие кораблей в области вокруг указанных клеток</p>
+<p>Аргументы:
+ships - Список имеющихся кораблей на поле
+cells - Список координат клеток, где пользователь хочет разместить следующий корабль</p>
+<p>Возвращает:
+True, если в области вокруг клеток есть корабль, иначе False</p>
+<p>@TODO Оптимизировать цикл поиска коллизий</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def hasCollisions(ships: List[Ship], cells: List[List[int]]) -&gt; bool:
+    &#34;&#34;&#34;
+        Проверяет наличие кораблей в области вокруг указанных клеток
+
+        Аргументы:
+            ships - Список имеющихся кораблей на поле
+            cells - Список координат клеток, где пользователь хочет разместить следующий корабль
+
+        Возвращает:
+            True, если в области вокруг клеток есть корабль, иначе False
+        
+        @TODO Оптимизировать цикл поиска коллизий
+    &#34;&#34;&#34;
+    # Поиск клеток, заполненных кораблями
+    for ship in ships:
+        ship_parts = ShipPart.objects.filter(ship=ship)
+        for ship_part in ship_parts:
+            for cell in cells:
+                cell_x, cell_y = cell
+
+                if ship_part.x_pos in [cell_x - 1, cell_x + 1, cell_x] \
+                and ship_part.y_pos in [cell_y - 1, cell_y + 1, cell_y]:
+                    return True
+
+    return False</code></pre>
+</details>
+</dd>
+<dt id="Games.views.shipIsDead"><code class="name flex">
+<span>def <span class="ident">shipIsDead</span></span>(<span>ship: Games.models.Ship) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Возвращает является ли корабль уничтоженным
+Аргументы:
+ship - Корабль, который нужно проверить на уничтоженность</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def shipIsDead(ship: Ship) -&gt; bool:
+    &#34;&#34;&#34;
+        Возвращает является ли корабль уничтоженным
+        Аргументы:
+            ship - Корабль, который нужно проверить на уничтоженность
+    &#34;&#34;&#34;
+    ship_parts = ShipPart.objects.filter(ship=ship)
+    return all(map(lambda part: part.is_damaged, ship_parts))</code></pre>
+</details>
+</dd>
+<dt id="Games.views.swapGameUserIdTurn"><code class="name flex">
+<span>def <span class="ident">swapGameUserIdTurn</span></span>(<span>game: Games.models.Game) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Меняет ход текущего игрока на противоположный</p>
+<p>Аргументы:
+game - Объект игры, в которой нужно поменять ход</p>
+<p>Возвращает:
+None</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def swapGameUserIdTurn(game: Game) -&gt; None:
+    &#34;&#34;&#34;
+        Меняет ход текущего игрока на противоположный
+
+        Аргументы:
+            game - Объект игры, в которой нужно поменять ход
+
+        Возвращает:
+            None
+    &#34;&#34;&#34;
+    fields = Field.objects.filter(game=game)
+
+    owners_id = [field.owner_id for field in fields]
+
+    # Получаем индекс id игрока, которого сейчас ход
+    user_id_turn = owners_id.index(game.user_id_turn)
+
+    game.user_id_turn = owners_id[not user_id_turn]
+    game.save()</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="Games.views.FieldViewSet"><code class="flex name class">
+<span>class <span class="ident">FieldViewSet</span></span>
+<span>(</span><span>**kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>The base ViewSet class does not provide any actions by default.</p>
+<p>Constructor. Called in the URLconf; can contain helpful extra
+keyword arguments, and other things.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class FieldViewSet(ViewSet):
+    # 5)
+    @action(detail=False, methods=[&#34;post&#34;])
+    def get_damaged_cells(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Возвращает все погибшие корабли, повреждённые части кораблей и промахи на поле
+            указанного пользователя 
+
+            Аргументы:
+                user_id - Идентификтор пользователя, погибишие корабли которого нужно вернуть
+
+            Возвращает:
+                Ответ от сервера, содержащего сообщение об ошибки или погибшие корабли, повреждённые 
+                их части и промахи на поле
+        &#34;&#34;&#34;            
+        try:
+            user_id = request.data[&#34;user_id&#34;]
+        except KeyError:
+            return Response({
+                &#34;error&#34;: &#34;Not enough arguments&#34;
+            })
+
+        field = Field.objects.get(owner_id=user_id)
+
+        data = dict()
+        # Получаем все погибшие корабли
+        dead_ships = Ship.objects.filter(field=field, is_dead=True)
+        dead_parts = list()
+        for dead_ship in dead_ships:
+            for dead_part in getDamagedShipPartsPositions(dead_ship):
+                dead_parts.append(dead_part)
+
+        dead_parts = [dead_part for dead_part in dead_parts if dead_part]
+        data[&#34;dead_parts&#34;] = dead_parts
+
+        # Получаем все корабли
+        ships = Ship.objects.filter(field=field, is_dead=False)
+        damaged_parts: List[str] = list()
+        for ship in ships:
+            for damaged_part in getDamagedShipPartsPositions(ship):
+                damaged_parts.append(damaged_part)
+
+        damaged_parts = [damaged_part for damaged_part in damaged_parts if damaged_part]
+        data[&#34;damaged_parts&#34;] = damaged_parts
+
+        # Получаем все повреждённые клетки
+        marked_cells = MarkedCell.objects.filter(field=field)
+        if marked_cells:
+            marked_cells = [f&#34;{cell.x_pos} {cell.y_pos}&#34; for cell in marked_cells]
+            data[&#34;marked_cells&#34;] = marked_cells
+        
+        return Response(data)
+
+    # 2)
+    @action(detail=False, methods=[&#34;get&#34;])
+    def get_field(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Возвращает поле указанного пользвателя если передан аргумент owner_id
+            или все поля
+
+            Аргументы:
+                owner_id - Идентификатор владельца поля
+
+            Возвращает:
+                Поле владельца или все существующие поля
+        &#34;&#34;&#34;
+        if &#34;owner_id&#34; not in request.data:
+            field = Field.objects.all()
+            serializer = FieldSerializer(field, many=True)
+            # *DEBUG
+            return Response(serializer.data)
+            return Response({
+                &#34;error&#34;: &#34;Not enough arguments&#34;
+            })
+
+        try:
+            field = Field.objects.get(owner_id=request.data[&#34;owner_id&#34;])
+        except Field.DoesNotExist:
+            return Response({
+                &#34;critical_error&#34;: &#34;Field does not exist&#34;
+            })
+
+        serialzer = FieldSerializer(field)
+        return Response(serialzer.data)
+
+    # 2)
+    @action(detail=False, methods=[&#34;post&#34;])
+    def place_ship(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Устанавливает корабль на поле игрока
+
+            Аргументы:
+                owner_id - Идентификатор владельца поля
+                game_id - Идентификатор игры
+
+            Возвращает:
+                Словарь, содержащий ошибку, или массив клеток, на которых были установлены корабли
+                Так же возвращает булевое значение если все корабли были расставлены
+        &#34;&#34;&#34;
+        cells = list()
+        data = dict()            
+        try:
+            owner_id = request.data[&#34;owner_id&#34;]
+            game_id = request.data[&#34;game_id&#34;]
+            # [[5, 7], [5, 8], [5, 9]]
+            cells = request.data[&#34;cells&#34;].split(&#34; &#34;)
+        except KeyError:
+            return Response({
+                &#34;error&#34;: &#34;Not enough arguments&#34;
+            })
+
+        cells = list(map(lambda lst: lst.split(&#34;,&#34;), cells))
+        cells = [cell for cell in cells if any(cell)]
+        cells = [list(map(int, cell)) for cell in cells]
+
+        # Проверка на выход за поле
+        for cell in cells:
+            x, y = cell
+            if x &lt; 0 or x &gt; 9 or y &lt; 0 or y &gt; 9:
+                return Response({
+                    &#34;error&#34;: &#34;Out of bounds&#34;
+                })
+
+        if not cells:
+            return Response({
+                &#34;error&#34;: &#34;No ships to place&#34;
+            })
+
+        # Проверка ширины корабля
+        first_cell = cells[0]
+        for cell in cells:
+            if cell[0] != first_cell[0] and cell[1] != first_cell[1]:
+                return Response({
+                    &#34;error&#34;: &#34;Ship is too wide:)&#34;
+                })
+        data[&#34;cells&#34;] = cells
+
+        # Проверка длины корабля
+        ship_length = len(cells)
+        if ship_length &gt; 4:
+            return Response({
+                &#34;error&#34;: &#34;Ship is too long&#34;
+            })
+        field = Field.objects.get(owner_id=owner_id)
+
+        # Проверка осталось ли столько кораблей
+        if not SHIP_LENGTHS[ship_length](field=field):
+            return Response(
+            {
+                &#34;error&#34;: f&#34;There no {ship_length}-deck ships last&#34;
+            })
+
+        # Получаем все корабли на поле
+        ships = Ship.objects.filter(field=field)
+
+        # Если кораблей нет, то нет и коллизий
+        if not ships:
+            self.createShip(cells=cells, field=field)
+
+            return Response(data)
+        else:
+            if (self.hasCollisions(ships=ships, cells=cells)):
+                return Response(
+                {
+                    &#34;error&#34;: &#34;Collisions&#34;
+                })
+            else:
+                self.createShip(cells=cells, field=field)
+
+        # Если все корабли заполнены - вернуть в ответе
+        if allShipsHasBeenPlaced(field=field):
+            data[&#34;all_ships_has_been_placed&#34;] = True
+ 
+        return Response(data)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>rest_framework.viewsets.ViewSet</li>
+<li>rest_framework.viewsets.ViewSetMixin</li>
+<li>rest_framework.views.APIView</li>
+<li>django.views.generic.base.View</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="Games.views.FieldViewSet.get_damaged_cells"><code class="name flex">
+<span>def <span class="ident">get_damaged_cells</span></span>(<span>self, request) ‑> rest_framework.response.Response</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Возвращает все погибшие корабли, повреждённые части кораблей и промахи на поле
+указанного пользователя </p>
+<p>Аргументы:
+user_id - Идентификтор пользователя, погибишие корабли которого нужно вернуть</p>
+<p>Возвращает:
+Ответ от сервера, содержащего сообщение об ошибки или погибшие корабли, повреждённые
+их части и промахи на поле</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@action(detail=False, methods=[&#34;post&#34;])
+def get_damaged_cells(self, request) -&gt; Response:
+    &#34;&#34;&#34;
+        Возвращает все погибшие корабли, повреждённые части кораблей и промахи на поле
+        указанного пользователя 
+
+        Аргументы:
+            user_id - Идентификтор пользователя, погибишие корабли которого нужно вернуть
+
+        Возвращает:
+            Ответ от сервера, содержащего сообщение об ошибки или погибшие корабли, повреждённые 
+            их части и промахи на поле
+    &#34;&#34;&#34;            
+    try:
+        user_id = request.data[&#34;user_id&#34;]
+    except KeyError:
+        return Response({
+            &#34;error&#34;: &#34;Not enough arguments&#34;
+        })
+
+    field = Field.objects.get(owner_id=user_id)
+
+    data = dict()
+    # Получаем все погибшие корабли
+    dead_ships = Ship.objects.filter(field=field, is_dead=True)
+    dead_parts = list()
+    for dead_ship in dead_ships:
+        for dead_part in getDamagedShipPartsPositions(dead_ship):
+            dead_parts.append(dead_part)
+
+    dead_parts = [dead_part for dead_part in dead_parts if dead_part]
+    data[&#34;dead_parts&#34;] = dead_parts
+
+    # Получаем все корабли
+    ships = Ship.objects.filter(field=field, is_dead=False)
+    damaged_parts: List[str] = list()
+    for ship in ships:
+        for damaged_part in getDamagedShipPartsPositions(ship):
+            damaged_parts.append(damaged_part)
+
+    damaged_parts = [damaged_part for damaged_part in damaged_parts if damaged_part]
+    data[&#34;damaged_parts&#34;] = damaged_parts
+
+    # Получаем все повреждённые клетки
+    marked_cells = MarkedCell.objects.filter(field=field)
+    if marked_cells:
+        marked_cells = [f&#34;{cell.x_pos} {cell.y_pos}&#34; for cell in marked_cells]
+        data[&#34;marked_cells&#34;] = marked_cells
+    
+    return Response(data)</code></pre>
+</details>
+</dd>
+<dt id="Games.views.FieldViewSet.get_field"><code class="name flex">
+<span>def <span class="ident">get_field</span></span>(<span>self, request) ‑> rest_framework.response.Response</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Возвращает поле указанного пользвателя если передан аргумент owner_id
+или все поля</p>
+<p>Аргументы:
+owner_id - Идентификатор владельца поля</p>
+<p>Возвращает:
+Поле владельца или все существующие поля</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@action(detail=False, methods=[&#34;get&#34;])
+def get_field(self, request) -&gt; Response:
+    &#34;&#34;&#34;
+        Возвращает поле указанного пользвателя если передан аргумент owner_id
+        или все поля
+
+        Аргументы:
+            owner_id - Идентификатор владельца поля
+
+        Возвращает:
+            Поле владельца или все существующие поля
+    &#34;&#34;&#34;
+    if &#34;owner_id&#34; not in request.data:
+        field = Field.objects.all()
+        serializer = FieldSerializer(field, many=True)
+        # *DEBUG
+        return Response(serializer.data)
+        return Response({
+            &#34;error&#34;: &#34;Not enough arguments&#34;
+        })
+
+    try:
+        field = Field.objects.get(owner_id=request.data[&#34;owner_id&#34;])
+    except Field.DoesNotExist:
+        return Response({
+            &#34;critical_error&#34;: &#34;Field does not exist&#34;
+        })
+
+    serialzer = FieldSerializer(field)
+    return Response(serialzer.data)</code></pre>
+</details>
+</dd>
+<dt id="Games.views.FieldViewSet.place_ship"><code class="name flex">
+<span>def <span class="ident">place_ship</span></span>(<span>self, request) ‑> rest_framework.response.Response</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Устанавливает корабль на поле игрока</p>
+<p>Аргументы:
+owner_id - Идентификатор владельца поля
+game_id - Идентификатор игры</p>
+<p>Возвращает:
+Словарь, содержащий ошибку, или массив клеток, на которых были установлены корабли
+Так же возвращает булевое значение если все корабли были расставлены</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@action(detail=False, methods=[&#34;post&#34;])
+def place_ship(self, request) -&gt; Response:
+    &#34;&#34;&#34;
+        Устанавливает корабль на поле игрока
+
+        Аргументы:
+            owner_id - Идентификатор владельца поля
+            game_id - Идентификатор игры
+
+        Возвращает:
+            Словарь, содержащий ошибку, или массив клеток, на которых были установлены корабли
+            Так же возвращает булевое значение если все корабли были расставлены
+    &#34;&#34;&#34;
+    cells = list()
+    data = dict()            
+    try:
+        owner_id = request.data[&#34;owner_id&#34;]
+        game_id = request.data[&#34;game_id&#34;]
+        # [[5, 7], [5, 8], [5, 9]]
+        cells = request.data[&#34;cells&#34;].split(&#34; &#34;)
+    except KeyError:
+        return Response({
+            &#34;error&#34;: &#34;Not enough arguments&#34;
+        })
+
+    cells = list(map(lambda lst: lst.split(&#34;,&#34;), cells))
+    cells = [cell for cell in cells if any(cell)]
+    cells = [list(map(int, cell)) for cell in cells]
+
+    # Проверка на выход за поле
+    for cell in cells:
+        x, y = cell
+        if x &lt; 0 or x &gt; 9 or y &lt; 0 or y &gt; 9:
+            return Response({
+                &#34;error&#34;: &#34;Out of bounds&#34;
+            })
+
+    if not cells:
+        return Response({
+            &#34;error&#34;: &#34;No ships to place&#34;
+        })
+
+    # Проверка ширины корабля
+    first_cell = cells[0]
+    for cell in cells:
+        if cell[0] != first_cell[0] and cell[1] != first_cell[1]:
+            return Response({
+                &#34;error&#34;: &#34;Ship is too wide:)&#34;
+            })
+    data[&#34;cells&#34;] = cells
+
+    # Проверка длины корабля
+    ship_length = len(cells)
+    if ship_length &gt; 4:
+        return Response({
+            &#34;error&#34;: &#34;Ship is too long&#34;
+        })
+    field = Field.objects.get(owner_id=owner_id)
+
+    # Проверка осталось ли столько кораблей
+    if not SHIP_LENGTHS[ship_length](field=field):
+        return Response(
+        {
+            &#34;error&#34;: f&#34;There no {ship_length}-deck ships last&#34;
+        })
+
+    # Получаем все корабли на поле
+    ships = Ship.objects.filter(field=field)
+
+    # Если кораблей нет, то нет и коллизий
+    if not ships:
+        self.createShip(cells=cells, field=field)
+
+        return Response(data)
+    else:
+        if (self.hasCollisions(ships=ships, cells=cells)):
+            return Response(
+            {
+                &#34;error&#34;: &#34;Collisions&#34;
+            })
+        else:
+            self.createShip(cells=cells, field=field)
+
+    # Если все корабли заполнены - вернуть в ответе
+    if allShipsHasBeenPlaced(field=field):
+        data[&#34;all_ships_has_been_placed&#34;] = True
+
+    return Response(data)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="Games.views.GameViewSet"><code class="flex name class">
+<span>class <span class="ident">GameViewSet</span></span>
+<span>(</span><span>**kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>The base ViewSet class does not provide any actions by default.</p>
+<p>Constructor. Called in the URLconf; can contain helpful extra
+keyword arguments, and other things.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GameViewSet(ViewSet):
+    def deleteGame(self, game_id: str) -&gt; None:
+        &#34;&#34;&#34;
+            Удаляет игру с заданным идентификатором
+
+            Аргументы:
+                game_id - Строка, содержащая в себе идентификатор игры
+
+            Возвращает:
+                True если игра удалена, иначе False
+        &#34;&#34;&#34;
+        try:
+            Game.objects.filter(game_id=game_id).delete()
+        except Exception as e:
+            return False
+        
+        return True
+
+    @action(detail=False, methods=[&#34;post&#34;])
+    def disconnect(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Отключает пользователя от указанной игры
+
+            Аргументы:
+                user_id - Идентификатор пользователя
+                game_id - Идентификатор игры
+
+            Возвращает:
+                Запрос, содержащий в себе результат отключения и сообщение об ошибке если она произошла
+        &#34;&#34;&#34;          
+        try:
+            game_id = request.data[&#34;game_id&#34;]
+            user_id = request.data[&#34;user_id&#34;]
+        except KeyError:
+            return Response({
+                &#34;error&#34;: &#34;Not enough arguments&#34;
+            })
+
+        try:
+            game = Game.objects.get(game_id=game_id)
+        except Game.DoesNotExist:
+            return Response({
+                &#34;critical_error&#34;: &#34;Game doesn&#39;t exist&#34;
+            })
+
+        try:
+            Field.objects.filter(game=game, owner_id=user_id).delete()
+        except Field.DoesNotExist:
+            return Response({
+                &#34;critical_error&#34;: &#34;Field doesn&#39;t exist&#34;
+            })
+
+        # Если полей у это игры нет, значит оба игрока вышли и игру можно удалять
+        try:
+            Field.objects.get(game=game)
+        except Field.DoesNotExist:
+            Game.objects.filter(game_id=game_id).delete()
+
+        return Response({
+            &#34;Disconnected&#34;: True
+        })
+
+    # 6)
+    @action(detail=False, methods=[&#34;post&#34;])
+    def game_is_over(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Возвращает информацию о том была ли завершена игра
+
+            Если игра окончена, значит поля можно удалять
+            сначала удаляется поле победителя, затем второй игрок удаляет своё поле
+
+            У игры 3 состояния
+                1: Игра окончена, но победителя нет
+                2: Игра окончена, и победитель есть
+                3: Игра не закончена
+            
+            Аргументы:
+                game_id - Идентификатор игры 
+                user_id - Идентификатор пользователя
+
+            Возвращает:
+                Статус о том завершена игра или нет и идентификатор победителя если он есть
+        &#34;&#34;&#34;
+
+
+        game_id = request.data[&#34;game_id&#34;]
+        try:
+            game = Game.objects.get(game_id=game_id)
+        except Game.DoesNotExist:
+            return Response(
+            {
+                &#34;critical_error&#34;: &#34;Game does not exist&#34;
+            })
+
+        data = dict()
+        user_id = request.data[&#34;user_id&#34;]
+        winner = getWinner(game=game)
+
+        if (winner):
+            data[&#34;winner&#34;] = winner
+
+            # Удаляем поле, т.к. у игрока игра закрывается
+            Field.objects.filter(game=game, owner_id=user_id).delete()
+        
+        data[&#34;game_is_over&#34;] = game.game_is_over
+
+        # Если полей нет, значит все вышли и игру можно удалять
+        if (len(Field.objects.filter(game=game)) == 0):
+            self.deleteGame(game_id=game_id)
+        return Response(data)
+
+    # 3)
+    @action(detail=False, methods=[&#34;post&#34;])
+    def get_user_id_turn(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Возвращает идентификатор игрока, который сейчас ходит
+
+            Аргументы:
+                game_id - Идентификатор игры
+
+            Возвращает:
+                Запрос, содержащий текст ошибки, если произошла ошибка или параметр 
+                game_is_started, отвечающий за начало игры
+        &#34;&#34;&#34;
+        game_id = request.data[&#34;game_id&#34;]
+        try:
+            game = Game.objects.get(game_id=game_id)
+        except Game.DoesNotExist:
+            # Если игры не существует, то она не была создана
+            return Response({
+                &#34;critical_error&#34;: &#34;Game doesn&#39;t exist&#34;
+            })
+
+
+        # Если у игры не 2 поля, значит второй игрок закрыл игру
+        fields = Field.objects.filter(game=game)
+
+        # Если поле 1 и у игры есть победитель, значит победил второй игрок
+        # Иначе второй игрок вышел
+        if len(fields) &lt; 2 and not game.has_winner:
+            return Response({
+                &#34;critical_error&#34;: &#34;Current game has less than 2 fields&#34;
+            })
+
+        print(game.user_id_turn)
+        return Response({
+            &#34;user_id_turn&#34;: game.user_id_turn
+        })
+
+    # 2)
+    @action(detail=False, methods=[&#34;post&#34;])
+    def game_is_started(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Возвращает метку о том началась ли игра с указанным идентификатором
+
+            Аргументы:
+                game_id - Идентификатор игры
+
+            Возвращает:
+                Параметр game_is_started, отвечающий за начало игры
+        &#34;&#34;&#34;
+        # Если корабли у обеих полей закончены то игра начата
+        game_id = request.data[&#34;game_id&#34;]
+        try:
+            game = Game.objects.get(game_id=game_id)
+        except Game.DoesNotExist:
+            return Response({
+                &#34;critical_error&#34;: &#34;Данной игры не существует&#34;
+            })
+
+        fields = Field.objects.filter(game=game)
+
+        if len(fields) != 2:
+            return Response({
+                &#34;game_is_started&#34;: False
+            })
+
+        if (allShipsHasBeenPlaced(fields[0]) and allShipsHasBeenPlaced(fields[1])):
+            return Response({
+                &#34;game_is_started&#34;: True
+            })
+
+        return Response({
+            &#34;game_is_started&#34;: False
+        })
+
+    # 1)
+    @action(detail=False, methods=[&#34;post&#34;])
+    def create_game(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Создаёт игру
+
+            Аргументы:
+                user_id - Идентификатор игрока, который создал игру
+                
+            Возвращает:
+                Текст ошибки или сериализованный класс Game
+        &#34;&#34;&#34;
+        try:  
+            user_id = request.data[&#34;user_id&#34;]
+        except KeyError:
+            return Response(
+            {
+                &#34;error&#34;: &#34;Not enough arguments&#34;
+            })
+
+        try:
+            Field.objects.get(owner_id=user_id)
+
+            return Response({
+                &#34;error&#34;: &#34;User already has a game&#34;
+            })
+        except Field.DoesNotExist:
+            game_id = generateGameId()
+            game = Game.objects.create(game_id=game_id, user_id_turn=user_id)
+            Field.objects.create(owner_id=user_id, game=game)
+
+            game_serializer = GameSerializer(game)
+            return Response(game_serializer.data)
+
+    # 4)
+    @action(detail=False, methods=[&#34;post&#34;])
+    def fire(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Стреляет по указанной точке на поле
+
+            Если убивает последний корабль, то возвращаем информацию о том, что игра закончена
+            
+            Аргументы:
+                game_id - Идентификатор игры
+                user_id - Идентификатор пользователя, который стреляет
+                x, y - Координаты на поле
+
+            Возвращает:
+                Ошибку или результат об мёртвом корабле 
+                или координаты части корабля по которой попали 
+                или координаты точки, по которой не попали
+        &#34;&#34;&#34;
+        # Получаем игру, в которой находится игрок и его айди, 
+        # а также координаты, по которым он стреляет
+        try:
+            game_id = request.data[&#34;game_id&#34;]
+            user_id = request.data[&#34;user_id&#34;]
+            x = int(request.data[&#34;x&#34;])
+            y = int(request.data[&#34;y&#34;])
+        except KeyError:
+            return Response({
+                &#34;error&#34;: &#34;Not enough arguments&#34;
+            })
+
+        # Получаем игру, в которой находится пользователь
+        try:
+            game = Game.objects.get(game_id=game_id)
+        except Game.DoesNotExist:
+            return Response({
+                &#34;critical_error&#34;: &#34;Game does not exist&#34;
+            })
+
+
+        # Если ход не его, то стрелять он не может
+        if not game.user_id_turn == user_id:
+            return Response({
+                &#34;error&#34;: &#34;It&#39;s not your turn&#34;
+            })
+
+
+        # Получаем поле противника
+        # путём исключения из полей поля с id пользователя
+        field = Field.objects.filter(game=game).exclude(owner_id=user_id)
+
+        # Обработка, при нахождении более одного поля
+        if len(field) &gt; 1:
+            return Response({
+                &#34;critical_error&#34;: &#34;Found more than one player&#39;s field&#34;
+            })
+        field = field[0]      
+
+        # Получаем все корабли противника
+        ships = Ship.objects.filter(field=field)
+
+        # Проходимся по кораблям
+        for ship in ships:
+            try:
+                needed_ship_part = ShipPart.objects.get(ship=ship, x_pos=x, y_pos=y)
+
+                if needed_ship_part.is_damaged:
+                    return Response({
+                        &#34;error&#34;: &#34;Ship part is already damaged&#34;
+                    })
+
+                needed_ship_part.is_damaged = True
+                needed_ship_part.save()
+
+                # Проверяем все ли части корабля повреждены
+                ship_is_dead = shipIsDead(ship)
+
+                # Если корабль мёртв, то возвращаем его части и всю область вокруг него
+                if ship_is_dead:
+                    # Делаем его мёртвым
+                    ship.is_dead = True
+                    ship.save()
+
+                    ship_parts = ShipPart.objects.filter(ship=ship)
+                    # Мёртвые части
+                    dead_parts = [f&#34;{part.x_pos} {part.y_pos}&#34; for part in ship_parts]
+
+                    marked_cells = createMarkedCellsAroundShip(ship=ship, field=field)
+
+                    return Response({
+                        &#34;ship_is_killed&#34;: True,
+                        &#34;dead_parts&#34;: dead_parts,
+                        &#34;marked_cells&#34;: marked_cells,
+                    })
+                # Иначе возвращаем повреждённую часть корабля
+                else:
+                    return Response({
+                            &#34;ship_is_damaged&#34;: True,
+                            &#34;damaged_part&#34;: f&#34;{x} {y}&#34;
+                        })       
+            # Если части нет, значит не попали
+            except ShipPart.DoesNotExist:
+                pass
+
+        # Нужно проверить, стреляли по этой клетке уже или нет
+        try:
+            # Ищем клетку в базе
+            MarkedCell.objects.get(field=field, x_pos=x, y_pos=y)
+
+            # Если она в базе, значит по ней уже стреляли
+            return Response({
+                &#34;error&#34;: &#34;Cell is already damaged&#34;
+            })
+
+        except MarkedCell.DoesNotExist:
+            MarkedCell.objects.create(field=field, x_pos=x, y_pos=y)
+
+            # Меняем ход игрока, т.к. попаданий не было
+            swapGameUserIdTurn(game=game)
+
+            return Response({
+                &#34;missed&#34;: True,
+                &#34;missed_cell&#34;: f&#34;{x} {y}&#34;
+            })
+
+    @action(detail=False, methods=[&#34;get&#34;, &#34;post&#34;])
+    def get_games(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Возвращает все игры
+
+            *DEBUG
+        &#34;&#34;&#34;
+        queryset = Game.objects.all()
+        serialzer = GameSerializer(queryset, many=True)
+
+        return Response(serialzer.data)
+
+    # 1)
+    @action(detail=False, methods=[&#34;post&#34;])
+    def connect_to_game(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Подключается пользователя к игре
+
+            Аргументы:
+                game_id - Идентификатор игры
+                user_id - Идентификатор пользователя
+
+            Возвращает:
+                Текст ошибки или идентификатор игры, к которой подключился пользователь
+        &#34;&#34;&#34;
+        try:
+            game_id = request.data[&#34;game_id&#34;]
+            user_id = request.data[&#34;user_id&#34;]
+        except KeyError:
+            return Response({
+                &#34;error&#34;: &#34;Not enough arguments&#34;
+            })
+
+        try:
+            game = Game.objects.get(game_id=game_id)
+            fields = Field.objects.filter(game=game)
+        except Game.DoesNotExist:
+            return Response({
+                &#34;error&#34;: &#34;Current game does not exist&#34;
+            })
+
+        # В комнате уже 2 поля, соответственно 2 игрока
+        if len(fields) == 2:
+            return Response({
+                &#34;error&#34;: &#34;Game is full&#34;
+            })
+
+        # Проверка на то, что игрок с таким же id подключается
+        if fields[0].owner_id == user_id:
+            return Response({
+                &#34;error&#34;: &#34;Game cannot contain players with 2 same id&#34;
+            })
+        
+        Field.objects.create(game=game, owner_id=user_id)
+
+        return Response({
+            &#34;game_id&#34;: game_id
+        })
+
+    @action(detail=False, methods=[&#34;get&#34;])
+    def delete_game(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Удаляет игру с заданным идентификатором
+
+            *DEBUG
+        &#34;&#34;&#34;
+        try:
+            game_id = request.data[&#34;game_id&#34;]
+        except KeyError:
+            return Response({
+                &#34;error&#34;: &#34;Not enough arguments&#34;
+            })
+
+        Game.objects.filter(game_id=game_id).delete()
+
+        return Response({
+            &#34;deleted&#34;: True
+        })
+
+    @action(detail=False, methods=[&#34;get&#34;])
+    def delete_games(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Удаляет все игры
+
+            *DEBUG
+        &#34;&#34;&#34;
+        Game.objects.all().delete()
+
+        return Response({
+            &#34;deleted&#34;: True
+        })</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>rest_framework.viewsets.ViewSet</li>
+<li>rest_framework.viewsets.ViewSetMixin</li>
+<li>rest_framework.views.APIView</li>
+<li>django.views.generic.base.View</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="Games.views.GameViewSet.connect_to_game"><code class="name flex">
+<span>def <span class="ident">connect_to_game</span></span>(<span>self, request) ‑> rest_framework.response.Response</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Подключается пользователя к игре</p>
+<p>Аргументы:
+game_id - Идентификатор игры
+user_id - Идентификатор пользователя</p>
+<p>Возвращает:
+Текст ошибки или идентификатор игры, к которой подключился пользователь</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@action(detail=False, methods=[&#34;post&#34;])
+def connect_to_game(self, request) -&gt; Response:
+    &#34;&#34;&#34;
+        Подключается пользователя к игре
+
+        Аргументы:
+            game_id - Идентификатор игры
+            user_id - Идентификатор пользователя
+
+        Возвращает:
+            Текст ошибки или идентификатор игры, к которой подключился пользователь
+    &#34;&#34;&#34;
+    try:
+        game_id = request.data[&#34;game_id&#34;]
+        user_id = request.data[&#34;user_id&#34;]
+    except KeyError:
+        return Response({
+            &#34;error&#34;: &#34;Not enough arguments&#34;
+        })
+
+    try:
+        game = Game.objects.get(game_id=game_id)
+        fields = Field.objects.filter(game=game)
+    except Game.DoesNotExist:
+        return Response({
+            &#34;error&#34;: &#34;Current game does not exist&#34;
+        })
+
+    # В комнате уже 2 поля, соответственно 2 игрока
+    if len(fields) == 2:
+        return Response({
+            &#34;error&#34;: &#34;Game is full&#34;
+        })
+
+    # Проверка на то, что игрок с таким же id подключается
+    if fields[0].owner_id == user_id:
+        return Response({
+            &#34;error&#34;: &#34;Game cannot contain players with 2 same id&#34;
+        })
+    
+    Field.objects.create(game=game, owner_id=user_id)
+
+    return Response({
+        &#34;game_id&#34;: game_id
+    })</code></pre>
+</details>
+</dd>
+<dt id="Games.views.GameViewSet.create_game"><code class="name flex">
+<span>def <span class="ident">create_game</span></span>(<span>self, request) ‑> rest_framework.response.Response</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Создаёт игру</p>
+<p>Аргументы:
+user_id - Идентификатор игрока, который создал игру</p>
+<p>Возвращает:
+Текст ошибки или сериализованный класс Game</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@action(detail=False, methods=[&#34;post&#34;])
+def create_game(self, request) -&gt; Response:
+    &#34;&#34;&#34;
+        Создаёт игру
+
+        Аргументы:
+            user_id - Идентификатор игрока, который создал игру
+            
+        Возвращает:
+            Текст ошибки или сериализованный класс Game
+    &#34;&#34;&#34;
+    try:  
+        user_id = request.data[&#34;user_id&#34;]
+    except KeyError:
+        return Response(
+        {
+            &#34;error&#34;: &#34;Not enough arguments&#34;
+        })
+
+    try:
+        Field.objects.get(owner_id=user_id)
+
+        return Response({
+            &#34;error&#34;: &#34;User already has a game&#34;
+        })
+    except Field.DoesNotExist:
+        game_id = generateGameId()
+        game = Game.objects.create(game_id=game_id, user_id_turn=user_id)
+        Field.objects.create(owner_id=user_id, game=game)
+
+        game_serializer = GameSerializer(game)
+        return Response(game_serializer.data)</code></pre>
+</details>
+</dd>
+<dt id="Games.views.GameViewSet.deleteGame"><code class="name flex">
+<span>def <span class="ident">deleteGame</span></span>(<span>self, game_id: str) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Удаляет игру с заданным идентификатором</p>
+<p>Аргументы:
+game_id - Строка, содержащая в себе идентификатор игры</p>
+<p>Возвращает:
+True если игра удалена, иначе False</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def deleteGame(self, game_id: str) -&gt; None:
+    &#34;&#34;&#34;
+        Удаляет игру с заданным идентификатором
+
+        Аргументы:
+            game_id - Строка, содержащая в себе идентификатор игры
+
+        Возвращает:
+            True если игра удалена, иначе False
+    &#34;&#34;&#34;
+    try:
+        Game.objects.filter(game_id=game_id).delete()
+    except Exception as e:
+        return False
+    
+    return True</code></pre>
+</details>
+</dd>
+<dt id="Games.views.GameViewSet.delete_game"><code class="name flex">
+<span>def <span class="ident">delete_game</span></span>(<span>self, request) ‑> rest_framework.response.Response</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Удаляет игру с заданным идентификатором</p>
+<p>*DEBUG</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@action(detail=False, methods=[&#34;get&#34;])
+def delete_game(self, request) -&gt; Response:
+    &#34;&#34;&#34;
+        Удаляет игру с заданным идентификатором
+
+        *DEBUG
+    &#34;&#34;&#34;
+    try:
+        game_id = request.data[&#34;game_id&#34;]
+    except KeyError:
+        return Response({
+            &#34;error&#34;: &#34;Not enough arguments&#34;
+        })
+
+    Game.objects.filter(game_id=game_id).delete()
+
+    return Response({
+        &#34;deleted&#34;: True
+    })</code></pre>
+</details>
+</dd>
+<dt id="Games.views.GameViewSet.delete_games"><code class="name flex">
+<span>def <span class="ident">delete_games</span></span>(<span>self, request) ‑> rest_framework.response.Response</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Удаляет все игры</p>
+<p>*DEBUG</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@action(detail=False, methods=[&#34;get&#34;])
+def delete_games(self, request) -&gt; Response:
+    &#34;&#34;&#34;
+        Удаляет все игры
+
+        *DEBUG
+    &#34;&#34;&#34;
+    Game.objects.all().delete()
+
+    return Response({
+        &#34;deleted&#34;: True
+    })</code></pre>
+</details>
+</dd>
+<dt id="Games.views.GameViewSet.disconnect"><code class="name flex">
+<span>def <span class="ident">disconnect</span></span>(<span>self, request) ‑> rest_framework.response.Response</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Отключает пользователя от указанной игры</p>
+<p>Аргументы:
+user_id - Идентификатор пользователя
+game_id - Идентификатор игры</p>
+<p>Возвращает:
+Запрос, содержащий в себе результат отключения и сообщение об ошибке если она произошла</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@action(detail=False, methods=[&#34;post&#34;])
+def disconnect(self, request) -&gt; Response:
+    &#34;&#34;&#34;
+        Отключает пользователя от указанной игры
+
+        Аргументы:
+            user_id - Идентификатор пользователя
+            game_id - Идентификатор игры
+
+        Возвращает:
+            Запрос, содержащий в себе результат отключения и сообщение об ошибке если она произошла
+    &#34;&#34;&#34;          
+    try:
+        game_id = request.data[&#34;game_id&#34;]
+        user_id = request.data[&#34;user_id&#34;]
+    except KeyError:
+        return Response({
+            &#34;error&#34;: &#34;Not enough arguments&#34;
+        })
+
+    try:
+        game = Game.objects.get(game_id=game_id)
+    except Game.DoesNotExist:
+        return Response({
+            &#34;critical_error&#34;: &#34;Game doesn&#39;t exist&#34;
+        })
+
+    try:
+        Field.objects.filter(game=game, owner_id=user_id).delete()
+    except Field.DoesNotExist:
+        return Response({
+            &#34;critical_error&#34;: &#34;Field doesn&#39;t exist&#34;
+        })
+
+    # Если полей у это игры нет, значит оба игрока вышли и игру можно удалять
+    try:
+        Field.objects.get(game=game)
+    except Field.DoesNotExist:
+        Game.objects.filter(game_id=game_id).delete()
+
+    return Response({
+        &#34;Disconnected&#34;: True
+    })</code></pre>
+</details>
+</dd>
+<dt id="Games.views.GameViewSet.fire"><code class="name flex">
+<span>def <span class="ident">fire</span></span>(<span>self, request) ‑> rest_framework.response.Response</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Стреляет по указанной точке на поле</p>
+<p>Если убивает последний корабль, то возвращаем информацию о том, что игра закончена</p>
+<p>Аргументы:
+game_id - Идентификатор игры
+user_id - Идентификатор пользователя, который стреляет
+x, y - Координаты на поле</p>
+<p>Возвращает:
+Ошибку или результат об мёртвом корабле
+или координаты части корабля по которой попали
+или координаты точки, по которой не попали</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@action(detail=False, methods=[&#34;post&#34;])
+def fire(self, request) -&gt; Response:
+    &#34;&#34;&#34;
+        Стреляет по указанной точке на поле
+
+        Если убивает последний корабль, то возвращаем информацию о том, что игра закончена
+        
+        Аргументы:
+            game_id - Идентификатор игры
+            user_id - Идентификатор пользователя, который стреляет
+            x, y - Координаты на поле
+
+        Возвращает:
+            Ошибку или результат об мёртвом корабле 
+            или координаты части корабля по которой попали 
+            или координаты точки, по которой не попали
+    &#34;&#34;&#34;
+    # Получаем игру, в которой находится игрок и его айди, 
+    # а также координаты, по которым он стреляет
+    try:
+        game_id = request.data[&#34;game_id&#34;]
+        user_id = request.data[&#34;user_id&#34;]
+        x = int(request.data[&#34;x&#34;])
+        y = int(request.data[&#34;y&#34;])
+    except KeyError:
+        return Response({
+            &#34;error&#34;: &#34;Not enough arguments&#34;
+        })
+
+    # Получаем игру, в которой находится пользователь
+    try:
+        game = Game.objects.get(game_id=game_id)
+    except Game.DoesNotExist:
+        return Response({
+            &#34;critical_error&#34;: &#34;Game does not exist&#34;
+        })
+
+
+    # Если ход не его, то стрелять он не может
+    if not game.user_id_turn == user_id:
+        return Response({
+            &#34;error&#34;: &#34;It&#39;s not your turn&#34;
+        })
+
+
+    # Получаем поле противника
+    # путём исключения из полей поля с id пользователя
+    field = Field.objects.filter(game=game).exclude(owner_id=user_id)
+
+    # Обработка, при нахождении более одного поля
+    if len(field) &gt; 1:
+        return Response({
+            &#34;critical_error&#34;: &#34;Found more than one player&#39;s field&#34;
+        })
+    field = field[0]      
+
+    # Получаем все корабли противника
+    ships = Ship.objects.filter(field=field)
+
+    # Проходимся по кораблям
+    for ship in ships:
+        try:
+            needed_ship_part = ShipPart.objects.get(ship=ship, x_pos=x, y_pos=y)
+
+            if needed_ship_part.is_damaged:
+                return Response({
+                    &#34;error&#34;: &#34;Ship part is already damaged&#34;
+                })
+
+            needed_ship_part.is_damaged = True
+            needed_ship_part.save()
+
+            # Проверяем все ли части корабля повреждены
+            ship_is_dead = shipIsDead(ship)
+
+            # Если корабль мёртв, то возвращаем его части и всю область вокруг него
+            if ship_is_dead:
+                # Делаем его мёртвым
+                ship.is_dead = True
+                ship.save()
+
+                ship_parts = ShipPart.objects.filter(ship=ship)
+                # Мёртвые части
+                dead_parts = [f&#34;{part.x_pos} {part.y_pos}&#34; for part in ship_parts]
+
+                marked_cells = createMarkedCellsAroundShip(ship=ship, field=field)
+
+                return Response({
+                    &#34;ship_is_killed&#34;: True,
+                    &#34;dead_parts&#34;: dead_parts,
+                    &#34;marked_cells&#34;: marked_cells,
+                })
+            # Иначе возвращаем повреждённую часть корабля
+            else:
+                return Response({
+                        &#34;ship_is_damaged&#34;: True,
+                        &#34;damaged_part&#34;: f&#34;{x} {y}&#34;
+                    })       
+        # Если части нет, значит не попали
+        except ShipPart.DoesNotExist:
+            pass
+
+    # Нужно проверить, стреляли по этой клетке уже или нет
+    try:
+        # Ищем клетку в базе
+        MarkedCell.objects.get(field=field, x_pos=x, y_pos=y)
+
+        # Если она в базе, значит по ней уже стреляли
+        return Response({
+            &#34;error&#34;: &#34;Cell is already damaged&#34;
+        })
+
+    except MarkedCell.DoesNotExist:
+        MarkedCell.objects.create(field=field, x_pos=x, y_pos=y)
+
+        # Меняем ход игрока, т.к. попаданий не было
+        swapGameUserIdTurn(game=game)
+
+        return Response({
+            &#34;missed&#34;: True,
+            &#34;missed_cell&#34;: f&#34;{x} {y}&#34;
+        })</code></pre>
+</details>
+</dd>
+<dt id="Games.views.GameViewSet.game_is_over"><code class="name flex">
+<span>def <span class="ident">game_is_over</span></span>(<span>self, request) ‑> rest_framework.response.Response</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Возвращает информацию о том была ли завершена игра</p>
+<p>Если игра окончена, значит поля можно удалять
+сначала удаляется поле победителя, затем второй игрок удаляет своё поле</p>
+<p>У игры 3 состояния
+1: Игра окончена, но победителя нет
+2: Игра окончена, и победитель есть
+3: Игра не закончена</p>
+<p>Аргументы:
+game_id - Идентификатор игры
+user_id - Идентификатор пользователя</p>
+<p>Возвращает:
+Статус о том завершена игра или нет и идентификатор победителя если он есть</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@action(detail=False, methods=[&#34;post&#34;])
+def game_is_over(self, request) -&gt; Response:
+    &#34;&#34;&#34;
+        Возвращает информацию о том была ли завершена игра
+
+        Если игра окончена, значит поля можно удалять
+        сначала удаляется поле победителя, затем второй игрок удаляет своё поле
+
+        У игры 3 состояния
+            1: Игра окончена, но победителя нет
+            2: Игра окончена, и победитель есть
+            3: Игра не закончена
+        
+        Аргументы:
+            game_id - Идентификатор игры 
+            user_id - Идентификатор пользователя
+
+        Возвращает:
+            Статус о том завершена игра или нет и идентификатор победителя если он есть
+    &#34;&#34;&#34;
+
+
+    game_id = request.data[&#34;game_id&#34;]
+    try:
+        game = Game.objects.get(game_id=game_id)
+    except Game.DoesNotExist:
+        return Response(
+        {
+            &#34;critical_error&#34;: &#34;Game does not exist&#34;
+        })
+
+    data = dict()
+    user_id = request.data[&#34;user_id&#34;]
+    winner = getWinner(game=game)
+
+    if (winner):
+        data[&#34;winner&#34;] = winner
+
+        # Удаляем поле, т.к. у игрока игра закрывается
+        Field.objects.filter(game=game, owner_id=user_id).delete()
+    
+    data[&#34;game_is_over&#34;] = game.game_is_over
+
+    # Если полей нет, значит все вышли и игру можно удалять
+    if (len(Field.objects.filter(game=game)) == 0):
+        self.deleteGame(game_id=game_id)
+    return Response(data)</code></pre>
+</details>
+</dd>
+<dt id="Games.views.GameViewSet.game_is_started"><code class="name flex">
+<span>def <span class="ident">game_is_started</span></span>(<span>self, request) ‑> rest_framework.response.Response</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Возвращает метку о том началась ли игра с указанным идентификатором</p>
+<p>Аргументы:
+game_id - Идентификатор игры</p>
+<p>Возвращает:
+Параметр game_is_started, отвечающий за начало игры</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@action(detail=False, methods=[&#34;post&#34;])
+def game_is_started(self, request) -&gt; Response:
+    &#34;&#34;&#34;
+        Возвращает метку о том началась ли игра с указанным идентификатором
+
+        Аргументы:
+            game_id - Идентификатор игры
+
+        Возвращает:
+            Параметр game_is_started, отвечающий за начало игры
+    &#34;&#34;&#34;
+    # Если корабли у обеих полей закончены то игра начата
+    game_id = request.data[&#34;game_id&#34;]
+    try:
+        game = Game.objects.get(game_id=game_id)
+    except Game.DoesNotExist:
+        return Response({
+            &#34;critical_error&#34;: &#34;Данной игры не существует&#34;
+        })
+
+    fields = Field.objects.filter(game=game)
+
+    if len(fields) != 2:
+        return Response({
+            &#34;game_is_started&#34;: False
+        })
+
+    if (allShipsHasBeenPlaced(fields[0]) and allShipsHasBeenPlaced(fields[1])):
+        return Response({
+            &#34;game_is_started&#34;: True
+        })
+
+    return Response({
+        &#34;game_is_started&#34;: False
+    })</code></pre>
+</details>
+</dd>
+<dt id="Games.views.GameViewSet.get_games"><code class="name flex">
+<span>def <span class="ident">get_games</span></span>(<span>self, request) ‑> rest_framework.response.Response</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Возвращает все игры</p>
+<p>*DEBUG</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@action(detail=False, methods=[&#34;get&#34;, &#34;post&#34;])
+def get_games(self, request) -&gt; Response:
+    &#34;&#34;&#34;
+        Возвращает все игры
+
+        *DEBUG
+    &#34;&#34;&#34;
+    queryset = Game.objects.all()
+    serialzer = GameSerializer(queryset, many=True)
+
+    return Response(serialzer.data)</code></pre>
+</details>
+</dd>
+<dt id="Games.views.GameViewSet.get_user_id_turn"><code class="name flex">
+<span>def <span class="ident">get_user_id_turn</span></span>(<span>self, request) ‑> rest_framework.response.Response</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Возвращает идентификатор игрока, который сейчас ходит</p>
+<p>Аргументы:
+game_id - Идентификатор игры</p>
+<p>Возвращает:
+Запрос, содержащий текст ошибки, если произошла ошибка или параметр
+game_is_started, отвечающий за начало игры</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@action(detail=False, methods=[&#34;post&#34;])
+def get_user_id_turn(self, request) -&gt; Response:
+    &#34;&#34;&#34;
+        Возвращает идентификатор игрока, который сейчас ходит
+
+        Аргументы:
+            game_id - Идентификатор игры
+
+        Возвращает:
+            Запрос, содержащий текст ошибки, если произошла ошибка или параметр 
+            game_is_started, отвечающий за начало игры
+    &#34;&#34;&#34;
+    game_id = request.data[&#34;game_id&#34;]
+    try:
+        game = Game.objects.get(game_id=game_id)
+    except Game.DoesNotExist:
+        # Если игры не существует, то она не была создана
+        return Response({
+            &#34;critical_error&#34;: &#34;Game doesn&#39;t exist&#34;
+        })
+
+
+    # Если у игры не 2 поля, значит второй игрок закрыл игру
+    fields = Field.objects.filter(game=game)
+
+    # Если поле 1 и у игры есть победитель, значит победил второй игрок
+    # Иначе второй игрок вышел
+    if len(fields) &lt; 2 and not game.has_winner:
+        return Response({
+            &#34;critical_error&#34;: &#34;Current game has less than 2 fields&#34;
+        })
+
+    print(game.user_id_turn)
+    return Response({
+        &#34;user_id_turn&#34;: game.user_id_turn
+    })</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="Games.views.ShipViewSet"><code class="flex name class">
+<span>class <span class="ident">ShipViewSet</span></span>
+<span>(</span><span>**kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>The base ViewSet class does not provide any actions by default.</p>
+<p>Constructor. Called in the URLconf; can contain helpful extra
+keyword arguments, and other things.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ShipViewSet(ViewSet):
+    @action(detail=False, methods=[&#34;post&#34;])
+    def get_ships(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Возвращает все корабли
+
+            *DEBUG
+            
+            Возвращает:
+                Сериализованный класс Ship
+        &#34;&#34;&#34;
+        ships = Ship.objects.all()
+        serialzer = ShipSerializer(ships, many=True)
+
+        return Response(serialzer.data)
+
+    @action(detail=False, methods=[&#34;post&#34;])
+    def delete_ships(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Удаляет все корабли
+
+            *DEBUG
+
+            Возвращает:
+                Результат удаления
+        &#34;&#34;&#34;
+        Ship.objects.all().delete()
+        Field.objects.all().delete()
+        Game.objects.all().delete()
+
+        return Response({
+            &#34;deleted&#34;: True
+        })</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>rest_framework.viewsets.ViewSet</li>
+<li>rest_framework.viewsets.ViewSetMixin</li>
+<li>rest_framework.views.APIView</li>
+<li>django.views.generic.base.View</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="Games.views.ShipViewSet.delete_ships"><code class="name flex">
+<span>def <span class="ident">delete_ships</span></span>(<span>self, request) ‑> rest_framework.response.Response</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Удаляет все корабли</p>
+<p>*DEBUG</p>
+<p>Возвращает:
+Результат удаления</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@action(detail=False, methods=[&#34;post&#34;])
+def delete_ships(self, request) -&gt; Response:
+    &#34;&#34;&#34;
+        Удаляет все корабли
+
+        *DEBUG
+
+        Возвращает:
+            Результат удаления
+    &#34;&#34;&#34;
+    Ship.objects.all().delete()
+    Field.objects.all().delete()
+    Game.objects.all().delete()
+
+    return Response({
+        &#34;deleted&#34;: True
+    })</code></pre>
+</details>
+</dd>
+<dt id="Games.views.ShipViewSet.get_ships"><code class="name flex">
+<span>def <span class="ident">get_ships</span></span>(<span>self, request) ‑> rest_framework.response.Response</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Возвращает все корабли</p>
+<p>*DEBUG</p>
+<p>Возвращает:
+Сериализованный класс Ship</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@action(detail=False, methods=[&#34;post&#34;])
+def get_ships(self, request) -&gt; Response:
+    &#34;&#34;&#34;
+        Возвращает все корабли
+
+        *DEBUG
+        
+        Возвращает:
+            Сериализованный класс Ship
+    &#34;&#34;&#34;
+    ships = Ship.objects.all()
+    serialzer = ShipSerializer(ships, many=True)
+
+    return Response(serialzer.data)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="Games.views.UserViewSet"><code class="flex name class">
+<span>class <span class="ident">UserViewSet</span></span>
+<span>(</span><span>**kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>The base ViewSet class does not provide any actions by default.</p>
+<p>Constructor. Called in the URLconf; can contain helpful extra
+keyword arguments, and other things.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UserViewSet(ViewSet):
+    @action(detail=False, methods=[&#34;post&#34;])
+    def login(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Входит в аккаунт пользователя с заданными данными
+
+            Аргументы:
+                user_id - Идентификатор пользователя
+
+            Возвращает:
+                Текст ошибки и/или результат о логине
+                *DEBUG возвращает имя пользователя
+        &#34;&#34;&#34;
+        try:
+            user_id = int(request.data[&#34;user_id&#34;])
+            password = request.data[&#34;password&#34;]
+        except ValueError:
+            return Response({
+                &#34;login_successful&#34;: False,
+                &#34;error&#34;: &#34;Неверный тип идентификатора пользователя(ожидается целочисленное число)&#34;
+            })
+        except KeyError:
+            return Response({
+                &#34;login_successful&#34;: False,
+                &#34;error&#34;: &#34;Недостаточно аргументов&#34;
+            }) 
+
+        try:
+            user = User.objects.get(user_id=user_id, user_password=password)
+        except User.DoesNotExist:
+            return Response({
+                &#34;login_successful&#34;: False
+            })
+
+        return Response({
+                &#34;login_successful&#34;: True,
+                &#34;username&#34;: user.user_name
+            })
+
+    @action(detail=False, methods=[&#34;post&#34;])
+    def registrate(self, request) -&gt; Response:
+        &#34;&#34;&#34;
+            Регистрирует пользователя
+
+            Аргументы:
+                user_name - Имя пользователя
+                password - Пароль
+                email - Электронная почта
+
+            Возвращает:
+                Информацию об успешной регистрации или текст ошибки
+
+            @TODO принимать хэш пароля а не сам пароль
+        &#34;&#34;&#34;
+        # x_forwarded_for = request.META.get(&#34;HTTP_X_FORWARDED_FOR&#34;)
+        # if x_forwarded_for:
+        #     ip = x_forwarded_for.split(&#34;,&#34;)[0]
+        # else:
+        #     ip = request.META.get(&#34;REMOTE_ADDR&#34;)
+        
+        # if ip in known_ips:
+        #     return Response({
+        #         &#34;registration_successful&#34;: False
+        #     })
+        
+        # known_ips.append(ip)
+        user_name = request.data[&#34;user_name&#34;]
+        password = request.data[&#34;password&#34;]
+        email = request.data[&#34;email&#34;]
+        try:
+            last_user_id = int(User.objects.latest(&#34;user_id&#34;).user_id)
+        except User.DoesNotExist:
+            last_user_id = 0
+
+        try:
+            created_user = User.objects.create(user_name=user_name, 
+                                               user_password=password, 
+                                               user_email=email,
+                                               user_id=last_user_id + 1)
+        except IntegrityError:
+            return Response({
+                &#34;registration_successful&#34;: False,
+                &#34;error&#34;: &#34;Данное имя пользователя занято&#34;
+            })
+
+        return Response({
+            &#34;registration_successful&#34;: True
+        })</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>rest_framework.viewsets.ViewSet</li>
+<li>rest_framework.viewsets.ViewSetMixin</li>
+<li>rest_framework.views.APIView</li>
+<li>django.views.generic.base.View</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="Games.views.UserViewSet.login"><code class="name flex">
+<span>def <span class="ident">login</span></span>(<span>self, request) ‑> rest_framework.response.Response</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Входит в аккаунт пользователя с заданными данными</p>
+<p>Аргументы:
+user_id - Идентификатор пользователя</p>
+<p>Возвращает:
+Текст ошибки и/или результат о логине
+*DEBUG возвращает имя пользователя</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@action(detail=False, methods=[&#34;post&#34;])
+def login(self, request) -&gt; Response:
+    &#34;&#34;&#34;
+        Входит в аккаунт пользователя с заданными данными
+
+        Аргументы:
+            user_id - Идентификатор пользователя
+
+        Возвращает:
+            Текст ошибки и/или результат о логине
+            *DEBUG возвращает имя пользователя
+    &#34;&#34;&#34;
+    try:
+        user_id = int(request.data[&#34;user_id&#34;])
+        password = request.data[&#34;password&#34;]
+    except ValueError:
+        return Response({
+            &#34;login_successful&#34;: False,
+            &#34;error&#34;: &#34;Неверный тип идентификатора пользователя(ожидается целочисленное число)&#34;
+        })
+    except KeyError:
+        return Response({
+            &#34;login_successful&#34;: False,
+            &#34;error&#34;: &#34;Недостаточно аргументов&#34;
+        }) 
+
+    try:
+        user = User.objects.get(user_id=user_id, user_password=password)
+    except User.DoesNotExist:
+        return Response({
+            &#34;login_successful&#34;: False
+        })
+
+    return Response({
+            &#34;login_successful&#34;: True,
+            &#34;username&#34;: user.user_name
+        })</code></pre>
+</details>
+</dd>
+<dt id="Games.views.UserViewSet.registrate"><code class="name flex">
+<span>def <span class="ident">registrate</span></span>(<span>self, request) ‑> rest_framework.response.Response</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Регистрирует пользователя</p>
+<p>Аргументы:
+user_name - Имя пользователя
+password - Пароль
+email - Электронная почта</p>
+<p>Возвращает:
+Информацию об успешной регистрации или текст ошибки</p>
+<p>@TODO принимать хэш пароля а не сам пароль</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@action(detail=False, methods=[&#34;post&#34;])
+def registrate(self, request) -&gt; Response:
+    &#34;&#34;&#34;
+        Регистрирует пользователя
+
+        Аргументы:
+            user_name - Имя пользователя
+            password - Пароль
+            email - Электронная почта
+
+        Возвращает:
+            Информацию об успешной регистрации или текст ошибки
+
+        @TODO принимать хэш пароля а не сам пароль
+    &#34;&#34;&#34;
+    # x_forwarded_for = request.META.get(&#34;HTTP_X_FORWARDED_FOR&#34;)
+    # if x_forwarded_for:
+    #     ip = x_forwarded_for.split(&#34;,&#34;)[0]
+    # else:
+    #     ip = request.META.get(&#34;REMOTE_ADDR&#34;)
+    
+    # if ip in known_ips:
+    #     return Response({
+    #         &#34;registration_successful&#34;: False
+    #     })
+    
+    # known_ips.append(ip)
+    user_name = request.data[&#34;user_name&#34;]
+    password = request.data[&#34;password&#34;]
+    email = request.data[&#34;email&#34;]
+    try:
+        last_user_id = int(User.objects.latest(&#34;user_id&#34;).user_id)
+    except User.DoesNotExist:
+        last_user_id = 0
+
+    try:
+        created_user = User.objects.create(user_name=user_name, 
+                                           user_password=password, 
+                                           user_email=email,
+                                           user_id=last_user_id + 1)
+    except IntegrityError:
+        return Response({
+            &#34;registration_successful&#34;: False,
+            &#34;error&#34;: &#34;Данное имя пользователя занято&#34;
+        })
+
+    return Response({
+        &#34;registration_successful&#34;: True
+    })</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-variables">Global variables</a></h3>
+<ul class="">
+<li><code><a title="Games.views.known_ips" href="#Games.views.known_ips">known_ips</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="Games.views.allShipsAreDead" href="#Games.views.allShipsAreDead">allShipsAreDead</a></code></li>
+<li><code><a title="Games.views.allShipsHasBeenPlaced" href="#Games.views.allShipsHasBeenPlaced">allShipsHasBeenPlaced</a></code></li>
+<li><code><a title="Games.views.createMarkedCellsAroundShip" href="#Games.views.createMarkedCellsAroundShip">createMarkedCellsAroundShip</a></code></li>
+<li><code><a title="Games.views.createShip" href="#Games.views.createShip">createShip</a></code></li>
+<li><code><a title="Games.views.generateGameId" href="#Games.views.generateGameId">generateGameId</a></code></li>
+<li><code><a title="Games.views.getDamagedShipPartsPositions" href="#Games.views.getDamagedShipPartsPositions">getDamagedShipPartsPositions</a></code></li>
+<li><code><a title="Games.views.getWinner" href="#Games.views.getWinner">getWinner</a></code></li>
+<li><code><a title="Games.views.hasCollisions" href="#Games.views.hasCollisions">hasCollisions</a></code></li>
+<li><code><a title="Games.views.shipIsDead" href="#Games.views.shipIsDead">shipIsDead</a></code></li>
+<li><code><a title="Games.views.swapGameUserIdTurn" href="#Games.views.swapGameUserIdTurn">swapGameUserIdTurn</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="Games.views.FieldViewSet" href="#Games.views.FieldViewSet">FieldViewSet</a></code></h4>
+<ul class="">
+<li><code><a title="Games.views.FieldViewSet.get_damaged_cells" href="#Games.views.FieldViewSet.get_damaged_cells">get_damaged_cells</a></code></li>
+<li><code><a title="Games.views.FieldViewSet.get_field" href="#Games.views.FieldViewSet.get_field">get_field</a></code></li>
+<li><code><a title="Games.views.FieldViewSet.place_ship" href="#Games.views.FieldViewSet.place_ship">place_ship</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="Games.views.GameViewSet" href="#Games.views.GameViewSet">GameViewSet</a></code></h4>
+<ul class="two-column">
+<li><code><a title="Games.views.GameViewSet.connect_to_game" href="#Games.views.GameViewSet.connect_to_game">connect_to_game</a></code></li>
+<li><code><a title="Games.views.GameViewSet.create_game" href="#Games.views.GameViewSet.create_game">create_game</a></code></li>
+<li><code><a title="Games.views.GameViewSet.deleteGame" href="#Games.views.GameViewSet.deleteGame">deleteGame</a></code></li>
+<li><code><a title="Games.views.GameViewSet.delete_game" href="#Games.views.GameViewSet.delete_game">delete_game</a></code></li>
+<li><code><a title="Games.views.GameViewSet.delete_games" href="#Games.views.GameViewSet.delete_games">delete_games</a></code></li>
+<li><code><a title="Games.views.GameViewSet.disconnect" href="#Games.views.GameViewSet.disconnect">disconnect</a></code></li>
+<li><code><a title="Games.views.GameViewSet.fire" href="#Games.views.GameViewSet.fire">fire</a></code></li>
+<li><code><a title="Games.views.GameViewSet.game_is_over" href="#Games.views.GameViewSet.game_is_over">game_is_over</a></code></li>
+<li><code><a title="Games.views.GameViewSet.game_is_started" href="#Games.views.GameViewSet.game_is_started">game_is_started</a></code></li>
+<li><code><a title="Games.views.GameViewSet.get_games" href="#Games.views.GameViewSet.get_games">get_games</a></code></li>
+<li><code><a title="Games.views.GameViewSet.get_user_id_turn" href="#Games.views.GameViewSet.get_user_id_turn">get_user_id_turn</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="Games.views.ShipViewSet" href="#Games.views.ShipViewSet">ShipViewSet</a></code></h4>
+<ul class="">
+<li><code><a title="Games.views.ShipViewSet.delete_ships" href="#Games.views.ShipViewSet.delete_ships">delete_ships</a></code></li>
+<li><code><a title="Games.views.ShipViewSet.get_ships" href="#Games.views.ShipViewSet.get_ships">get_ships</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="Games.views.UserViewSet" href="#Games.views.UserViewSet">UserViewSet</a></code></h4>
+<ul class="">
+<li><code><a title="Games.views.UserViewSet.login" href="#Games.views.UserViewSet.login">login</a></code></li>
+<li><code><a title="Games.views.UserViewSet.registrate" href="#Games.views.UserViewSet.registrate">registrate</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

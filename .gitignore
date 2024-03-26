@@ -2,6 +2,7 @@ build-*/
 Lib/
 Scripts/
 pyvenv.cfg
-__pycache__/
+__pycache__
+migrations
 *.pro.user
 *.pro.user.*

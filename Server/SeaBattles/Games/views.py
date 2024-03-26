@@ -110,6 +110,7 @@ def allShipsHasBeenPlaced(field: Field) -> bool:
 
         Аргументы:
             field - Поле, на котором размещены корабли
+
         Возвращает:
             True или False в зависимости от расстановки всех кораблей
     """
@@ -121,6 +122,7 @@ def getDamagedShipPartsPositions(ship: Ship) -> List[str]:
 
         Аргументы:
             ship - Корабль, части которого нужно найти
+
         Возвращает:
             Список из координат повреждённых частей корабля, разделённых пробелом
     """
@@ -147,6 +149,7 @@ def allShipsAreDead(field: Field) -> bool:
         Проверяет все корабли были уничтожены или нет
         Аргументы:
             field - Поле, на котором нужно провести проверку
+
         Возвращает:
             True если все части всех кораблей были уничтожены, в ином случае False
     """
@@ -160,6 +163,7 @@ def getWinner(game: Game) -> str:
 
         Аргументы:
             game - Объект игры
+
         Возвращает:
             Строку, содержащую id победителя
     """
@@ -191,6 +195,7 @@ def swapGameUserIdTurn(game: Game) -> None:
 
         Аргументы:
             game - Объект игры, в которой нужно поменять ход
+
         Возвращает:
             None
     """
@@ -211,6 +216,7 @@ def createShip(cells: List[List[int]], field: Field) -> bool:
         Аргументы:
             cells - Список координат частей корабля
             field - Поле, на котором создаётся корабль
+
         Возвращает:
             True если корабль был создан, иначе False
     """
@@ -247,6 +253,7 @@ def hasCollisions(ships: List[Ship], cells: List[List[int]]) -> bool:
         Аргументы:
             ships - Список имеющихся кораблей на поле
             cells - Список координат клеток, где пользователь хочет разместить следующий корабль
+
         Возвращает:
             True, если в области вокруг клеток есть корабль, иначе False
         
@@ -326,6 +333,7 @@ class FieldViewSet(ViewSet):
 
             Аргументы:
                 user_id - Идентификтор пользователя, погибишие корабли которого нужно вернуть
+
             Возвращает:
                 Ответ от сервера, содержащего сообщение об ошибки или погибшие корабли, повреждённые 
                 их части и промахи на поле
@@ -334,7 +342,7 @@ class FieldViewSet(ViewSet):
             user_id = request.data["user_id"]
         except KeyError:
             return Response({
-                "Error": "Not enough arguments"
+                "error": "Not enough arguments"
             })
 
         field = Field.objects.get(owner_id=user_id)
@@ -352,7 +360,7 @@ class FieldViewSet(ViewSet):
 
         # Получаем все корабли
         ships = Ship.objects.filter(field=field, is_dead=False)
-        damaged_parts = list()
+        damaged_parts: List[str] = list()
         for ship in ships:
             for damaged_part in getDamagedShipPartsPositions(ship):
                 damaged_parts.append(damaged_part)
@@ -375,28 +383,26 @@ class FieldViewSet(ViewSet):
             Возвращает поле указанного пользвателя если передан аргумент owner_id
             или все поля
 
-            *DEBUG
-
             Аргументы:
                 owner_id - Идентификатор владельца поля
+
             Возвращает:
                 Поле владельца или все существующие поля
         """
         if "owner_id" not in request.data:
             field = Field.objects.all()
             serializer = FieldSerializer(field, many=True)
+            # *DEBUG
             return Response(serializer.data)
-            return Response(
-            {
-                "Error": "Not enough arguments"
+            return Response({
+                "error": "Not enough arguments"
             })
 
         try:
             field = Field.objects.get(owner_id=request.data["owner_id"])
         except Field.DoesNotExist:
-            return Response(
-            {
-                "Critical Error": "Field does not exist"
+            return Response({
+                "critical_error": "Field does not exist"
             })
 
         serialzer = FieldSerializer(field)
@@ -411,6 +417,7 @@ class FieldViewSet(ViewSet):
             Аргументы:
                 owner_id - Идентификатор владельца поля
                 game_id - Идентификатор игры
+
             Возвращает:
                 Словарь, содержащий ошибку, или массив клеток, на которых были установлены корабли
                 Так же возвращает булевое значение если все корабли были расставлены
@@ -424,7 +431,7 @@ class FieldViewSet(ViewSet):
             cells = request.data["cells"].split(" ")
         except KeyError:
             return Response({
-                "Error": "Not enough arguments"
+                "error": "Not enough arguments"
             })
 
         cells = list(map(lambda lst: lst.split(","), cells))
@@ -436,12 +443,12 @@ class FieldViewSet(ViewSet):
             x, y = cell
             if x < 0 or x > 9 or y < 0 or y > 9:
                 return Response({
-                    "Error": "Out of bounds"
+                    "error": "Out of bounds"
                 })
 
         if not cells:
             return Response({
-                "Error": "No ships to place"
+                "error": "No ships to place"
             })
 
         # Проверка ширины корабля
@@ -449,7 +456,7 @@ class FieldViewSet(ViewSet):
         for cell in cells:
             if cell[0] != first_cell[0] and cell[1] != first_cell[1]:
                 return Response({
-                    "Error": "Ship is too wide:)"
+                    "error": "Ship is too wide:)"
                 })
         data["cells"] = cells
 
@@ -457,7 +464,7 @@ class FieldViewSet(ViewSet):
         ship_length = len(cells)
         if ship_length > 4:
             return Response({
-                "Error": "Ship is too long"
+                "error": "Ship is too long"
             })
         field = Field.objects.get(owner_id=owner_id)
 
@@ -465,7 +472,7 @@ class FieldViewSet(ViewSet):
         if not SHIP_LENGTHS[ship_length](field=field):
             return Response(
             {
-                "Error": f"There no {ship_length}-deck ships last"
+                "error": f"There no {ship_length}-deck ships last"
             })
 
         # Получаем все корабли на поле
@@ -480,7 +487,7 @@ class FieldViewSet(ViewSet):
             if (self.hasCollisions(ships=ships, cells=cells)):
                 return Response(
                 {
-                    "Error": "Collisions"
+                    "error": "Collisions"
                 })
             else:
                 self.createShip(cells=cells, field=field)
@@ -506,6 +513,7 @@ class GameViewSet(ViewSet):
 
             Аргументы:
                 game_id - Строка, содержащая в себе идентификатор игры
+
             Возвращает:
                 True если игра удалена, иначе False
         """
@@ -524,6 +532,7 @@ class GameViewSet(ViewSet):
             Аргументы:
                 user_id - Идентификатор пользователя
                 game_id - Идентификатор игры
+
             Возвращает:
                 Запрос, содержащий в себе результат отключения и сообщение об ошибке если она произошла
         """          
@@ -532,21 +541,21 @@ class GameViewSet(ViewSet):
             user_id = request.data["user_id"]
         except KeyError:
             return Response({
-                "Error": "Not enough arguments"
+                "error": "Not enough arguments"
             })
 
         try:
             game = Game.objects.get(game_id=game_id)
         except Game.DoesNotExist:
             return Response({
-                "Critical Error": "Game doesn't exist"
+                "critical_error": "Game doesn't exist"
             })
 
         try:
             Field.objects.filter(game=game, owner_id=user_id).delete()
         except Field.DoesNotExist:
             return Response({
-                "Critical Error": "Field doesn't exist"
+                "critical_error": "Field doesn't exist"
             })
 
         # Если полей у это игры нет, значит оба игрока вышли и игру можно удалять
@@ -576,6 +585,7 @@ class GameViewSet(ViewSet):
             Аргументы:
                 game_id - Идентификатор игры 
                 user_id - Идентификатор пользователя
+
             Возвращает:
                 Статус о том завершена игра или нет и идентификатор победителя если он есть
         """
@@ -587,7 +597,7 @@ class GameViewSet(ViewSet):
         except Game.DoesNotExist:
             return Response(
             {
-                "Critical Error": "Game does not exist"
+                "critical_error": "Game does not exist"
             })
 
         data = dict()
@@ -612,16 +622,21 @@ class GameViewSet(ViewSet):
     def get_user_id_turn(self, request) -> Response:
         """
             Возвращает идентификатор игрока, который сейчас ходит
-            game_id
+
+            Аргументы:
+                game_id - Идентификатор игры
+
+            Возвращает:
+                Запрос, содержащий текст ошибки, если произошла ошибка или параметр 
+                game_is_started, отвечающий за начало игры
         """
         game_id = request.data["game_id"]
         try:
             game = Game.objects.get(game_id=game_id)
         except Game.DoesNotExist:
             # Если игры не существует, то она не была создана
-            return Response(
-            {
-                "Critical Error": "Game doesn't exist"
+            return Response({
+                "critical_error": "Game doesn't exist"
             })
 
 
@@ -631,14 +646,12 @@ class GameViewSet(ViewSet):
         # Если поле 1 и у игры есть победитель, значит победил второй игрок
         # Иначе второй игрок вышел
         if len(fields) < 2 and not game.has_winner:
-            return Response(
-            {
-                "Critical Error": "Current game has less than 2 fields"
+            return Response({
+                "critical_error": "Current game has less than 2 fields"
             })
 
         print(game.user_id_turn)
-        return Response(
-        {
+        return Response({
             "user_id_turn": game.user_id_turn
         })
 
@@ -646,53 +659,69 @@ class GameViewSet(ViewSet):
     @action(detail=False, methods=["post"])
     def game_is_started(self, request) -> Response:
         """
-            game_id
+            Возвращает метку о том началась ли игра с указанным идентификатором
+
+            Аргументы:
+                game_id - Идентификатор игры
+
+            Возвращает:
+                Параметр game_is_started, отвечающий за начало игры
         """
         # Если корабли у обеих полей закончены то игра начата
         game_id = request.data["game_id"]
-        game = Game.objects.get(game_id=game_id)
+        try:
+            game = Game.objects.get(game_id=game_id)
+        except Game.DoesNotExist:
+            return Response({
+                "critical_error": "Данной игры не существует"
+            })
 
         fields = Field.objects.filter(game=game)
 
         if len(fields) != 2:
-            return Response(
-            {
+            return Response({
                 "game_is_started": False
             })
 
         if (allShipsHasBeenPlaced(fields[0]) and allShipsHasBeenPlaced(fields[1])):
-            return Response(
-            {
+            return Response({
                 "game_is_started": True
             })
 
-        return Response(
-        {
+        return Response({
             "game_is_started": False
         })
 
     # 1)
     @action(detail=False, methods=["post"])
     def create_game(self, request) -> Response:
+        """
+            Создаёт игру
+
+            Аргументы:
+                user_id - Идентификатор игрока, который создал игру
+                
+            Возвращает:
+                Текст ошибки или сериализованный класс Game
+        """
         try:  
             user_id = request.data["user_id"]
         except KeyError:
             return Response(
             {
-                "Error": "Not enough arguments"
+                "error": "Not enough arguments"
             })
 
         try:
-            field = Field.objects.get(owner_id=user_id)
+            Field.objects.get(owner_id=user_id)
 
-            return Response(
-            {
-                "Error": "User already has a game"
+            return Response({
+                "error": "User already has a game"
             })
         except Field.DoesNotExist:
             game_id = generateGameId()
             game = Game.objects.create(game_id=game_id, user_id_turn=user_id)
-            field = Field.objects.create(owner_id=user_id, game=game)
+            Field.objects.create(owner_id=user_id, game=game)
 
             game_serializer = GameSerializer(game)
             return Response(game_serializer.data)
@@ -701,37 +730,45 @@ class GameViewSet(ViewSet):
     @action(detail=False, methods=["post"])
     def fire(self, request) -> Response:
         """
-            game_id, user_id, x, y
-        """
-        ### Если убивает последний корабль, то возвращаем информацию о том, что игра закончена ###
+            Стреляет по указанной точке на поле
 
-        # Получаем игру, в которой находится игрок и его айди, а также координаты, по которым он стреляет
+            Если убивает последний корабль, то возвращаем информацию о том, что игра закончена
+            
+            Аргументы:
+                game_id - Идентификатор игры
+                user_id - Идентификатор пользователя, который стреляет
+                x, y - Координаты на поле
+
+            Возвращает:
+                Ошибку или результат об мёртвом корабле 
+                или координаты части корабля по которой попали 
+                или координаты точки, по которой не попали
+        """
+        # Получаем игру, в которой находится игрок и его айди, 
+        # а также координаты, по которым он стреляет
         try:
             game_id = request.data["game_id"]
             user_id = request.data["user_id"]
             x = int(request.data["x"])
             y = int(request.data["y"])
         except KeyError:
-            return Response(
-            {
-                "Error": "Not enough arguments"
+            return Response({
+                "error": "Not enough arguments"
             })
 
         # Получаем игру, в которой находится пользователь
         try:
             game = Game.objects.get(game_id=game_id)
         except Game.DoesNotExist:
-            return Response(
-            {
-                "Critical Error": "Game does not exist"
+            return Response({
+                "critical_error": "Game does not exist"
             })
 
 
         # Если ход не его, то стрелять он не может
         if not game.user_id_turn == user_id:
-            return Response(
-            {
-                "Error": "It's not your turn"
+            return Response({
+                "error": "It's not your turn"
             })
 
 
@@ -741,17 +778,13 @@ class GameViewSet(ViewSet):
 
         # Обработка, при нахождении более одного поля
         if len(field) > 1:
-            return Response(
-            {
-                "Critical Error": "Found more than one player's field"
+            return Response({
+                "critical_error": "Found more than one player's field"
             })
-        field = field[0]
-        # Получаем координаты, по которым стреляет игрок
-        
+        field = field[0]      
 
         # Получаем все корабли противника
         ships = Ship.objects.filter(field=field)
-        data = dict()
 
         # Проходимся по кораблям
         for ship in ships:
@@ -759,9 +792,8 @@ class GameViewSet(ViewSet):
                 needed_ship_part = ShipPart.objects.get(ship=ship, x_pos=x, y_pos=y)
 
                 if needed_ship_part.is_damaged:
-                    return Response(
-                    {
-                        "Error": "Ship part is already damaged"
+                    return Response({
+                        "error": "Ship part is already damaged"
                     })
 
                 needed_ship_part.is_damaged = True
@@ -776,23 +808,20 @@ class GameViewSet(ViewSet):
                     ship.is_dead = True
                     ship.save()
 
-
                     ship_parts = ShipPart.objects.filter(ship=ship)
                     # Мёртвые части
                     dead_parts = [f"{part.x_pos} {part.y_pos}" for part in ship_parts]
 
                     marked_cells = createMarkedCellsAroundShip(ship=ship, field=field)
 
-                    return Response(
-                    {
+                    return Response({
                         "ship_is_killed": True,
                         "dead_parts": dead_parts,
                         "marked_cells": marked_cells,
                     })
                 # Иначе возвращаем повреждённую часть корабля
                 else:
-                    return Response(
-                        {
+                    return Response({
                             "ship_is_damaged": True,
                             "damaged_part": f"{x} {y}"
                         })       
@@ -807,7 +836,7 @@ class GameViewSet(ViewSet):
 
             # Если она в базе, значит по ней уже стреляли
             return Response({
-                "Error": "Cell is already damaged"
+                "error": "Cell is already damaged"
             })
 
         except MarkedCell.DoesNotExist:
@@ -837,14 +866,21 @@ class GameViewSet(ViewSet):
     @action(detail=False, methods=["post"])
     def connect_to_game(self, request) -> Response:
         """
-            game_id, user_id
+            Подключается пользователя к игре
+
+            Аргументы:
+                game_id - Идентификатор игры
+                user_id - Идентификатор пользователя
+
+            Возвращает:
+                Текст ошибки или идентификатор игры, к которой подключился пользователь
         """
         try:
             game_id = request.data["game_id"]
             user_id = request.data["user_id"]
         except KeyError:
             return Response({
-                "Error": "Not enough arguments"
+                "error": "Not enough arguments"
             })
 
         try:
@@ -852,19 +888,19 @@ class GameViewSet(ViewSet):
             fields = Field.objects.filter(game=game)
         except Game.DoesNotExist:
             return Response({
-                "Error": "Current game does not exist"
+                "error": "Current game does not exist"
             })
 
         # В комнате уже 2 поля, соответственно 2 игрока
         if len(fields) == 2:
             return Response({
-                "Error": "Game is full"
+                "error": "Game is full"
             })
 
         # Проверка на то, что игрок с таким же id подключается
         if fields[0].owner_id == user_id:
             return Response({
-                "Error": "Game cannot contain players with 2 same id"
+                "error": "Game cannot contain players with 2 same id"
             })
         
         Field.objects.create(game=game, owner_id=user_id)
@@ -873,13 +909,18 @@ class GameViewSet(ViewSet):
             "game_id": game_id
         })
 
-    @action(detail=False, methods=["post"])
-    def delete_game(self, request) -> Response:     
+    @action(detail=False, methods=["get"])
+    def delete_game(self, request) -> Response:
+        """
+            Удаляет игру с заданным идентификатором
+
+            *DEBUG
+        """
         try:
             game_id = request.data["game_id"]
         except KeyError:
             return Response({
-                "Error": "Not enough arguments"
+                "error": "Not enough arguments"
             })
 
         Game.objects.filter(game_id=game_id).delete()
@@ -888,8 +929,13 @@ class GameViewSet(ViewSet):
             "deleted": True
         })
 
-    @action(detail=False, methods=["post"])
+    @action(detail=False, methods=["get"])
     def delete_games(self, request) -> Response:
+        """
+            Удаляет все игры
+
+            *DEBUG
+        """
         Game.objects.all().delete()
 
         return Response({
@@ -897,20 +943,47 @@ class GameViewSet(ViewSet):
         })
 
 
-class UserViewSet(ViewSet):
+"""
+    ViewSet пользователя
 
+    Описывает поведение при запросе на адрес адрес_сервера/users/имя_метода
+
+    @author     ChazGrant
+    @version    1.0
+"""
+class UserViewSet(ViewSet):
     @action(detail=False, methods=["post"])
-    def login(self, request):
+    def login(self, request) -> Response:
+        """
+            Входит в аккаунт пользователя с заданными данными
+
+            Аргументы:
+                user_id - Идентификатор пользователя
+
+            Возвращает:
+                Текст ошибки и/или результат о логине
+                *DEBUG возвращает имя пользователя
+        """
         try:
             user_id = int(request.data["user_id"])
+            password = request.data["password"]
         except ValueError:
-            return Response({"login_successful": False})
-        password = request.data["password"]
+            return Response({
+                "login_successful": False,
+                "error": "Неверный тип идентификатора пользователя(ожидается целочисленное число)"
+            })
+        except KeyError:
+            return Response({
+                "login_successful": False,
+                "error": "Недостаточно аргументов"
+            }) 
 
         try:
             user = User.objects.get(user_id=user_id, user_password=password)
         except User.DoesNotExist:
-            return Response({"login_successful": False})
+            return Response({
+                "login_successful": False
+            })
 
         return Response({
                 "login_successful": True,
@@ -918,7 +991,20 @@ class UserViewSet(ViewSet):
             })
 
     @action(detail=False, methods=["post"])
-    def registrate(self, request):
+    def registrate(self, request) -> Response:
+        """
+            Регистрирует пользователя
+
+            Аргументы:
+                user_name - Имя пользователя
+                password - Пароль
+                email - Электронная почта
+
+            Возвращает:
+                Информацию об успешной регистрации или текст ошибки
+
+            @TODO принимать хэш пароля а не сам пароль
+        """
         # x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
         # if x_forwarded_for:
         #     ip = x_forwarded_for.split(",")[0]
@@ -927,7 +1013,7 @@ class UserViewSet(ViewSet):
         
         # if ip in known_ips:
         #     return Response({
-        #         "registrate_successful": False
+        #         "registration_successful": False
         #     })
         
         # known_ips.append(ip)
@@ -946,11 +1032,10 @@ class UserViewSet(ViewSet):
                                                user_id=last_user_id + 1)
         except IntegrityError:
             return Response({
-                "registrate_successful": False,
-                "error_message": "Данное имя пользователя занято"
+                "registration_successful": False,
+                "error": "Данное имя пользователя занято"
             })
 
         return Response({
-            "registrate_successful": True,
-            "user_id": created_user.user_id
+            "registration_successful": True
         })
