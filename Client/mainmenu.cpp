@@ -4,6 +4,7 @@
 #include "inputgameid.h"
 #include "mainwindow.h"
 
+
 MainMenu::MainMenu(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainMenu)
@@ -11,9 +12,6 @@ MainMenu::MainMenu(QWidget *parent) :
     ui->setupUi(this);
 
     m_manager = new QNetworkAccessManager(this);
-
-    userId = generateUserId(15);
-    ui->userID->setText("Ваш ID: " + userId);
 }
 
 MainMenu::~MainMenu()
@@ -21,6 +19,14 @@ MainMenu::~MainMenu()
     delete ui;
 }
 
+//! @brief Метод для обработки нажатия на кнопку "Подключиться к игре"
+//
+/* @return void
+
+ @details
+ Делает запрос к адресу по подключению к игре. В параметры передаёт идентификатор пользователя
+ после ответа от сервера передаёт управление методу connectToCreatedGame
+*/
 void MainMenu::on_createNewGameButton_clicked()
 {
     QUrl url("http://127.0.0.1:8000/games/create_game/");

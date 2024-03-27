@@ -352,6 +352,7 @@ void MainWindow::setShipsAmountLabel(QNetworkReply* reply)
     if (this->getErrorMessage(jsonObj))
         return;
 
+    qDebug() << jsonObj["four_deck"].toInt();
     int fourDeckLeft = jsonObj["four_deck"].toInt();
     int threeDeckLeft = jsonObj["three_deck"].toInt();
     int twoDeckLeft = jsonObj["two_deck"].toInt();
@@ -378,7 +379,7 @@ void MainWindow::setShipsAmountLabel(QNetworkReply* reply)
 
 void MainWindow::getShipsAmountResponse()
 {
-    QUrl url("http://127.0.0.1:8000/fields/return_field/");
+    QUrl url("http://127.0.0.1:8000/fields/get_field/");
     QNetworkRequest request( url );
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
 

@@ -1,0 +1,945 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ru">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=11"/>
+<meta name="generator" content="Doxygen 1.10.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Battleships_Client: Класс MainWindow</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<script type="text/javascript" src="clipboard.js"></script>
+<script type="text/javascript" src="cookie.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr id="projectrow">
+  <td id="projectalign">
+   <div id="projectname">Battleships_Client
+   </div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Создано системой Doxygen 1.10.0 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+var searchBox = new SearchBox("searchBox", "search/",'.html');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(function() {
+  initMenu('',true,false,'search.php','Поиск');
+  $(function() { init_search(); });
+});
+/* @license-end */
+</script>
+<div id="main-nav"></div>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Загрузка...</div>
+<div class="SRStatus" id="Searching">Поиск...</div>
+<div class="SRStatus" id="NoMatches">Не найдено</div>
+</div>
+</div>
+</div>
+</div>
+
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Открытые члены</a> &#124;
+<a href="#pri-slots">Закрытые слоты</a> &#124;
+<a href="#pri-methods">Закрытые члены</a> &#124;
+<a href="#pri-attribs">Закрытые данные</a> &#124;
+<a href="class_main_window-members.html">Полный список членов класса</a>  </div>
+  <div class="headertitle"><div class="title">Класс MainWindow</div></div>
+</div><!--header-->
+<div class="contents">
+
+<p><code>#include &lt;<a class="el" href="mainwindow_8h_source.html">mainwindow.h</a>&gt;</code></p>
+<div class="dynheader">
+Граф наследования:MainWindow:</div>
+<div class="dyncontent">
+ <div class="center">
+  <img src="class_main_window.png" alt=""/>
+ </div></div>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
+Открытые члены</h2></td></tr>
+<tr class="memitem:a1fab59cae549adba45881bae6238029a" id="r_a1fab59cae549adba45881bae6238029a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1fab59cae549adba45881bae6238029a">MainWindow</a> (QWidget *parent=nullptr, QString <a class="el" href="#adc17721200db286a2bb1b428c5ee3932">gameId</a>=&quot;&quot;, QString <a class="el" href="#af632220fcefe285bc1f5394fc98bfa16">userId</a>=&quot;&quot;)</td></tr>
+<tr class="separator:a1fab59cae549adba45881bae6238029a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae98d00a93bc118200eeef9f9bba1dba7" id="r_ae98d00a93bc118200eeef9f9bba1dba7"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae98d00a93bc118200eeef9f9bba1dba7">~MainWindow</a> ()</td></tr>
+<tr class="separator:ae98d00a93bc118200eeef9f9bba1dba7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0e26ef711257953959094cda52fba70e" id="r_a0e26ef711257953959094cda52fba70e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0e26ef711257953959094cda52fba70e">fire</a> (QTableWidgetItem *item)</td></tr>
+<tr class="separator:a0e26ef711257953959094cda52fba70e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8465eb83773e53236f1b0183cbeac496" id="r_a8465eb83773e53236f1b0183cbeac496"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8465eb83773e53236f1b0183cbeac496">gameIsOver</a> ()</td></tr>
+<tr class="separator:a8465eb83773e53236f1b0183cbeac496"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a05fb9d72c044aa3bb7d187b994704e2f" id="r_a05fb9d72c044aa3bb7d187b994704e2f"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a05fb9d72c044aa3bb7d187b994704e2f">closeEvent</a> (QCloseEvent *event) override</td></tr>
+<tr class="separator:a05fb9d72c044aa3bb7d187b994704e2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-slots" name="pri-slots"></a>
+Закрытые слоты</h2></td></tr>
+<tr class="memitem:a15997dee2819a731f27f60c1a80712a1" id="r_a15997dee2819a731f27f60c1a80712a1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a15997dee2819a731f27f60c1a80712a1">on_placeShipButton_clicked</a> ()</td></tr>
+<tr class="separator:a15997dee2819a731f27f60c1a80712a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a308bd21b5aa3708ef3cd15350e221b63" id="r_a308bd21b5aa3708ef3cd15350e221b63"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a308bd21b5aa3708ef3cd15350e221b63">setShipsAmountLabel</a> (QNetworkReply *reply)</td></tr>
+<tr class="separator:a308bd21b5aa3708ef3cd15350e221b63"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4211bd08c4e7c4cb67f1922c392c7cff" id="r_a4211bd08c4e7c4cb67f1922c392c7cff"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4211bd08c4e7c4cb67f1922c392c7cff">placeShip</a> (QNetworkReply *reply)</td></tr>
+<tr class="separator:a4211bd08c4e7c4cb67f1922c392c7cff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad3af6fe1bdd2e5e2fcc901b816b8c113" id="r_ad3af6fe1bdd2e5e2fcc901b816b8c113"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad3af6fe1bdd2e5e2fcc901b816b8c113">getGameState</a> (QNetworkReply *reply)</td></tr>
+<tr class="separator:ad3af6fe1bdd2e5e2fcc901b816b8c113"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8da246efe352ea7a644bdaf05ef91221" id="r_a8da246efe352ea7a644bdaf05ef91221"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8da246efe352ea7a644bdaf05ef91221">getUserIdTurn</a> (QNetworkReply *reply)</td></tr>
+<tr class="separator:a8da246efe352ea7a644bdaf05ef91221"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac5ef870ff7d03910de8466f5339835b3" id="r_ac5ef870ff7d03910de8466f5339835b3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac5ef870ff7d03910de8466f5339835b3">fillField</a> (QNetworkReply *reply)</td></tr>
+<tr class="separator:ac5ef870ff7d03910de8466f5339835b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24d879f6ffd8ebb18578035ac726bffe" id="r_a24d879f6ffd8ebb18578035ac726bffe"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a24d879f6ffd8ebb18578035ac726bffe">getFireStatus</a> (QNetworkReply *reply)</td></tr>
+<tr class="separator:a24d879f6ffd8ebb18578035ac726bffe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a70e53aca4c6ae3842a8e3255f264a5e7" id="r_a70e53aca4c6ae3842a8e3255f264a5e7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a70e53aca4c6ae3842a8e3255f264a5e7">getGameOverState</a> (QNetworkReply *reply)</td></tr>
+<tr class="separator:a70e53aca4c6ae3842a8e3255f264a5e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a83733aaee1ee7784a8591cebc9d2691d" id="r_a83733aaee1ee7784a8591cebc9d2691d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a83733aaee1ee7784a8591cebc9d2691d">acceptCloseEvent</a> (QNetworkReply *reply)</td></tr>
+<tr class="separator:a83733aaee1ee7784a8591cebc9d2691d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-methods" name="pri-methods"></a>
+Закрытые члены</h2></td></tr>
+<tr class="memitem:aa7d8bf27a2826ad0f5e989edc01c6313" id="r_aa7d8bf27a2826ad0f5e989edc01c6313"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa7d8bf27a2826ad0f5e989edc01c6313">getErrorMessage</a> (QJsonObject jsonObj)</td></tr>
+<tr class="separator:aa7d8bf27a2826ad0f5e989edc01c6313"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa2aed50dcea69b14b6bdd38cae5d63fd" id="r_aa2aed50dcea69b14b6bdd38cae5d63fd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa2aed50dcea69b14b6bdd38cae5d63fd">setTable</a> ()</td></tr>
+<tr class="separator:aa2aed50dcea69b14b6bdd38cae5d63fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3a29a33e0f7ba2dbcf4afae9511a086b" id="r_a3a29a33e0f7ba2dbcf4afae9511a086b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3a29a33e0f7ba2dbcf4afae9511a086b">setOpponentTable</a> ()</td></tr>
+<tr class="separator:a3a29a33e0f7ba2dbcf4afae9511a086b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab437109ae1d4981008ee70fcbc8fb139" id="r_ab437109ae1d4981008ee70fcbc8fb139"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab437109ae1d4981008ee70fcbc8fb139">findDeadShips</a> ()</td></tr>
+<tr class="separator:ab437109ae1d4981008ee70fcbc8fb139"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f3a25546c70d5de624c96926bce211e" id="r_a7f3a25546c70d5de624c96926bce211e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7f3a25546c70d5de624c96926bce211e">lockAllButtons</a> (bool lockState)</td></tr>
+<tr class="separator:a7f3a25546c70d5de624c96926bce211e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9204edcc615c3999c4dede252fa01303" id="r_a9204edcc615c3999c4dede252fa01303"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9204edcc615c3999c4dede252fa01303">getShipsAmountResponse</a> ()</td></tr>
+<tr class="separator:a9204edcc615c3999c4dede252fa01303"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1e72beb3c3c3a5380922bbd138e4038d" id="r_a1e72beb3c3c3a5380922bbd138e4038d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1e72beb3c3c3a5380922bbd138e4038d">waitForGameStart</a> ()</td></tr>
+<tr class="separator:a1e72beb3c3c3a5380922bbd138e4038d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a61e3b45b2acc117fc179bdef7ae58aa2" id="r_a61e3b45b2acc117fc179bdef7ae58aa2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a61e3b45b2acc117fc179bdef7ae58aa2">waitForTurn</a> ()</td></tr>
+<tr class="separator:a61e3b45b2acc117fc179bdef7ae58aa2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac871e820ec460de731150228f5a9f476" id="r_ac871e820ec460de731150228f5a9f476"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac871e820ec460de731150228f5a9f476">getDamagedCells</a> ()</td></tr>
+<tr class="separator:ac871e820ec460de731150228f5a9f476"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac7db04d93c24c5b2e8d3eac46b17f64b" id="r_ac7db04d93c24c5b2e8d3eac46b17f64b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac7db04d93c24c5b2e8d3eac46b17f64b">checkForWinner</a> ()</td></tr>
+<tr class="separator:ac7db04d93c24c5b2e8d3eac46b17f64b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6f51b42d45cebf62221fe1a7b509fb18" id="r_a6f51b42d45cebf62221fe1a7b509fb18"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6f51b42d45cebf62221fe1a7b509fb18">shoot</a> ()</td></tr>
+<tr class="separator:a6f51b42d45cebf62221fe1a7b509fb18"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pri-attribs" name="pri-attribs"></a>
+Закрытые данные</h2></td></tr>
+<tr class="memitem:a35466a70ed47252a0191168126a352a5" id="r_a35466a70ed47252a0191168126a352a5"><td class="memItemLeft" align="right" valign="top">Ui::MainWindow *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a35466a70ed47252a0191168126a352a5">ui</a></td></tr>
+<tr class="separator:a35466a70ed47252a0191168126a352a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aede53ea8d2f22c80c213f31437d4d704" id="r_aede53ea8d2f22c80c213f31437d4d704"><td class="memItemLeft" align="right" valign="top">QNetworkAccessManager *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aede53ea8d2f22c80c213f31437d4d704">m_manager</a></td></tr>
+<tr class="separator:aede53ea8d2f22c80c213f31437d4d704"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc17721200db286a2bb1b428c5ee3932" id="r_adc17721200db286a2bb1b428c5ee3932"><td class="memItemLeft" align="right" valign="top">QString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adc17721200db286a2bb1b428c5ee3932">gameId</a></td></tr>
+<tr class="separator:adc17721200db286a2bb1b428c5ee3932"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af632220fcefe285bc1f5394fc98bfa16" id="r_af632220fcefe285bc1f5394fc98bfa16"><td class="memItemLeft" align="right" valign="top">QString&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af632220fcefe285bc1f5394fc98bfa16">userId</a></td></tr>
+<tr class="separator:af632220fcefe285bc1f5394fc98bfa16"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a454fc1e1e6c53e92dc1df717a55a2160" id="r_a454fc1e1e6c53e92dc1df717a55a2160"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a454fc1e1e6c53e92dc1df717a55a2160">closeEventIsAccepted</a></td></tr>
+<tr class="separator:a454fc1e1e6c53e92dc1df717a55a2160"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1429f1ddb092fbe24d1effbbb703fa0b" id="r_a1429f1ddb092fbe24d1effbbb703fa0b"><td class="memItemLeft" align="right" valign="top">QTimer *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1429f1ddb092fbe24d1effbbb703fa0b">timerForGameStart</a></td></tr>
+<tr class="separator:a1429f1ddb092fbe24d1effbbb703fa0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ec8ad5c774e213b98c3ee2948694328" id="r_a7ec8ad5c774e213b98c3ee2948694328"><td class="memItemLeft" align="right" valign="top">QTimer *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7ec8ad5c774e213b98c3ee2948694328">timerForUserTurn</a></td></tr>
+<tr class="separator:a7ec8ad5c774e213b98c3ee2948694328"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">Конструктор(ы)</h2>
+<a id="a1fab59cae549adba45881bae6238029a" name="a1fab59cae549adba45881bae6238029a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1fab59cae549adba45881bae6238029a">&#9670;&#160;</a></span>MainWindow()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">MainWindow::MainWindow </td>
+          <td>(</td>
+          <td class="paramtype">QWidget *</td>          <td class="paramname"><span class="paramname"><em>parent</em><span class="paramdefsep"> = </span><span class="paramdefval">nullptr</span>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">QString</td>          <td class="paramname"><span class="paramname"><em>gameId</em><span class="paramdefsep"> = </span><span class="paramdefval">&quot;&quot;</span>, </span></td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">QString</td>          <td class="paramname"><span class="paramname"><em>userId</em><span class="paramdefsep"> = </span><span class="paramdefval">&quot;&quot;</span></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">explicit</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ae98d00a93bc118200eeef9f9bba1dba7" name="ae98d00a93bc118200eeef9f9bba1dba7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae98d00a93bc118200eeef9f9bba1dba7">&#9670;&#160;</a></span>~MainWindow()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">MainWindow::~MainWindow </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Методы</h2>
+<a id="a83733aaee1ee7784a8591cebc9d2691d" name="a83733aaee1ee7784a8591cebc9d2691d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a83733aaee1ee7784a8591cebc9d2691d">&#9670;&#160;</a></span>acceptCloseEvent</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void MainWindow::acceptCloseEvent </td>
+          <td>(</td>
+          <td class="paramtype">QNetworkReply *</td>          <td class="paramname"><span class="paramname"><em>reply</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span><span class="mlabel">slot</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ac7db04d93c24c5b2e8d3eac46b17f64b" name="ac7db04d93c24c5b2e8d3eac46b17f64b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac7db04d93c24c5b2e8d3eac46b17f64b">&#9670;&#160;</a></span>checkForWinner()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void MainWindow::checkForWinner </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a05fb9d72c044aa3bb7d187b994704e2f" name="a05fb9d72c044aa3bb7d187b994704e2f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a05fb9d72c044aa3bb7d187b994704e2f">&#9670;&#160;</a></span>closeEvent()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void MainWindow::closeEvent </td>
+          <td>(</td>
+          <td class="paramtype">QCloseEvent *</td>          <td class="paramname"><span class="paramname"><em>event</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ac5ef870ff7d03910de8466f5339835b3" name="ac5ef870ff7d03910de8466f5339835b3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac5ef870ff7d03910de8466f5339835b3">&#9670;&#160;</a></span>fillField</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void MainWindow::fillField </td>
+          <td>(</td>
+          <td class="paramtype">QNetworkReply *</td>          <td class="paramname"><span class="paramname"><em>reply</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span><span class="mlabel">slot</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ab437109ae1d4981008ee70fcbc8fb139" name="ab437109ae1d4981008ee70fcbc8fb139"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab437109ae1d4981008ee70fcbc8fb139">&#9670;&#160;</a></span>findDeadShips()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void MainWindow::findDeadShips </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a0e26ef711257953959094cda52fba70e" name="a0e26ef711257953959094cda52fba70e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0e26ef711257953959094cda52fba70e">&#9670;&#160;</a></span>fire()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void MainWindow::fire </td>
+          <td>(</td>
+          <td class="paramtype">QTableWidgetItem *</td>          <td class="paramname"><span class="paramname"><em>item</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a8465eb83773e53236f1b0183cbeac496" name="a8465eb83773e53236f1b0183cbeac496"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8465eb83773e53236f1b0183cbeac496">&#9670;&#160;</a></span>gameIsOver()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool MainWindow::gameIsOver </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ac871e820ec460de731150228f5a9f476" name="ac871e820ec460de731150228f5a9f476"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac871e820ec460de731150228f5a9f476">&#9670;&#160;</a></span>getDamagedCells()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void MainWindow::getDamagedCells </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aa7d8bf27a2826ad0f5e989edc01c6313" name="aa7d8bf27a2826ad0f5e989edc01c6313"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa7d8bf27a2826ad0f5e989edc01c6313">&#9670;&#160;</a></span>getErrorMessage()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool MainWindow::getErrorMessage </td>
+          <td>(</td>
+          <td class="paramtype">QJsonObject</td>          <td class="paramname"><span class="paramname"><em>jsonObj</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a24d879f6ffd8ebb18578035ac726bffe" name="a24d879f6ffd8ebb18578035ac726bffe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a24d879f6ffd8ebb18578035ac726bffe">&#9670;&#160;</a></span>getFireStatus</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void MainWindow::getFireStatus </td>
+          <td>(</td>
+          <td class="paramtype">QNetworkReply *</td>          <td class="paramname"><span class="paramname"><em>reply</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span><span class="mlabel">slot</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a70e53aca4c6ae3842a8e3255f264a5e7" name="a70e53aca4c6ae3842a8e3255f264a5e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a70e53aca4c6ae3842a8e3255f264a5e7">&#9670;&#160;</a></span>getGameOverState</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void MainWindow::getGameOverState </td>
+          <td>(</td>
+          <td class="paramtype">QNetworkReply *</td>          <td class="paramname"><span class="paramname"><em>reply</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span><span class="mlabel">slot</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ad3af6fe1bdd2e5e2fcc901b816b8c113" name="ad3af6fe1bdd2e5e2fcc901b816b8c113"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad3af6fe1bdd2e5e2fcc901b816b8c113">&#9670;&#160;</a></span>getGameState</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void MainWindow::getGameState </td>
+          <td>(</td>
+          <td class="paramtype">QNetworkReply *</td>          <td class="paramname"><span class="paramname"><em>reply</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span><span class="mlabel">slot</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a9204edcc615c3999c4dede252fa01303" name="a9204edcc615c3999c4dede252fa01303"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9204edcc615c3999c4dede252fa01303">&#9670;&#160;</a></span>getShipsAmountResponse()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void MainWindow::getShipsAmountResponse </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a8da246efe352ea7a644bdaf05ef91221" name="a8da246efe352ea7a644bdaf05ef91221"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8da246efe352ea7a644bdaf05ef91221">&#9670;&#160;</a></span>getUserIdTurn</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void MainWindow::getUserIdTurn </td>
+          <td>(</td>
+          <td class="paramtype">QNetworkReply *</td>          <td class="paramname"><span class="paramname"><em>reply</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span><span class="mlabel">slot</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a7f3a25546c70d5de624c96926bce211e" name="a7f3a25546c70d5de624c96926bce211e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7f3a25546c70d5de624c96926bce211e">&#9670;&#160;</a></span>lockAllButtons()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void MainWindow::lockAllButtons </td>
+          <td>(</td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>lockState</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a15997dee2819a731f27f60c1a80712a1" name="a15997dee2819a731f27f60c1a80712a1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a15997dee2819a731f27f60c1a80712a1">&#9670;&#160;</a></span>on_placeShipButton_clicked</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void MainWindow::on_placeShipButton_clicked </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span><span class="mlabel">slot</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a4211bd08c4e7c4cb67f1922c392c7cff" name="a4211bd08c4e7c4cb67f1922c392c7cff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4211bd08c4e7c4cb67f1922c392c7cff">&#9670;&#160;</a></span>placeShip</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void MainWindow::placeShip </td>
+          <td>(</td>
+          <td class="paramtype">QNetworkReply *</td>          <td class="paramname"><span class="paramname"><em>reply</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span><span class="mlabel">slot</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a3a29a33e0f7ba2dbcf4afae9511a086b" name="a3a29a33e0f7ba2dbcf4afae9511a086b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3a29a33e0f7ba2dbcf4afae9511a086b">&#9670;&#160;</a></span>setOpponentTable()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void MainWindow::setOpponentTable </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a308bd21b5aa3708ef3cd15350e221b63" name="a308bd21b5aa3708ef3cd15350e221b63"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a308bd21b5aa3708ef3cd15350e221b63">&#9670;&#160;</a></span>setShipsAmountLabel</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void MainWindow::setShipsAmountLabel </td>
+          <td>(</td>
+          <td class="paramtype">QNetworkReply *</td>          <td class="paramname"><span class="paramname"><em>reply</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span><span class="mlabel">slot</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aa2aed50dcea69b14b6bdd38cae5d63fd" name="aa2aed50dcea69b14b6bdd38cae5d63fd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa2aed50dcea69b14b6bdd38cae5d63fd">&#9670;&#160;</a></span>setTable()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void MainWindow::setTable </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a6f51b42d45cebf62221fe1a7b509fb18" name="a6f51b42d45cebf62221fe1a7b509fb18"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6f51b42d45cebf62221fe1a7b509fb18">&#9670;&#160;</a></span>shoot()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void MainWindow::shoot </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a1e72beb3c3c3a5380922bbd138e4038d" name="a1e72beb3c3c3a5380922bbd138e4038d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1e72beb3c3c3a5380922bbd138e4038d">&#9670;&#160;</a></span>waitForGameStart()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void MainWindow::waitForGameStart </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a61e3b45b2acc117fc179bdef7ae58aa2" name="a61e3b45b2acc117fc179bdef7ae58aa2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a61e3b45b2acc117fc179bdef7ae58aa2">&#9670;&#160;</a></span>waitForTurn()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void MainWindow::waitForTurn </td>
+          <td>(</td>
+          <td class="paramname"><span class="paramname"></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Данные класса</h2>
+<a id="a454fc1e1e6c53e92dc1df717a55a2160" name="a454fc1e1e6c53e92dc1df717a55a2160"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a454fc1e1e6c53e92dc1df717a55a2160">&#9670;&#160;</a></span>closeEventIsAccepted</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool MainWindow::closeEventIsAccepted</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="adc17721200db286a2bb1b428c5ee3932" name="adc17721200db286a2bb1b428c5ee3932"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adc17721200db286a2bb1b428c5ee3932">&#9670;&#160;</a></span>gameId</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">QString MainWindow::gameId</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aede53ea8d2f22c80c213f31437d4d704" name="aede53ea8d2f22c80c213f31437d4d704"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aede53ea8d2f22c80c213f31437d4d704">&#9670;&#160;</a></span>m_manager</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">QNetworkAccessManager* MainWindow::m_manager</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a1429f1ddb092fbe24d1effbbb703fa0b" name="a1429f1ddb092fbe24d1effbbb703fa0b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1429f1ddb092fbe24d1effbbb703fa0b">&#9670;&#160;</a></span>timerForGameStart</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">QTimer* MainWindow::timerForGameStart</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a7ec8ad5c774e213b98c3ee2948694328" name="a7ec8ad5c774e213b98c3ee2948694328"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7ec8ad5c774e213b98c3ee2948694328">&#9670;&#160;</a></span>timerForUserTurn</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">QTimer* MainWindow::timerForUserTurn</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a35466a70ed47252a0191168126a352a5" name="a35466a70ed47252a0191168126a352a5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a35466a70ed47252a0191168126a352a5">&#9670;&#160;</a></span>ui</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Ui::MainWindow* MainWindow::ui</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="af632220fcefe285bc1f5394fc98bfa16" name="af632220fcefe285bc1f5394fc98bfa16"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af632220fcefe285bc1f5394fc98bfa16">&#9670;&#160;</a></span>userId</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">QString MainWindow::userId</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<hr/>Объявления и описания членов классов находятся в файлах:<ul>
+<li>E:/Battleship/Client/<a class="el" href="mainwindow_8h_source.html">mainwindow.h</a></li>
+<li>E:/Battleship/Client/<a class="el" href="mainwindow_8cpp.html">mainwindow.cpp</a></li>
+</ul>
+</div><!-- contents -->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+Создано системой&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.10.0
+</small></address>
+</body>
+</html>

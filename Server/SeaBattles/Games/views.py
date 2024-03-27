@@ -377,7 +377,7 @@ class FieldViewSet(ViewSet):
         return Response(data)
 
     # 2)
-    @action(detail=False, methods=["get"])
+    @action(detail=False, methods=["get", "post"])
     def get_field(self, request) -> Response:
         """
             Возвращает поле указанного пользвателя если передан аргумент owner_id
@@ -405,8 +405,9 @@ class FieldViewSet(ViewSet):
                 "critical_error": "Field does not exist"
             })
 
-        serialzer = FieldSerializer(field)
-        return Response(serialzer.data)
+        serializer = FieldSerializer(field)
+        print(serializer.data)
+        return Response(serializer.data)
 
     # 2)
     @action(detail=False, methods=["post"])
@@ -480,17 +481,17 @@ class FieldViewSet(ViewSet):
 
         # Если кораблей нет, то нет и коллизий
         if not ships:
-            self.createShip(cells=cells, field=field)
+            createShip(cells=cells, field=field)
 
             return Response(data)
         else:
-            if (self.hasCollisions(ships=ships, cells=cells)):
+            if (hasCollisions(ships=ships, cells=cells)):
                 return Response(
                 {
                     "error": "Collisions"
                 })
             else:
-                self.createShip(cells=cells, field=field)
+                createShip(cells=cells, field=field)
 
         # Если все корабли заполнены - вернуть в ответе
         if allShipsHasBeenPlaced(field=field):

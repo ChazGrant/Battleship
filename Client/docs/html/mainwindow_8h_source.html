@@ -1,0 +1,220 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ru">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=11"/>
+<meta name="generator" content="Doxygen 1.10.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Battleships_Client: Исходный файл E:/Battleship/Client/mainwindow.h</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<script type="text/javascript" src="clipboard.js"></script>
+<script type="text/javascript" src="cookie.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr id="projectrow">
+  <td id="projectalign">
+   <div id="projectname">Battleships_Client
+   </div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Создано системой Doxygen 1.10.0 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+var searchBox = new SearchBox("searchBox", "search/",'.html');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(function() {
+  initMenu('',true,false,'search.php','Поиск');
+  $(function() { init_search(); });
+});
+/* @license-end */
+</script>
+<div id="main-nav"></div>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(function() { codefold.init(0); });
+/* @license-end */
+</script>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Загрузка...</div>
+<div class="SRStatus" id="Searching">Поиск...</div>
+<div class="SRStatus" id="NoMatches">Не найдено</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_e53dee6379640cf9ee7b142bf044a354.html">Battleship</a></li><li class="navelem"><a class="el" href="dir_db250fab9fd979c51e2d8fcd606a0ed0.html">Client</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle"><div class="title">mainwindow.h</div></div>
+</div><!--header-->
+<div class="contents">
+<a href="mainwindow_8h.html">См. документацию.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#ifndef MAINWINDOW_H</span></div>
+<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="preprocessor">#define MAINWINDOW_H</span></div>
+<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span> </div>
+<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &lt;QMainWindow&gt;</span></div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#include &lt;QString&gt;</span></div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &lt;QDebug&gt;</span></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &lt;QTableWidgetItem&gt;</span></div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;QMessageBox&gt;</span></div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &lt;QTimer&gt;</span></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="preprocessor">#include &lt;QCloseEvent&gt;</span></div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span> </div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="preprocessor">#include &lt;QJsonDocument&gt;</span></div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="preprocessor">#include &lt;QJsonObject&gt;</span></div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="preprocessor">#include &lt;QJsonArray&gt;</span></div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span> </div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span><span class="preprocessor">#include &lt;QtNetwork/QNetworkAccessManager&gt;</span></div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span><span class="preprocessor">#include &lt;QtNetwork/QNetworkRequest&gt;</span></div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span><span class="preprocessor">#include &lt;QtNetwork/QNetworkReply&gt;</span></div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="preprocessor">#include &lt;QtNetwork/QHttpPart&gt;</span></div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span><span class="preprocessor">#include &lt;QUrlQuery&gt;</span></div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span> </div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span><span class="preprocessor">#include &lt;string&gt;</span></div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="preprocessor">#include &quot;<a class="code" href="additionalfunctions_8cpp.html">additionalfunctions.cpp</a>&quot;</span></div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span> </div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span><span class="keyword">class </span>QNetworkReply;</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span><span class="keyword">class </span>QNetworkAccessManager;</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span> </div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>QT_BEGIN_NAMESPACE</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span><span class="keyword">namespace </span><a class="code hl_namespace" href="namespace_ui.html">Ui</a> { <span class="keyword">class </span><a class="code hl_class" href="class_main_window.html">MainWindow</a>; }</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>QT_END_NAMESPACE</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span> </div>
+<div class="foldopen" id="foldopen00034" data-start="{" data-end="};">
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno"><a class="line" href="class_main_window.html">   34</a></span><span class="keyword">class </span><a class="code hl_class" href="class_main_window.html">MainWindow</a> : <span class="keyword">public</span> QMainWindow</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>{</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span>    Q_OBJECT</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span> </div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    <span class="keyword">explicit</span> <a class="code hl_function" href="class_main_window.html#a1fab59cae549adba45881bae6238029a">MainWindow</a>(QWidget *parent = <span class="keyword">nullptr</span>, QString <a class="code hl_variable" href="class_main_window.html#adc17721200db286a2bb1b428c5ee3932">gameId</a>=<span class="stringliteral">&quot;&quot;</span>, QString <a class="code hl_variable" href="class_main_window.html#af632220fcefe285bc1f5394fc98bfa16">userId</a>=<span class="stringliteral">&quot;&quot;</span>);</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    <a class="code hl_function" href="class_main_window.html#ae98d00a93bc118200eeef9f9bba1dba7">~MainWindow</a>();</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno"><a class="line" href="class_main_window.html#a0e26ef711257953959094cda52fba70e">   42</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_main_window.html#a0e26ef711257953959094cda52fba70e">fire</a>(QTableWidgetItem *item);</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno"><a class="line" href="class_main_window.html#a8465eb83773e53236f1b0183cbeac496">   43</a></span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="class_main_window.html#a8465eb83773e53236f1b0183cbeac496">gameIsOver</a>();</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code hl_function" href="class_main_window.html#a05fb9d72c044aa3bb7d187b994704e2f">closeEvent</a>(QCloseEvent *event) <span class="keyword">override</span>;</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span> </div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span><span class="keyword">private</span> slots:</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    <span class="keywordtype">void</span> <a class="code hl_slot" href="class_main_window.html#a15997dee2819a731f27f60c1a80712a1">on_placeShipButton_clicked</a>();</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>    <span class="comment">// Обработка ответов с сервера</span></div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    <span class="keywordtype">void</span> <a class="code hl_slot" href="class_main_window.html#a308bd21b5aa3708ef3cd15350e221b63">setShipsAmountLabel</a>(QNetworkReply* reply);</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    <span class="keywordtype">void</span> <a class="code hl_slot" href="class_main_window.html#a4211bd08c4e7c4cb67f1922c392c7cff">placeShip</a>(QNetworkReply* reply);</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    <span class="keywordtype">void</span> <a class="code hl_slot" href="class_main_window.html#ad3af6fe1bdd2e5e2fcc901b816b8c113">getGameState</a>(QNetworkReply* reply);</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>    <span class="keywordtype">void</span> <a class="code hl_slot" href="class_main_window.html#a8da246efe352ea7a644bdaf05ef91221">getUserIdTurn</a>(QNetworkReply* reply);</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    <span class="keywordtype">void</span> <a class="code hl_slot" href="class_main_window.html#ac5ef870ff7d03910de8466f5339835b3">fillField</a>(QNetworkReply* reply);</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>    <span class="keywordtype">void</span> <a class="code hl_slot" href="class_main_window.html#a24d879f6ffd8ebb18578035ac726bffe">getFireStatus</a>(QNetworkReply* reply);</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>    <span class="keywordtype">void</span> <a class="code hl_slot" href="class_main_window.html#a70e53aca4c6ae3842a8e3255f264a5e7">getGameOverState</a>(QNetworkReply* reply);</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>    <span class="keywordtype">void</span> <a class="code hl_slot" href="class_main_window.html#a83733aaee1ee7784a8591cebc9d2691d">acceptCloseEvent</a>(QNetworkReply* reply);</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span> </div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno"><a class="line" href="class_main_window.html#a35466a70ed47252a0191168126a352a5">   61</a></span>    Ui::MainWindow *<a class="code hl_variable" href="class_main_window.html#a35466a70ed47252a0191168126a352a5">ui</a>;</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span> </div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno"><a class="line" href="class_main_window.html#aede53ea8d2f22c80c213f31437d4d704">   63</a></span>    QNetworkAccessManager* <a class="code hl_variable" href="class_main_window.html#aede53ea8d2f22c80c213f31437d4d704">m_manager</a>;</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno"><a class="line" href="class_main_window.html#adc17721200db286a2bb1b428c5ee3932">   64</a></span>    QString <a class="code hl_variable" href="class_main_window.html#adc17721200db286a2bb1b428c5ee3932">gameId</a>, <a class="code hl_variable" href="class_main_window.html#af632220fcefe285bc1f5394fc98bfa16">userId</a>;</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno"><a class="line" href="class_main_window.html#a454fc1e1e6c53e92dc1df717a55a2160">   65</a></span>    <span class="keywordtype">bool</span> <a class="code hl_variable" href="class_main_window.html#a454fc1e1e6c53e92dc1df717a55a2160">closeEventIsAccepted</a>;</div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span> </div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    <span class="comment">// Таймеры</span></div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno"><a class="line" href="class_main_window.html#a1429f1ddb092fbe24d1effbbb703fa0b">   68</a></span>    QTimer *<a class="code hl_variable" href="class_main_window.html#a1429f1ddb092fbe24d1effbbb703fa0b">timerForGameStart</a>;</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno"><a class="line" href="class_main_window.html#a7ec8ad5c774e213b98c3ee2948694328">   69</a></span>    QTimer *<a class="code hl_variable" href="class_main_window.html#a7ec8ad5c774e213b98c3ee2948694328">timerForUserTurn</a>;</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span> </div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="class_main_window.html#aa7d8bf27a2826ad0f5e989edc01c6313">getErrorMessage</a>(QJsonObject jsonObj);</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span> </div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    <span class="comment">// Устанавливает количество рядов и колонок</span></div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_main_window.html#aa2aed50dcea69b14b6bdd38cae5d63fd">setTable</a>();</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_main_window.html#a3a29a33e0f7ba2dbcf4afae9511a086b">setOpponentTable</a>();</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span> </div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>    <span class="comment">// Убивает корабль, закрашивая его части красным цветом</span></div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno"><a class="line" href="class_main_window.html#ab437109ae1d4981008ee70fcbc8fb139">   78</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_main_window.html#ab437109ae1d4981008ee70fcbc8fb139">findDeadShips</a>();</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span> </div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno"><a class="line" href="class_main_window.html#a7f3a25546c70d5de624c96926bce211e">   80</a></span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_main_window.html#a7f3a25546c70d5de624c96926bce211e">lockAllButtons</a>(<span class="keywordtype">bool</span> lockState);</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span> </div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>    <span class="comment">// Запросы на сервер</span></div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_main_window.html#a9204edcc615c3999c4dede252fa01303">getShipsAmountResponse</a>();</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_main_window.html#a1e72beb3c3c3a5380922bbd138e4038d">waitForGameStart</a>();</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_main_window.html#a61e3b45b2acc117fc179bdef7ae58aa2">waitForTurn</a>();</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_main_window.html#ac871e820ec460de731150228f5a9f476">getDamagedCells</a>();</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_main_window.html#ac7db04d93c24c5b2e8d3eac46b17f64b">checkForWinner</a>();</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_main_window.html#a6f51b42d45cebf62221fe1a7b509fb18">shoot</a>();</div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span> </div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>};</div>
+</div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span><span class="preprocessor">#endif </span><span class="comment">// MAINWINDOW_H</span></div>
+<div class="ttc" id="aadditionalfunctions_8cpp_html"><div class="ttname"><a href="additionalfunctions_8cpp.html">additionalfunctions.cpp</a></div></div>
+<div class="ttc" id="aclass_main_window_html"><div class="ttname"><a href="class_main_window.html">MainWindow</a></div><div class="ttdef"><b>Definition</b> mainwindow.h:35</div></div>
+<div class="ttc" id="aclass_main_window_html_a05fb9d72c044aa3bb7d187b994704e2f"><div class="ttname"><a href="class_main_window.html#a05fb9d72c044aa3bb7d187b994704e2f">MainWindow::closeEvent</a></div><div class="ttdeci">virtual void closeEvent(QCloseEvent *event) override</div><div class="ttdef"><b>Definition</b> mainwindow.cpp:257</div></div>
+<div class="ttc" id="aclass_main_window_html_a0e26ef711257953959094cda52fba70e"><div class="ttname"><a href="class_main_window.html#a0e26ef711257953959094cda52fba70e">MainWindow::fire</a></div><div class="ttdeci">void fire(QTableWidgetItem *item)</div></div>
+<div class="ttc" id="aclass_main_window_html_a1429f1ddb092fbe24d1effbbb703fa0b"><div class="ttname"><a href="class_main_window.html#a1429f1ddb092fbe24d1effbbb703fa0b">MainWindow::timerForGameStart</a></div><div class="ttdeci">QTimer * timerForGameStart</div><div class="ttdef"><b>Definition</b> mainwindow.h:68</div></div>
+<div class="ttc" id="aclass_main_window_html_a15997dee2819a731f27f60c1a80712a1"><div class="ttname"><a href="class_main_window.html#a15997dee2819a731f27f60c1a80712a1">MainWindow::on_placeShipButton_clicked</a></div><div class="ttdeci">void on_placeShipButton_clicked()</div><div class="ttdef"><b>Definition</b> mainwindow.cpp:466</div></div>
+<div class="ttc" id="aclass_main_window_html_a1e72beb3c3c3a5380922bbd138e4038d"><div class="ttname"><a href="class_main_window.html#a1e72beb3c3c3a5380922bbd138e4038d">MainWindow::waitForGameStart</a></div><div class="ttdeci">void waitForGameStart()</div><div class="ttdef"><b>Definition</b> mainwindow.cpp:327</div></div>
+<div class="ttc" id="aclass_main_window_html_a1fab59cae549adba45881bae6238029a"><div class="ttname"><a href="class_main_window.html#a1fab59cae549adba45881bae6238029a">MainWindow::MainWindow</a></div><div class="ttdeci">MainWindow(QWidget *parent=nullptr, QString gameId=&quot;&quot;, QString userId=&quot;&quot;)</div><div class="ttdef"><b>Definition</b> mainwindow.cpp:15</div></div>
+<div class="ttc" id="aclass_main_window_html_a24d879f6ffd8ebb18578035ac726bffe"><div class="ttname"><a href="class_main_window.html#a24d879f6ffd8ebb18578035ac726bffe">MainWindow::getFireStatus</a></div><div class="ttdeci">void getFireStatus(QNetworkReply *reply)</div><div class="ttdef"><b>Definition</b> mainwindow.cpp:507</div></div>
+<div class="ttc" id="aclass_main_window_html_a308bd21b5aa3708ef3cd15350e221b63"><div class="ttname"><a href="class_main_window.html#a308bd21b5aa3708ef3cd15350e221b63">MainWindow::setShipsAmountLabel</a></div><div class="ttdeci">void setShipsAmountLabel(QNetworkReply *reply)</div><div class="ttdef"><b>Definition</b> mainwindow.cpp:347</div></div>
+<div class="ttc" id="aclass_main_window_html_a35466a70ed47252a0191168126a352a5"><div class="ttname"><a href="class_main_window.html#a35466a70ed47252a0191168126a352a5">MainWindow::ui</a></div><div class="ttdeci">Ui::MainWindow * ui</div><div class="ttdef"><b>Definition</b> mainwindow.h:61</div></div>
+<div class="ttc" id="aclass_main_window_html_a3a29a33e0f7ba2dbcf4afae9511a086b"><div class="ttname"><a href="class_main_window.html#a3a29a33e0f7ba2dbcf4afae9511a086b">MainWindow::setOpponentTable</a></div><div class="ttdeci">void setOpponentTable()</div><div class="ttdef"><b>Definition</b> mainwindow.cpp:417</div></div>
+<div class="ttc" id="aclass_main_window_html_a4211bd08c4e7c4cb67f1922c392c7cff"><div class="ttname"><a href="class_main_window.html#a4211bd08c4e7c4cb67f1922c392c7cff">MainWindow::placeShip</a></div><div class="ttdeci">void placeShip(QNetworkReply *reply)</div><div class="ttdef"><b>Definition</b> mainwindow.cpp:441</div></div>
+<div class="ttc" id="aclass_main_window_html_a454fc1e1e6c53e92dc1df717a55a2160"><div class="ttname"><a href="class_main_window.html#a454fc1e1e6c53e92dc1df717a55a2160">MainWindow::closeEventIsAccepted</a></div><div class="ttdeci">bool closeEventIsAccepted</div><div class="ttdef"><b>Definition</b> mainwindow.h:65</div></div>
+<div class="ttc" id="aclass_main_window_html_a61e3b45b2acc117fc179bdef7ae58aa2"><div class="ttname"><a href="class_main_window.html#a61e3b45b2acc117fc179bdef7ae58aa2">MainWindow::waitForTurn</a></div><div class="ttdeci">void waitForTurn()</div><div class="ttdef"><b>Definition</b> mainwindow.cpp:74</div></div>
+<div class="ttc" id="aclass_main_window_html_a6f51b42d45cebf62221fe1a7b509fb18"><div class="ttname"><a href="class_main_window.html#a6f51b42d45cebf62221fe1a7b509fb18">MainWindow::shoot</a></div><div class="ttdeci">void shoot()</div><div class="ttdef"><b>Definition</b> mainwindow.cpp:599</div></div>
+<div class="ttc" id="aclass_main_window_html_a70e53aca4c6ae3842a8e3255f264a5e7"><div class="ttname"><a href="class_main_window.html#a70e53aca4c6ae3842a8e3255f264a5e7">MainWindow::getGameOverState</a></div><div class="ttdeci">void getGameOverState(QNetworkReply *reply)</div><div class="ttdef"><b>Definition</b> mainwindow.cpp:196</div></div>
+<div class="ttc" id="aclass_main_window_html_a7ec8ad5c774e213b98c3ee2948694328"><div class="ttname"><a href="class_main_window.html#a7ec8ad5c774e213b98c3ee2948694328">MainWindow::timerForUserTurn</a></div><div class="ttdeci">QTimer * timerForUserTurn</div><div class="ttdef"><b>Definition</b> mainwindow.h:69</div></div>
+<div class="ttc" id="aclass_main_window_html_a7f3a25546c70d5de624c96926bce211e"><div class="ttname"><a href="class_main_window.html#a7f3a25546c70d5de624c96926bce211e">MainWindow::lockAllButtons</a></div><div class="ttdeci">void lockAllButtons(bool lockState)</div></div>
+<div class="ttc" id="aclass_main_window_html_a83733aaee1ee7784a8591cebc9d2691d"><div class="ttname"><a href="class_main_window.html#a83733aaee1ee7784a8591cebc9d2691d">MainWindow::acceptCloseEvent</a></div><div class="ttdeci">void acceptCloseEvent(QNetworkReply *reply)</div><div class="ttdef"><b>Definition</b> mainwindow.cpp:245</div></div>
+<div class="ttc" id="aclass_main_window_html_a8465eb83773e53236f1b0183cbeac496"><div class="ttname"><a href="class_main_window.html#a8465eb83773e53236f1b0183cbeac496">MainWindow::gameIsOver</a></div><div class="ttdeci">bool gameIsOver()</div></div>
+<div class="ttc" id="aclass_main_window_html_a8da246efe352ea7a644bdaf05ef91221"><div class="ttname"><a href="class_main_window.html#a8da246efe352ea7a644bdaf05ef91221">MainWindow::getUserIdTurn</a></div><div class="ttdeci">void getUserIdTurn(QNetworkReply *reply)</div><div class="ttdef"><b>Definition</b> mainwindow.cpp:53</div></div>
+<div class="ttc" id="aclass_main_window_html_a9204edcc615c3999c4dede252fa01303"><div class="ttname"><a href="class_main_window.html#a9204edcc615c3999c4dede252fa01303">MainWindow::getShipsAmountResponse</a></div><div class="ttdeci">void getShipsAmountResponse()</div><div class="ttdef"><b>Definition</b> mainwindow.cpp:380</div></div>
+<div class="ttc" id="aclass_main_window_html_aa2aed50dcea69b14b6bdd38cae5d63fd"><div class="ttname"><a href="class_main_window.html#aa2aed50dcea69b14b6bdd38cae5d63fd">MainWindow::setTable</a></div><div class="ttdeci">void setTable()</div><div class="ttdef"><b>Definition</b> mainwindow.cpp:399</div></div>
+<div class="ttc" id="aclass_main_window_html_aa7d8bf27a2826ad0f5e989edc01c6313"><div class="ttname"><a href="class_main_window.html#aa7d8bf27a2826ad0f5e989edc01c6313">MainWindow::getErrorMessage</a></div><div class="ttdeci">bool getErrorMessage(QJsonObject jsonObj)</div><div class="ttdef"><b>Definition</b> mainwindow.cpp:282</div></div>
+<div class="ttc" id="aclass_main_window_html_ab437109ae1d4981008ee70fcbc8fb139"><div class="ttname"><a href="class_main_window.html#ab437109ae1d4981008ee70fcbc8fb139">MainWindow::findDeadShips</a></div><div class="ttdeci">void findDeadShips()</div></div>
+<div class="ttc" id="aclass_main_window_html_ac5ef870ff7d03910de8466f5339835b3"><div class="ttname"><a href="class_main_window.html#ac5ef870ff7d03910de8466f5339835b3">MainWindow::fillField</a></div><div class="ttdeci">void fillField(QNetworkReply *reply)</div><div class="ttdef"><b>Definition</b> mainwindow.cpp:94</div></div>
+<div class="ttc" id="aclass_main_window_html_ac7db04d93c24c5b2e8d3eac46b17f64b"><div class="ttname"><a href="class_main_window.html#ac7db04d93c24c5b2e8d3eac46b17f64b">MainWindow::checkForWinner</a></div><div class="ttdeci">void checkForWinner()</div><div class="ttdef"><b>Definition</b> mainwindow.cpp:224</div></div>
+<div class="ttc" id="aclass_main_window_html_ac871e820ec460de731150228f5a9f476"><div class="ttname"><a href="class_main_window.html#ac871e820ec460de731150228f5a9f476">MainWindow::getDamagedCells</a></div><div class="ttdeci">void getDamagedCells()</div><div class="ttdef"><b>Definition</b> mainwindow.cpp:177</div></div>
+<div class="ttc" id="aclass_main_window_html_ad3af6fe1bdd2e5e2fcc901b816b8c113"><div class="ttname"><a href="class_main_window.html#ad3af6fe1bdd2e5e2fcc901b816b8c113">MainWindow::getGameState</a></div><div class="ttdeci">void getGameState(QNetworkReply *reply)</div><div class="ttdef"><b>Definition</b> mainwindow.cpp:305</div></div>
+<div class="ttc" id="aclass_main_window_html_adc17721200db286a2bb1b428c5ee3932"><div class="ttname"><a href="class_main_window.html#adc17721200db286a2bb1b428c5ee3932">MainWindow::gameId</a></div><div class="ttdeci">QString gameId</div><div class="ttdef"><b>Definition</b> mainwindow.h:64</div></div>
+<div class="ttc" id="aclass_main_window_html_ae98d00a93bc118200eeef9f9bba1dba7"><div class="ttname"><a href="class_main_window.html#ae98d00a93bc118200eeef9f9bba1dba7">MainWindow::~MainWindow</a></div><div class="ttdeci">~MainWindow()</div><div class="ttdef"><b>Definition</b> mainwindow.cpp:435</div></div>
+<div class="ttc" id="aclass_main_window_html_aede53ea8d2f22c80c213f31437d4d704"><div class="ttname"><a href="class_main_window.html#aede53ea8d2f22c80c213f31437d4d704">MainWindow::m_manager</a></div><div class="ttdeci">QNetworkAccessManager * m_manager</div><div class="ttdef"><b>Definition</b> mainwindow.h:63</div></div>
+<div class="ttc" id="aclass_main_window_html_af632220fcefe285bc1f5394fc98bfa16"><div class="ttname"><a href="class_main_window.html#af632220fcefe285bc1f5394fc98bfa16">MainWindow::userId</a></div><div class="ttdeci">QString userId</div><div class="ttdef"><b>Definition</b> mainwindow.h:64</div></div>
+<div class="ttc" id="anamespace_ui_html"><div class="ttname"><a href="namespace_ui.html">Ui</a></div><div class="ttdef"><b>Definition</b> inputgameid.h:13</div></div>
+</div><!-- fragment --></div><!-- contents -->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+Создано системой&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.10.0
+</small></address>
+</body>
+</html>

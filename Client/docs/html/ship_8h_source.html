@@ -1,0 +1,136 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ru">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=11"/>
+<meta name="generator" content="Doxygen 1.10.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Battleships_Client: Исходный файл E:/Battleship/Client/ship.h</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<script type="text/javascript" src="clipboard.js"></script>
+<script type="text/javascript" src="cookie.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr id="projectrow">
+  <td id="projectalign">
+   <div id="projectname">Battleships_Client
+   </div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- Создано системой Doxygen 1.10.0 -->
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+var searchBox = new SearchBox("searchBox", "search/",'.html');
+/* @license-end */
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(function() {
+  initMenu('',true,false,'search.php','Поиск');
+  $(function() { init_search(); });
+});
+/* @license-end */
+</script>
+<div id="main-nav"></div>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(function() { codefold.init(0); });
+/* @license-end */
+</script>
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Загрузка...</div>
+<div class="SRStatus" id="Searching">Поиск...</div>
+<div class="SRStatus" id="NoMatches">Не найдено</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="dir_e53dee6379640cf9ee7b142bf044a354.html">Battleship</a></li><li class="navelem"><a class="el" href="dir_db250fab9fd979c51e2d8fcd606a0ed0.html">Client</a></li>  </ul>
+</div>
+</div><!-- top -->
+<div class="header">
+  <div class="headertitle"><div class="title">ship.h</div></div>
+</div><!--header-->
+<div class="contents">
+<a href="ship_8h.html">См. документацию.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#ifndef SHIP_H</span></div>
+<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="preprocessor">#define SHIP_H</span></div>
+<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span> </div>
+<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &lt;QList&gt;</span></div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#include &lt;QDebug&gt;</span></div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span> </div>
+<div class="foldopen" id="foldopen00007" data-start="{" data-end="};">
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno"><a class="line" href="class_ship.html">    7</a></span><span class="keyword">class </span><a class="code hl_class" href="class_ship.html">Ship</a></div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span>{</div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span>    <a class="code hl_function" href="class_ship.html#a835c3f0195ffa0e9fc1ab4732e5120be">Ship</a>(<span class="keywordtype">int</span> <a class="code hl_variable" href="class_ship.html#ab39d121c1f5eeb472d087427c4fbee12">shipLength</a>);</div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span> </div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>    QList&lt;QList&lt;int&gt;&gt; <a class="code hl_function" href="class_ship.html#a7ca8812c56b3c1d6587a81a1f48b6e8c">getPartsPositions</a>();</div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    <span class="comment">// Устанавливает позиции всех частей корабля</span></div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="class_ship.html#a21a0b2002ef63479c4f2bcefe10d8035">setPosition</a>(QList&lt;int&gt; <a class="code hl_variable" href="class_ship.html#a1aa08b7aee6f1858bd0bbff9631c802d">head</a>, QList&lt;int&gt; <a class="code hl_variable" href="class_ship.html#a7ba983a077a82d19af90171564e03923">tail</a>);</div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>    <span class="comment">// Если в позиции есть часть корабля, то получает урон</span></div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="class_ship.html#a54c6744e6cc05c034615fc29a7fdc643">takeDamage</a>(QList&lt;int&gt; position);</div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    <span class="comment">// Возвращает true если все части корабля повреждены</span></div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    <span class="keywordtype">bool</span> <a class="code hl_function" href="class_ship.html#aa4c8a05e575b32f70d99220de9c864a1">isDead</a>();</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span> </div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno"><a class="line" href="class_ship.html#ab39d121c1f5eeb472d087427c4fbee12">   21</a></span>    <span class="keywordtype">int</span> <a class="code hl_variable" href="class_ship.html#ab39d121c1f5eeb472d087427c4fbee12">shipLength</a>;</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno"><a class="line" href="class_ship.html#a754769ae5e95c4d3c58f5d0a17b20b5e">   22</a></span>    <span class="keywordtype">int</span> <a class="code hl_variable" href="class_ship.html#a754769ae5e95c4d3c58f5d0a17b20b5e">partsDamaged</a>;</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span> </div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    <span class="comment">// Части корабля</span></div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno"><a class="line" href="class_ship.html#a503bbdd0f34054bd597ac432d585f7d2">   25</a></span>    QList&lt;QList&lt;int&gt;&gt; <a class="code hl_variable" href="class_ship.html#a503bbdd0f34054bd597ac432d585f7d2">shipPartsPosition</a>;</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    <span class="comment">// Начало и конец корабля</span></div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno"><a class="line" href="class_ship.html#a1aa08b7aee6f1858bd0bbff9631c802d">   27</a></span>    QList&lt;int&gt; <a class="code hl_variable" href="class_ship.html#a1aa08b7aee6f1858bd0bbff9631c802d">head</a>;</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno"><a class="line" href="class_ship.html#a7ba983a077a82d19af90171564e03923">   28</a></span>    QList&lt;int&gt; <a class="code hl_variable" href="class_ship.html#a7ba983a077a82d19af90171564e03923">tail</a>;</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>};</div>
+</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span> </div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="preprocessor">#endif </span><span class="comment">// SHIP_H</span></div>
+<div class="ttc" id="aclass_ship_html"><div class="ttname"><a href="class_ship.html">Ship</a></div><div class="ttdef"><b>Definition</b> ship.h:8</div></div>
+<div class="ttc" id="aclass_ship_html_a1aa08b7aee6f1858bd0bbff9631c802d"><div class="ttname"><a href="class_ship.html#a1aa08b7aee6f1858bd0bbff9631c802d">Ship::head</a></div><div class="ttdeci">QList&lt; int &gt; head</div><div class="ttdef"><b>Definition</b> ship.h:27</div></div>
+<div class="ttc" id="aclass_ship_html_a21a0b2002ef63479c4f2bcefe10d8035"><div class="ttname"><a href="class_ship.html#a21a0b2002ef63479c4f2bcefe10d8035">Ship::setPosition</a></div><div class="ttdeci">void setPosition(QList&lt; int &gt; head, QList&lt; int &gt; tail)</div><div class="ttdef"><b>Definition</b> ship.cpp:14</div></div>
+<div class="ttc" id="aclass_ship_html_a503bbdd0f34054bd597ac432d585f7d2"><div class="ttname"><a href="class_ship.html#a503bbdd0f34054bd597ac432d585f7d2">Ship::shipPartsPosition</a></div><div class="ttdeci">QList&lt; QList&lt; int &gt; &gt; shipPartsPosition</div><div class="ttdef"><b>Definition</b> ship.h:25</div></div>
+<div class="ttc" id="aclass_ship_html_a54c6744e6cc05c034615fc29a7fdc643"><div class="ttname"><a href="class_ship.html#a54c6744e6cc05c034615fc29a7fdc643">Ship::takeDamage</a></div><div class="ttdeci">bool takeDamage(QList&lt; int &gt; position)</div><div class="ttdef"><b>Definition</b> ship.cpp:26</div></div>
+<div class="ttc" id="aclass_ship_html_a754769ae5e95c4d3c58f5d0a17b20b5e"><div class="ttname"><a href="class_ship.html#a754769ae5e95c4d3c58f5d0a17b20b5e">Ship::partsDamaged</a></div><div class="ttdeci">int partsDamaged</div><div class="ttdef"><b>Definition</b> ship.h:22</div></div>
+<div class="ttc" id="aclass_ship_html_a7ba983a077a82d19af90171564e03923"><div class="ttname"><a href="class_ship.html#a7ba983a077a82d19af90171564e03923">Ship::tail</a></div><div class="ttdeci">QList&lt; int &gt; tail</div><div class="ttdef"><b>Definition</b> ship.h:28</div></div>
+<div class="ttc" id="aclass_ship_html_a7ca8812c56b3c1d6587a81a1f48b6e8c"><div class="ttname"><a href="class_ship.html#a7ca8812c56b3c1d6587a81a1f48b6e8c">Ship::getPartsPositions</a></div><div class="ttdeci">QList&lt; QList&lt; int &gt; &gt; getPartsPositions()</div><div class="ttdef"><b>Definition</b> ship.cpp:9</div></div>
+<div class="ttc" id="aclass_ship_html_a835c3f0195ffa0e9fc1ab4732e5120be"><div class="ttname"><a href="class_ship.html#a835c3f0195ffa0e9fc1ab4732e5120be">Ship::Ship</a></div><div class="ttdeci">Ship(int shipLength)</div><div class="ttdef"><b>Definition</b> ship.cpp:3</div></div>
+<div class="ttc" id="aclass_ship_html_aa4c8a05e575b32f70d99220de9c864a1"><div class="ttname"><a href="class_ship.html#aa4c8a05e575b32f70d99220de9c864a1">Ship::isDead</a></div><div class="ttdeci">bool isDead()</div><div class="ttdef"><b>Definition</b> ship.cpp:21</div></div>
+<div class="ttc" id="aclass_ship_html_ab39d121c1f5eeb472d087427c4fbee12"><div class="ttname"><a href="class_ship.html#ab39d121c1f5eeb472d087427c4fbee12">Ship::shipLength</a></div><div class="ttdeci">int shipLength</div><div class="ttdef"><b>Definition</b> ship.h:21</div></div>
+</div><!-- fragment --></div><!-- contents -->
+<!-- start footer part -->
+<hr class="footer"/><address class="footer"><small>
+Создано системой&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.10.0
+</small></address>
+</body>
+</html>
