@@ -12,7 +12,16 @@ const int ROW_COUNT = 10;
 const int COLUMN_COUNT = 10;
 
 
-MainWindow::MainWindow(QWidget *parent, QString gameId, QString userId)
+/*! @brief Конструктор класса
+ *
+ *  @details Создаются 2 таймера для ожидания хода и ожидания начала игры
+ *
+ *  @param t_game_id
+ *  @param t_user_id
+ *
+ *  @return MainWindow
+*/
+MainWindow::MainWindow(QWidget *parent, QString t_game_id, QString t_user_id)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {

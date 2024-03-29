@@ -36,7 +36,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr, QString gameId="", QString userId="");
+    explicit MainWindow(QWidget *parent = nullptr, QString t_game_id="", QString t_user_id="");
     ~MainWindow();
 
     void fire(QTableWidgetItem *item);

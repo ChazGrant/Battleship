@@ -5,6 +5,11 @@
 #include "mainwindow.h"
 
 
+/**
+ *  @brief Конструктор по умолчанию, не принимающий аргументы.
+ *
+ *  @details Инициализирует свойство класса m_manager
+*/
 MainMenu::MainMenu(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainMenu)
@@ -19,13 +24,13 @@ MainMenu::~MainMenu()
     delete ui;
 }
 
-//! @brief Метод для обработки нажатия на кнопку "Подключиться к игре"
-//
-/* @return void
-
- @details
- Делает запрос к адресу по подключению к игре. В параметры передаёт идентификатор пользователя
- после ответа от сервера передаёт управление методу connectToCreatedGame
+/*! @brief Метод для обработки нажатия на кнопку "Подключиться к игре"
+ *
+ *  @details
+ *  Делает запрос к адресу по подключению к игре. В параметры передаёт идентификатор пользователя
+ *  после ответа от сервера передаёт управление методу connectToCreatedGame
+ *
+ *  @return void
 */
 void MainMenu::on_createNewGameButton_clicked()
 {
@@ -46,6 +51,16 @@ void MainMenu::on_createNewGameButton_clicked()
     m_manager->post(request, queryUrl.toEncoded().remove(0, 1));
 }
 
+/*! @brief Подключается к указанной игре
+ *
+ *  @details
+ *  Получает идентификатор игры из ответа сервера, выдаёт ошибку
+ *  или открывает окно с игрой, передавая айди игры
+ *
+ *  @param *reply Указатель  на ответ от сервера
+ *
+ *  @return void
+*/
 void MainMenu::connectToCreatedGame(QNetworkReply *reply)
 {
     // Читаем ответ от сервера в строку
@@ -70,6 +85,11 @@ void MainMenu::connectToCreatedGame(QNetworkReply *reply)
     }
 }
 
+/*!
+ * @brief Открывает окно для ввода идентификатора игры
+ *
+ * @return void
+*/
 void MainMenu::on_connectToExistingGame_clicked()
 {
     InputGameID *widget = new InputGameID(nullptr, this->userId);
@@ -78,6 +98,13 @@ void MainMenu::on_connectToExistingGame_clicked()
     QObject::connect(widget, &InputGameID::acceptConnection, this, &MainMenu::openMainWindow);
 }
 
+/*!
+ * @brief Открывает окно с игрой
+ *
+ * @param gameId Идентификатор игры
+ *
+ * @return void
+*/
 void MainMenu::openMainWindow(QString gameId)
 {
     QString userId = ui->userID->text().split(": ")[1];

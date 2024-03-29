@@ -27,10 +27,6 @@ class MainMenu : public QMainWindow
     Q_OBJECT
 
 public:
-    /**
-     * @brief Конструктор по умолчанию,
-     * не принимает аргументы.
-     */
     explicit MainMenu(QWidget *parent = nullptr);
     ~MainMenu();
 

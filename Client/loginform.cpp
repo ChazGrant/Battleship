@@ -1,6 +1,12 @@
 #include "loginform.h"
 #include "ui_loginform.h"
 
+/*! @brief Констркутор класса
+ *
+ *  @details Создаёт экземпляр класса, делая форму безрамочной
+ *
+ *  @return LoginForm
+*/
 LoginForm::LoginForm(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::LoginForm)
@@ -18,11 +24,18 @@ LoginForm::LoginForm(QWidget *parent) :
     connect(ui->exit2_pushButton, &QPushButton::clicked, this, &LoginForm::close);
 }
 
+//! @brief Дестркутор класса
 LoginForm::~LoginForm()
 {
     delete ui;
 }
 
+/*! @brief Обработка перемещения мыши
+ *
+ *  @details Меняет переменную delta и перемещает окно к её координатам
+ *
+ *  @return void
+*/
 void LoginForm::mouseMoveEvent(QMouseEvent* event)
 {
     const QPointF delta = event->globalPos() - m_mouse_point;
@@ -31,6 +44,15 @@ void LoginForm::mouseMoveEvent(QMouseEvent* event)
     event->accept();
 }
 
+/*! @brief Обработка нажатия кнопки мыши
+ *
+ *  @details При нажатии на левую, правую или среднюю кнопку мыши
+ *  меняет приватную переменную m_mouse_point
+ *
+ *  @param *event События нажатия кнопки мыши
+ *
+ *  @return void
+*/
 void LoginForm::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton ||
@@ -41,6 +63,14 @@ void LoginForm::mousePressEvent(QMouseEvent *event)
     }
 }
 
+/*! @brief Авторизация пользователя
+ *
+ *  @details Отправляет запрос на сервер, передавая идентификатор пользователя и пароль
+ *
+ *  @return void
+ *
+ *  @todo Зашифровывать пароль перед отправкой
+*/
 void LoginForm::login()
 {
     QString user_id = ui->loginUserID_lineEdit->text();
@@ -61,6 +91,15 @@ void LoginForm::login()
     m_manager->post(request, queryUrl.toEncoded().remove(0, 1));
 }
 
+/*! @brief Регистрация пользователя
+ *
+ *  @details Отправляет запрос на сервер, передавая в параметрах
+ *  имя пользователя, пароль и почту
+ *
+ *  @return void
+ *
+ *  @todo Зашифровывать пароль
+*/
 void LoginForm::registrate()
 {
     QString user_name = ui->registrateUsername_lineEdit->text();
@@ -81,6 +120,17 @@ void LoginForm::registrate()
     QObject::connect(m_manager, SIGNAL(finished(QNetworkReply *)), SLOT(getRegistrateStatus(QNetworkReply *)));
 }
 
+/*! @brief Вход в систему
+ *
+ *  @details Получает ответ от сервера и в зависимости от него выдаёт ошибку или
+ *  открывает форму Лобби
+ *
+ *  @param *reply Указатель на ответ от сервера
+ *
+ *  @return void
+ *
+ *  @todo Открывать форму InputGameId
+*/
 void LoginForm::getLoginStatus(QNetworkReply *reply)
 {
     QObject::disconnect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getLoginStatus(QNetworkReply* )));
@@ -104,6 +154,17 @@ void LoginForm::getLoginStatus(QNetworkReply *reply)
 
 }
 
+/*! @brief Получает статус регистрации пользователя
+ *
+ *  @details Получает ответ от сервера и открывает форму для ввода идентификатора игры
+ *  или выводит текст ошибки
+ *
+ *  @param *reply Указатель на ответ от сервера
+ *
+ *  @return void
+ *
+ *  @todo Открывать InputGameID
+*/
 void LoginForm::getRegistrateStatus(QNetworkReply *reply)
 {
     QObject::disconnect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getRegistrateStatus(QNetworkReply* )));

@@ -2,6 +2,15 @@
 #include "ui_inputgameid.h"
 
 
+/*! @brief Конструктор класса
+ *
+ *  @param *parent Родительский класс
+ *  @param userId Идентификатор пользователя
+ *
+ *  @details Создаёт объект класса QNetworkAccessManager, идентификатор игры и пользователя
+ *
+ *  @return InputGameID
+*/
 InputGameID::InputGameID(QWidget *parent, QString userId) :
     QDialog(parent),
     ui(new Ui::InputGameID)
@@ -13,11 +22,19 @@ InputGameID::InputGameID(QWidget *parent, QString userId) :
     this->userId = userId;
 }
 
+//! @brief Деструктор класса
 InputGameID::~InputGameID()
 {
     delete ui;
 }
 
+/*! @brief Обработка события кнопки "Подключиться"
+ *
+ *  @details Отправляет запрос POST на сервер, передавая в качестве параметров
+ *  идентификатор пользователя и игры
+ *
+ *  @return void
+*/
 void InputGameID::on_connectToGameButton_clicked()
 {
     this->gameId = ui->gameIDTextEdit->toPlainText();
@@ -28,7 +45,7 @@ void InputGameID::on_connectToGameButton_clicked()
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     // Ищем на сервере игру с таким айди
     QUrlQuery query;
-    query.addQueryItem("game_id", ui->gameIDTextEdit->toPlainText().toUtf8());
+    query.addQueryItem("game_id", this->gameId.toUtf8());
     query.addQueryItem("user_id", this->userId);
 
     QUrl queryUrl;
@@ -40,6 +57,16 @@ void InputGameID::on_connectToGameButton_clicked()
 
 }
 
+/*! @brief Подключается к игре с полученным идентификатором
+ *
+ *  @details Получает иденификатор игры от сервера.
+ *  Закрывает окно и подтверждает сигнал о подключении к игре
+ *
+ *  @param *reply Указатель на ответ от сервера
+ *
+ *  @return void
+ *
+*/
 void InputGameID::connectToGame(QNetworkReply *reply)
 {
     QString strReply = reply->readAll();
@@ -62,6 +89,7 @@ void InputGameID::connectToGame(QNetworkReply *reply)
     }
 }
 
+//! @brief Закрывает окно
 void InputGameID::on_cancelButton_clicked()
 {
     this->close();
