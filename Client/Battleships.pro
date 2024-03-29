@@ -23,16 +23,14 @@ SOURCES += \
     loginform.cpp \
     main.cpp \
     mainmenu.cpp \
-    mainwindow.cpp \
-    ship.cpp
+    mainwindow.cpp
 
 HEADERS += \
     additionalfunctions.h \
     inputgameid.h \
     loginform.h \
     mainmenu.h \
-    mainwindow.h \
-    ship.h
+    mainwindow.h
 
 FORMS += \
     inputgameid.ui \

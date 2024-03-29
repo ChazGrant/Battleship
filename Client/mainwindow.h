@@ -54,7 +54,7 @@ private slots:
     void getUserIdTurn(QNetworkReply* reply);
     void fillField(QNetworkReply* reply);
     void getFireStatus(QNetworkReply* reply);
-    void getGameOverState(QNetworkReply* reply);
+    void getWinner(QNetworkReply* reply);
     void acceptCloseEvent(QNetworkReply* reply);
 
 private:

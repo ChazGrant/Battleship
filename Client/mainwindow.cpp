@@ -58,7 +58,16 @@ MainWindow::MainWindow(QWidget *parent, QString t_game_id, QString t_user_id)
     this->getShipsAmountResponse();
 }
 
-////////////////////////////////////////Ожидание конца хода противника////////////////////////////////////////
+
+/*! @brief Получение идентификатора пользователя, который должен делать ход
+ *
+ *  @details Сейчас ход текущего пользователя, то останавливается таймер ожидания хода
+ *  и получаются повреждённые клетки
+ *
+ *  @param *reply Указатель на ответ от сервера
+ *
+ *  @return void
+*/
 void MainWindow::getUserIdTurn(QNetworkReply *reply)
 {
     QString replyStr = reply->readAll();
@@ -80,6 +89,12 @@ void MainWindow::getUserIdTurn(QNetworkReply *reply)
     }
 }
 
+/*! @brief Ожидание хода текущего пользователя
+ *
+ *  @details Отправляется запрос на сервер, в параметры передаётся идентификатор игры
+ *
+ *  @return void
+*/
 void MainWindow::waitForTurn()
 {
     QUrl url("http://127.0.0.1:8000/games/get_user_id_turn/");
@@ -97,9 +112,16 @@ void MainWindow::waitForTurn()
 
     m_manager->post(request, queryUrl.toEncoded().remove(0, 1));
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////Заполняем UI повреждёнными клетками//////////////////////////////////////////
+/*! @brief Заполнение поля
+ *
+ *  @details С json object'а получаем повреждённые части кораблей и мёртвые корабли
+ *  и закрашиваем их на поле
+ *
+ *  @param *reply Указатель на ответ от сервера
+ *
+ *  @return void
+*/
 void MainWindow::fillField(QNetworkReply *reply)
 {
     QString replyStr = reply->readAll();
@@ -183,6 +205,12 @@ void MainWindow::fillField(QNetworkReply *reply)
     this->setDisabled(false);
 }
 
+/*! @brief Получаем все клетки, по которым противник стрелял
+ *
+ *  @details Отправляется запрос на сервер. В параметрах передаётся идентификатор текущего пользователя
+ *
+ *  @return void
+*/
 void MainWindow::getDamagedCells()
 {
     QUrl url("http://127.0.0.1:8000/fields/get_damaged_cells/");
@@ -200,9 +228,17 @@ void MainWindow::getDamagedCells()
 
     m_manager->post(request, queryUrl.toEncoded().remove(0, 1));
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void MainWindow::getGameOverState(QNetworkReply *reply)
+/*! @brief Получение победителя игры
+ *
+ *  @details Если json object содержит параметр с победителем, то он выводится на экран и
+ *  игра завершается
+ *
+ *  @param *reply Указатель на ответ от сервера
+ *
+ *  @return void
+*/
+void MainWindow::getWinner(QNetworkReply *reply)
 {
     QString replyStr = reply->readAll();
     qDebug() << "GET GAME OVER STATE";
@@ -227,9 +263,16 @@ void MainWindow::getGameOverState(QNetworkReply *reply)
         this->close();
     }
 
-    QObject::disconnect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getGameOverState(QNetworkReply* )));
+    QObject::disconnect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getWinner(QNetworkReply* )));
 }
 
+/*! @brief Проверка победителя
+ *
+ *  @details На сервер отправляется запрос для получения победителя игры. В параметры
+ *  передаются идентификатор игры и пользователя
+ *
+ *  @return void
+*/
 void MainWindow::checkForWinner()
 {
     QUrl url("http://127.0.0.1:8000/games/game_is_over/");
@@ -244,13 +287,12 @@ void MainWindow::checkForWinner()
     QUrl queryUrl;
     queryUrl.setQuery(query);
 
-    QObject::connect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getGameOverState(QNetworkReply* )));
+    QObject::connect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getWinner(QNetworkReply* )));
 
     m_manager->post(request, queryUrl.toEncoded().remove(0, 1));
 }
 
-//////////////////////////////////////////Обработка выхода из игры//////////////////////////////////////////
-
+//! @brief Закрытие главного окна
 void MainWindow::acceptCloseEvent(QNetworkReply *reply)
 {
     this->closeEventIsAccepted = true;
@@ -263,6 +305,15 @@ void MainWindow::acceptCloseEvent(QNetworkReply *reply)
     this->close();
 }
 
+/*! @brief Обработка сигнала закрытия окна
+ *
+ *  @details На сервер отсылается запрос для отключения от текущей игры. В параметры передаются
+ *  идентификатор игры и пользователя
+ *
+ *  @param *event Указатель на тип события
+ *
+ *  @return void
+*/
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     // Пока не нашёл альтернативы как это сделать более грамотно,
@@ -287,20 +338,26 @@ void MainWindow::closeEvent(QCloseEvent *event)
     m_manager->post(request, queryUrl.toEncoded().remove(0, 1));
     event->ignore();
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool MainWindow::getErrorMessage(QJsonObject jsonObj)
+
+/*! @brief Получение текста ошибки из json object'а
+ *
+ *  @param t_json_obj Сам объект, который может содержать текст ошибки
+ *
+ *  @return bool
+*/
+bool MainWindow::getErrorMessage(QJsonObject t_json_obj)
 {
-    if (jsonObj.contains("Error"))
+    if (t_json_obj.contains("Error"))
     {
-        showMessage(jsonObj["Error"].toString(), QMessageBox::Icon::Critical);
+        showMessage(t_json_obj["Error"].toString(), QMessageBox::Icon::Critical);
         return true;
     }
-    if (jsonObj.contains("Critical Error"))
+    if (t_json_obj.contains("Critical Error"))
     {
         timerForUserTurn->stop();
         QObject::disconnect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getUserIdTurn(QNetworkReply* )));
 
-        showMessage(jsonObj["Critical Error"].toString(), QMessageBox::Icon::Critical);
+        showMessage(t_json_obj["Critical Error"].toString(), QMessageBox::Icon::Critical);
         this->close();
         return true;
     }
@@ -308,9 +365,12 @@ bool MainWindow::getErrorMessage(QJsonObject jsonObj)
     return false;
 }
 
-
-
-//////////////////////////////////////////////Ожидание начала игры//////////////////////////////////////////////
+/*! @brief Получение текущего состояние игры(началась она или нет)
+ *
+ *  @param *reply Указатель на ответ от сервера
+ *
+ *  @return void
+*/
 void MainWindow::getGameState(QNetworkReply* reply)
 {
     QString replyStr = reply->readAll();
@@ -333,6 +393,12 @@ void MainWindow::getGameState(QNetworkReply* reply)
 
 }
 
+/*! @brief Ожидание начала играы
+ *
+ *  @details Отсылается на сервер по истечению времени таймера
+ *
+ *  @return void
+*/
 void MainWindow::waitForGameStart()
 {
     QUrl url("http://127.0.0.1:8000/games/game_is_started/");
@@ -350,9 +416,13 @@ void MainWindow::waitForGameStart()
 
     m_manager->post(request, queryUrl.toEncoded().remove(0, 1));
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////Вывод в UI сколько кораблей осталось поставить///////////////////////////////
+/*! @brief Выводит на экран пользователя количество оставших кораблей
+ *
+ *  @param *reply Указатель на ответ от сервера
+ *
+ *  @return void
+*/
 void MainWindow::setShipsAmountLabel(QNetworkReply* reply)
 {
     QString replyStr = reply->readAll();
@@ -386,6 +456,13 @@ void MainWindow::setShipsAmountLabel(QNetworkReply* reply)
     }
 }
 
+/*! @brief Получение количества оставшихся кораблей
+ *
+ *  @details Делает запрос на сервер чтобы получить количество каждого типа кораблей, оставшегося
+ *  для расстановки на поле. В параметры передаётся идентификатор пользователя(владельца поля)
+ *
+ *  @return void
+*/
 void MainWindow::getShipsAmountResponse()
 {
     QUrl url("http://127.0.0.1:8000/fields/get_field/");
@@ -403,8 +480,14 @@ void MainWindow::getShipsAmountResponse()
 
     m_manager->post(request, queryUrl.toEncoded().remove(0, 1));
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/*! @brief Создание пустого поля пользователя
+ *
+ *  @details Поле создаётся путём добавления туда ячеек содержащих пробел, чтоб ячейки
+ *  существовали и могли иметь задний фон
+ *
+ *  @return void
+*/
 void MainWindow::setTable()
 {
     ui->yourField->setRowCount(ROW_COUNT);
@@ -423,6 +506,13 @@ void MainWindow::setTable()
     ui->yourField->setEditTriggers(QAbstractItemView::EditTrigger::NoEditTriggers);
 }
 
+/*! @brief Создание пустого поля оппонента
+ *
+ *  @details Поле создаётся путём добавления туда ячеек содержащих пробел, чтоб ячейки
+ *  существовали и могли иметь задний фон
+ *
+ *  @return void
+*/
 void MainWindow::setOpponentTable()
 {
     ui->opponentField->setRowCount(ROW_COUNT);
@@ -441,12 +531,18 @@ void MainWindow::setOpponentTable()
     ui->opponentField->setEditTriggers(QAbstractItemView::EditTrigger::NoEditTriggers);
 }
 
+//! @brief Деструктор класса
 MainWindow::~MainWindow()
 {
     delete ui;
 }
 
-//////////////////////////////////Расстановка кораблей//////////////////////////////////
+/*! @brief Установка корабля на поле
+ *
+ *  @param *reply Указатель на ответ от сервера
+ *
+ *  @return void
+*/
 void MainWindow::placeShip(QNetworkReply* reply)
 {
     QString replyStr = reply->readAll();
@@ -472,6 +568,15 @@ void MainWindow::placeShip(QNetworkReply* reply)
     this->setDisabled(false);
 }
 
+/*! @brief Обработка события на кнопке "Установить корабль"
+ *
+ *  @details В запрос передаётся json, по примеру
+ *  cells : [[2,3],[4,5],[1,2]]
+ *  owner_id: foaishf0bhas9-f09
+ *  game_id: 15812571257
+ *
+ *  @return void
+*/
 void MainWindow::on_placeShipButton_clicked()
 {
     if (!(ui->yourField->selectedItems().length()))
@@ -486,12 +591,6 @@ void MainWindow::on_placeShipButton_clicked()
 
     QListIterator<QTableWidgetItem *> iter(ui->yourField->selectedItems());
 
-    // В запрос передаётся json, по примеру
-    /*
-     * cells : [[2,3],[4,5],[1,2]]
-     * owner_id: foaishf0bhas9-f09
-     * game_id: 15812571257
-    */
     QString values = "";
     while (iter.hasNext())
     {
@@ -510,17 +609,19 @@ void MainWindow::on_placeShipButton_clicked()
     m_manager->post(request, json);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////Стрельба по кораблям////////////////////////////////////////////
+/*! @brief Получает статус куда попал пользователь
+ *
+ *  @details Получаем клетки, по которым промахнулись
+ *  Получаем клетки, по которым попали
+ *  Получаем корабли, которые убили
+ *  Если убили, то проверяем на конец хода
+ *
+ *  @param *reply Указатель на ответ от сервера
+ *
+ *  @return void
+*/
 void MainWindow::getFireStatus(QNetworkReply *reply)
 {
-    /*
-     * Получаем клетки, по которым промахнулись
-     * Получаем клетки, по которым попали
-     * Получаем корабли, которые убили
-     * Если убили, то проверяем на конец хода
-    */
     ui->opponentField->clearSelection();
     QString replyStr = reply->readAll();
 
@@ -594,8 +695,6 @@ void MainWindow::getFireStatus(QNetworkReply *reply)
             ui->opponentField->setItem(y, x, item);
         }
 
-
-
         this->setDisabled(false);
 
         // Отписываемся от события, т.к. иначе в checkForWinner будет передаваться информация о кораблях
@@ -605,16 +704,18 @@ void MainWindow::getFireStatus(QNetworkReply *reply)
     }
 }
 
+/*! @brief Выстрел по клетке
+ *
+ *  @details Отправляем запрос на сервер, блокируя интерфейс
+ *  Если ошибок нет, то проверяем на попадание
+ *  Если не попал, то ожидаем своего хода
+ *  Если попал, то даём ещё один ход
+ *  Если убил, то проверяем на конец игры
+ *
+ *  @return void
+*/
 void MainWindow::shoot()
 {
-    /*
-     * Отправляем запрос на сервер, блокируя интерфейс
-     * Если ошибок нет, то проверяем на попадание
-     * Если не попал, то ожидаем своего хода
-     * Если попал, то даём ещё один ход
-     * Если убил, то проверяем на конец игры
-    */
-
     if (!ui->opponentField->selectedItems().length())
         return showMessage("Клетки не были выбраны", QMessageBox::Icon::Critical);
 
@@ -641,6 +742,3 @@ void MainWindow::shoot()
     QObject::connect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getFireStatus(QNetworkReply* )));
     m_manager->post(request, data.toEncoded().remove(0, 1));
 }
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
