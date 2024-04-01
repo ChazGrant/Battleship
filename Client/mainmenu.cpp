@@ -98,7 +98,7 @@ void MainMenu::connectToCreatedGame(QNetworkReply *reply)
 */
 void MainMenu::on_connectToExistingGame_clicked()
 {
-    InputGameID *widget = new InputGameID(nullptr, this->userId);
+    InputGameID *widget = new InputGameID(nullptr, this->m_userId);
     widget->show();
 
     QObject::connect(widget, &InputGameID::acceptConnection, this, &MainMenu::openMainWindow);
@@ -114,8 +114,8 @@ void MainMenu::on_connectToExistingGame_clicked()
 void MainMenu::openMainWindow(QString gameId)
 {
     QString userId = ui->userID->text().split(": ")[1];
-    this->window = new MainWindow (nullptr, gameId, userId);
+    this->m_window = new MainWindow (nullptr, gameId, userId);
 
-    window->show();
+    m_window->show();
     this->close();
 }

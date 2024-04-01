@@ -19,7 +19,7 @@ class InputGameID : public QDialog
     Q_OBJECT
 
 public:
-    explicit InputGameID(QWidget *parent = nullptr, QString userId="");
+    explicit InputGameID(QWidget *parent = nullptr, QString t_userId="");
     ~InputGameID();
 
 signals:
@@ -29,11 +29,11 @@ signals:
      *
      * @return void
     */
-    void acceptConnection(QString gameId);
+    void acceptConnection(QString t_gameId);
 
 private slots:
     void on_connectToGameButton_clicked();
-    void connectToGame(QNetworkReply* reply);
+    void connectToGame(QNetworkReply* t_reply);
 
     void on_cancelButton_clicked();
 
@@ -43,9 +43,9 @@ private:
     //! Указатель на обработчик запросов
     QNetworkAccessManager *m_manager;
     //! Идентификатор игры
-    QString gameId;
+    QString m_gameId;
     //! Идентификатор пользователя
-    QString userId;
+    QString m_userId;
 };
 
 #endif // INPUTGAMEID_H

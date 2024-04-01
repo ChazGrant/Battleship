@@ -11,15 +11,15 @@
  *
  *  @return InputGameID
 */
-InputGameID::InputGameID(QWidget *parent, QString userId) :
+InputGameID::InputGameID(QWidget *parent, QString t_userId) :
     QDialog(parent),
     ui(new Ui::InputGameID)
 {
     ui->setupUi(this);
 
     m_manager = new QNetworkAccessManager(this);
-    this->gameId = "";
-    this->userId = userId;
+    this->m_gameId = "";
+    this->m_userId = t_userId;
 }
 
 //! @brief Деструктор класса
@@ -37,16 +37,16 @@ InputGameID::~InputGameID()
 */
 void InputGameID::on_connectToGameButton_clicked()
 {
-    this->gameId = ui->gameIDTextEdit->toPlainText();
-    if (this->gameId == "")
+    this->m_gameId = ui->gameIDTextEdit->toPlainText();
+    if (this->m_gameId == "")
         return;
 
     QNetworkRequest request(QUrl("http://127.0.0.1:8000/games/connect_to_game/"));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     // Ищем на сервере игру с таким айди
     QUrlQuery query;
-    query.addQueryItem("game_id", this->gameId.toUtf8());
-    query.addQueryItem("user_id", this->userId);
+    query.addQueryItem("game_id", this->m_gameId.toUtf8());
+    query.addQueryItem("user_id", this->m_userId);
 
     QUrl queryUrl;
     queryUrl.setQuery(query);

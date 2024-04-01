@@ -45,14 +45,14 @@ private slots:
     void on_placeShipButton_clicked();
 
     // Обработка ответов с сервера
-    void setShipsAmountLabel(QNetworkReply* reply);
-    void placeShip(QNetworkReply* reply);
-    void getGameState(QNetworkReply* reply);
-    void getUserIdTurn(QNetworkReply* reply);
-    void fillField(QNetworkReply* reply);
-    void getFireStatus(QNetworkReply* reply);
-    void getWinner(QNetworkReply* reply);
-    void acceptCloseEvent(QNetworkReply* reply);
+    void setShipsAmountLabel(QNetworkReply* t_reply);
+    void placeShip(QNetworkReply* t_reply);
+    void getGameState(QNetworkReply* t_reply);
+    void getUserIdTurn(QNetworkReply* t_reply);
+    void fillField(QNetworkReply* t_reply);
+    void getFireStatus(QNetworkReply* t_reply);
+    void getWinner(QNetworkReply* t_reply);
+    void acceptCloseEvent(QNetworkReply* t_reply);
 
 private:
     //! Указатель на виджет класса
@@ -68,11 +68,11 @@ private:
 
     // Таймеры
     //! Указатель на таймер ожидания начала игры
-    QTimer *timerForGameStart;
+    QTimer *m_timerForGameStart;
     //! Указатель на таймер ожидания начала хода
-    QTimer *timerForUserTurn;
+    QTimer *m_timerForUserTurn;
 
-    bool getErrorMessage(QJsonObject jsonObj);
+    bool getErrorMessage(QJsonObject t_jsonObj);
 
     // Устанавливает количество рядов и колонок
     void setTable();

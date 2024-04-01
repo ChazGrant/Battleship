@@ -42,14 +42,14 @@ MainWindow::MainWindow(QWidget *parent, QString t_game_id, QString t_user_id)
     ui->fireButton->hide();
     ui->opponentField->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
 
-    timerForUserTurn = new QTimer();
-    timerForGameStart = new QTimer();
+    m_timerForUserTurn = new QTimer();
+    m_timerForGameStart = new QTimer();
 
-    timerForUserTurn->setInterval(400);
-    timerForUserTurn->connect(timerForUserTurn, &QTimer::timeout, this, &MainWindow::waitForTurn);
+    m_timerForUserTurn->setInterval(400);
+    m_timerForUserTurn->connect(m_timerForUserTurn, &QTimer::timeout, this, &MainWindow::waitForTurn);
 
-    timerForGameStart->setInterval(400);
-    timerForGameStart->connect(timerForGameStart, &QTimer::timeout, this, &MainWindow::waitForGameStart);
+    m_timerForGameStart->setInterval(400);
+    m_timerForGameStart->connect(m_timerForGameStart, &QTimer::timeout, this, &MainWindow::waitForGameStart);
 
     m_manager = new QNetworkAccessManager(this);
 
@@ -83,7 +83,7 @@ void MainWindow::getUserIdTurn(QNetworkReply *reply)
     if (jsonObj["user_id_turn"].toString() == this->m_userId)
     {
         // Отключаем таймер и событие
-        timerForUserTurn->stop();
+        m_timerForUserTurn->stop();
         QObject::disconnect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getUserIdTurn(QNetworkReply* )));
         // Получаем клетки, по которым попал соперник
         this->getDamagedCells();
@@ -139,7 +139,7 @@ void MainWindow::fillField(QNetworkReply *reply)
 
     // Если ответ пришёл от нужного url, то заполняем данные
     // Иначе послыаем ещё один запрос
-    if (!(jsonObj.contains("dead_parts")))
+    if (jsonObj.contains("user_id_turn"))
     {
         QObject::disconnect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(fillField(QNetworkReply* )));
         return this->getDamagedCells();
@@ -362,7 +362,7 @@ bool MainWindow::getErrorMessage(QJsonObject t_json_obj)
     }
     if (t_json_obj.contains("Critical Error"))
     {
-        timerForUserTurn->stop();
+        m_timerForUserTurn->stop();
         QObject::disconnect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getUserIdTurn(QNetworkReply* )));
 
         showMessage(t_json_obj["Critical Error"].toString(), QMessageBox::Icon::Critical);
@@ -388,11 +388,11 @@ void MainWindow::getGameState(QNetworkReply* reply)
     if (jsonObj["game_is_started"].toBool())
     {
         // Останавливаем прошлый таймер и отключаем сигнал
-        timerForGameStart->stop();
+        m_timerForGameStart->stop();
         QObject::disconnect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getGameState(QNetworkReply* )));
-        delete timerForGameStart;
+        delete m_timerForGameStart;
         //Запускаем таймер на ожидание хода
-        timerForUserTurn->start();
+        m_timerForUserTurn->start();
 
         ui->fireButton->show();
         ui->placeShipButton->hide();
@@ -460,7 +460,7 @@ void MainWindow::setShipsAmountLabel(QNetworkReply* reply)
         this->setDisabled(true);
         // Ставим таймер на функцию, в которой ожидаем когда игра будет начата
 
-        timerForGameStart->start();
+        m_timerForGameStart->start();
     }
 }
 
@@ -653,7 +653,7 @@ void MainWindow::getFireStatus(QNetworkReply *reply)
 
         QObject::disconnect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getFireStatus(QNetworkReply* )));
         // Ожидаем пока оппонент сделает ход
-        timerForUserTurn->start();
+        m_timerForUserTurn->start();
     }
 
     // Закрашиваем либо жёлтым цветом

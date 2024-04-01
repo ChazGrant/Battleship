@@ -31,8 +31,8 @@ public:
     ~LoginForm();
 
 private slots:
-    void getLoginStatus(QNetworkReply *reply);
-    void getRegistrateStatus(QNetworkReply *reply);
+    void getLoginStatus(QNetworkReply *t_reply);
+    void getRegistrateStatus(QNetworkReply *t_reply);
 
 private:
     //! Указатель на виджет класса

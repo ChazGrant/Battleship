@@ -32,10 +32,10 @@ public:
 
 private slots:
     void on_createNewGameButton_clicked();
-    void connectToCreatedGame(QNetworkReply* reply);
+    void connectToCreatedGame(QNetworkReply* t_reply);
 
     void on_connectToExistingGame_clicked();
-    void openMainWindow(QString gameId);
+    void openMainWindow(QString t_gameId);
 
 private:
     //! Указатель на виджет класса
@@ -43,9 +43,9 @@ private:
     //! Указатель на обработчик запросов
     QNetworkAccessManager* m_manager;
     //! Указатель на класс MainWindow
-    MainWindow *window;
+    MainWindow *m_window;
     //! Идентификатор пользователя
-    QString userId;
+    QString m_userId;
 };
 
 #endif // MAINMENU_H
