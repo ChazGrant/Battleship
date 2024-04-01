@@ -1,2 +1,14 @@
 # Battleship
-This is a simple implementation of Battleship with UI written on C++, using QT. And Rest-API server written on Python using DRF
+Это простая реализация игры "Морской бой" с клиентом написанным на C++/QT и сервером на Python/Django Rest Framework
+
+Для запуска сервера необходимо
+
+Перейти в папку сервера
+Запустить команду `python -m venv .`
+Перейти в папку Scripts и прописать `activate`
+Вернуться на папку назад и установить все нужные модули командой `pip install -r requirements.txt`
+Перейти в папку SeaBattles и запустить сервер командой `python manage.py runserver`
+
+Для запуска клиента необходимо
+Либо запустить файл с расширением .exe из папки Release
+Либо собрать самому с помощью Qt
