@@ -38,10 +38,13 @@ private slots:
     void openMainWindow(QString gameId);
 
 private:
-    QNetworkAccessManager* m_manager;
+    //! Указатель на виджет класса
     Ui::MainMenu *ui;
+    //! Указатель на обработчик запросов
+    QNetworkAccessManager* m_manager;
+    //! Указатель на класс MainWindow
     MainWindow *window;
-
+    //! Идентификатор пользователя
     QString userId;
 };
 

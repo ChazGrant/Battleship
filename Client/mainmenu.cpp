@@ -6,9 +6,13 @@
 
 
 /**
- *  @brief Конструктор по умолчанию, не принимающий аргументы.
+ *  @brief Конструктор класса
  *
  *  @details Инициализирует свойство класса m_manager
+ *
+ *  @param *parent Указатель на родительский виджет
+ *
+ *  @return MainMenu
 */
 MainMenu::MainMenu(QWidget *parent) :
     QMainWindow(parent),
@@ -19,6 +23,7 @@ MainMenu::MainMenu(QWidget *parent) :
     m_manager = new QNetworkAccessManager(this);
 }
 
+//! @brief Деструктор класса
 MainMenu::~MainMenu()
 {
     delete ui;
@@ -26,8 +31,8 @@ MainMenu::~MainMenu()
 
 /*! @brief Метод для обработки нажатия на кнопку "Подключиться к игре"
  *
- *  @details
- *  Делает запрос к адресу по подключению к игре. В параметры передаёт идентификатор пользователя
+ *  @details Делает запрос к адресу по подключению к игре.
+ *  В параметры передаёт идентификатор пользователя
  *  после ответа от сервера передаёт управление методу connectToCreatedGame
  *
  *  @return void
@@ -51,10 +56,9 @@ void MainMenu::on_createNewGameButton_clicked()
     m_manager->post(request, queryUrl.toEncoded().remove(0, 1));
 }
 
-/*! @brief Подключается к указанной игре
+/*! @brief Подключение к указанной игре
  *
- *  @details
- *  Получает идентификатор игры из ответа сервера, выдаёт ошибку
+ *  @details Получает идентификатор игры из ответа сервера, выдаёт ошибку
  *  или открывает окно с игрой, передавая айди игры
  *
  *  @param *reply Указатель  на ответ от сервера
@@ -86,7 +90,9 @@ void MainMenu::connectToCreatedGame(QNetworkReply *reply)
 }
 
 /*!
- * @brief Открывает окно для ввода идентификатора игры
+ * @brief Обработчик нажатия кнопки "Подключиться"
+ *
+ * @details Открывает окно для ввода идентификатора игры
  *
  * @return void
 */
@@ -99,7 +105,7 @@ void MainMenu::on_connectToExistingGame_clicked()
 }
 
 /*!
- * @brief Открывает окно с игрой
+ * @brief Открытие окна с игрой
  *
  * @param gameId Идентификатор игры
  *

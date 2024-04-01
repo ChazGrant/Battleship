@@ -23,6 +23,12 @@ public:
     ~InputGameID();
 
 signals:
+    /*! @brief Сигнал о том, что подключение было принято
+     *
+     * @param gameId Идентификатор игры
+     *
+     * @return void
+    */
     void acceptConnection(QString gameId);
 
 private slots:
@@ -32,9 +38,13 @@ private slots:
     void on_cancelButton_clicked();
 
 private:
+    //! Указатель на виджет класса
     Ui::InputGameID *ui;
+    //! Указатель на обработчик запросов
     QNetworkAccessManager *m_manager;
+    //! Идентификатор игры
     QString gameId;
+    //! Идентификатор пользователя
     QString userId;
 };
 

@@ -16,8 +16,9 @@ const int COLUMN_COUNT = 10;
  *
  *  @details Создаются 2 таймера для ожидания хода и ожидания начала игры
  *
- *  @param t_game_id
- *  @param t_user_id
+ *  @param *parent Указатель на родительский виджет
+ *  @param t_game_id Идентификатор игры
+ *  @param t_user_id Идентификатор пользователя
  *
  *  @return MainWindow
 */
@@ -25,16 +26,16 @@ MainWindow::MainWindow(QWidget *parent, QString t_game_id, QString t_user_id)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
-    this->gameId = gameId;
-    this->userId = userId;
-    this->closeEventIsAccepted = false;
+    this->m_gameId = m_gameId;
+    this->m_userId = m_userId;
+    this->m_closeEventIsAccepted = false;
 
-    showMessage("Ваше айди: " + this->userId, QMessageBox::Icon::Information);
+    showMessage("Ваше айди: " + this->m_userId, QMessageBox::Icon::Information);
 
     ui->setupUi(this);
 
-    ui->gameIdLabel->setText("ID игры: " + gameId);
-    ui->userIdLabel->setText("Ваш ID: " + userId);
+    ui->gameIdLabel->setText("ID игры: " + m_gameId);
+    ui->userIdLabel->setText("Ваш ID: " + m_userId);
 
     connect(ui->fireButton, &QPushButton::released, this, &MainWindow::shoot);
 
@@ -79,7 +80,7 @@ void MainWindow::getUserIdTurn(QNetworkReply *reply)
         return;
     }
 
-    if (jsonObj["user_id_turn"].toString() == this->userId)
+    if (jsonObj["user_id_turn"].toString() == this->m_userId)
     {
         // Отключаем таймер и событие
         timerForUserTurn->stop();
@@ -103,7 +104,7 @@ void MainWindow::waitForTurn()
 
     QUrlQuery query;
 
-    query.addQueryItem("game_id", this->gameId);
+    query.addQueryItem("game_id", this->m_gameId);
 
     QUrl queryUrl;
     queryUrl.setQuery(query);
@@ -121,6 +122,8 @@ void MainWindow::waitForTurn()
  *  @param *reply Указатель на ответ от сервера
  *
  *  @return void
+ *
+ *  @todo Решить проблему из-за которой иногда может прийти ответ от getUserIdTurn
 */
 void MainWindow::fillField(QNetworkReply *reply)
 {
@@ -205,7 +208,7 @@ void MainWindow::fillField(QNetworkReply *reply)
     this->setDisabled(false);
 }
 
-/*! @brief Получаем все клетки, по которым противник стрелял
+/*! @brief Получение всех клеток, по которым противник стрелял
  *
  *  @details Отправляется запрос на сервер. В параметрах передаётся идентификатор текущего пользователя
  *
@@ -219,7 +222,7 @@ void MainWindow::getDamagedCells()
 
     QUrlQuery query;
 
-    query.addQueryItem("user_id", this->userId);
+    query.addQueryItem("user_id", this->m_userId);
 
     QUrl queryUrl;
     queryUrl.setQuery(query);
@@ -249,10 +252,10 @@ void MainWindow::getWinner(QNetworkReply *reply)
     if (jsonObject["game_is_over"].toBool())
     {
         qDebug() << "WINNER OF THE GAME";
-        qDebug() << "YOUR ID " << this->userId;
+        qDebug() << "YOUR ID " << this->m_userId;
         qDebug() << "WINNER ID " << jsonObject["winner"].toString();
 
-        if (jsonObject["winner"].toString() == this->userId)
+        if (jsonObject["winner"].toString() == this->m_userId)
         {
             showMessage("Игра закончена и победу одержали Вы", QMessageBox::Icon::Information);
         }
@@ -281,8 +284,8 @@ void MainWindow::checkForWinner()
 
     QUrlQuery query;
 
-    query.addQueryItem("game_id", this->gameId);
-    query.addQueryItem("user_id", this->userId);
+    query.addQueryItem("game_id", this->m_gameId);
+    query.addQueryItem("user_id", this->m_userId);
 
     QUrl queryUrl;
     queryUrl.setQuery(query);
@@ -292,10 +295,15 @@ void MainWindow::checkForWinner()
     m_manager->post(request, queryUrl.toEncoded().remove(0, 1));
 }
 
-//! @brief Закрытие главного окна
+/*! @brief Закрытие главного окна
+ *
+ *  @param *reply Указатель на ответ от сервера
+ *
+ *  @return void
+ */
 void MainWindow::acceptCloseEvent(QNetworkReply *reply)
 {
-    this->closeEventIsAccepted = true;
+    this->m_closeEventIsAccepted = true;
     QString replyStr = reply->readAll();
 
     QJsonObject jsonObj = QJsonDocument::fromJson(replyStr.toUtf8()).object();
@@ -318,7 +326,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
     // Пока не нашёл альтернативы как это сделать более грамотно,
     // поэтому пока так
-    if (this->closeEventIsAccepted)
+    if (this->m_closeEventIsAccepted)
         return event->accept();
 
     qDebug() << "closeEvent called";
@@ -328,8 +336,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
     QUrlQuery query;
 
-    query.addQueryItem("user_id", this->userId);
-    query.addQueryItem("game_id", this->gameId);
+    query.addQueryItem("user_id", this->m_userId);
+    query.addQueryItem("game_id", this->m_gameId);
 
     QUrl queryUrl;
     queryUrl.setQuery(query);
@@ -407,7 +415,7 @@ void MainWindow::waitForGameStart()
 
     QUrlQuery query;
 
-    query.addQueryItem("game_id", this->gameId);
+    query.addQueryItem("game_id", this->m_gameId);
 
     QUrl queryUrl;
     queryUrl.setQuery(query);
@@ -417,7 +425,7 @@ void MainWindow::waitForGameStart()
     m_manager->post(request, queryUrl.toEncoded().remove(0, 1));
 }
 
-/*! @brief Выводит на экран пользователя количество оставших кораблей
+/*! @brief Вывод на экран пользователя количество оставших кораблей
  *
  *  @param *reply Указатель на ответ от сервера
  *
@@ -471,7 +479,7 @@ void MainWindow::getShipsAmountResponse()
 
     QUrlQuery query;
 
-    query.addQueryItem("owner_id", this->userId);
+    query.addQueryItem("owner_id", this->m_userId);
 
     QUrl queryUrl;
     queryUrl.setQuery(query);
@@ -601,17 +609,17 @@ void MainWindow::on_placeShipButton_clicked()
         values += " ";
     }
     QByteArray json = "{ \"cells\":\"" + values.toUtf8() + \
-            "\", \"owner_id\":\"" + this->userId.toUtf8() + \
-            "\", \"game_id\":\"" +  this->gameId.toUtf8() + "\" }";
+            "\", \"owner_id\":\"" + this->m_userId.toUtf8() + \
+            "\", \"game_id\":\"" +  this->m_gameId.toUtf8() + "\" }";
 
 
     QObject::connect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(placeShip(QNetworkReply* )));
     m_manager->post(request, json);
 }
 
-/*! @brief Получает статус куда попал пользователь
+/*! @brief Получение статус куда попал пользователь
  *
- *  @details Получаем клетки, по которым промахнулись
+ *  @details Получает клетки, по которым промахнулись
  *  Получаем клетки, по которым попали
  *  Получаем корабли, которые убили
  *  Если убили, то проверяем на конец хода
@@ -730,8 +738,8 @@ void MainWindow::shoot()
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
 
     QUrlQuery jsonData;
-    jsonData.addQueryItem("user_id", this->userId);
-    jsonData.addQueryItem("game_id", this->gameId);
+    jsonData.addQueryItem("user_id", this->m_userId);
+    jsonData.addQueryItem("game_id", this->m_gameId);
 
     jsonData.addQueryItem("x", QString::number(selectedCell->column()));
     jsonData.addQueryItem("y", QString::number(selectedCell->row()));

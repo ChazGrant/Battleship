@@ -5,6 +5,8 @@
  *
  *  @details Создаёт экземпляр класса, делая форму безрамочной
  *
+ *  @param *parent Указатель на родительский виджет
+ *
  *  @return LoginForm
 */
 LoginForm::LoginForm(QWidget *parent) :
@@ -34,6 +36,8 @@ LoginForm::~LoginForm()
  *
  *  @details Меняет переменную delta и перемещает окно к её координатам
  *
+ *  @param *event Указатель на событие поведения мыши
+ *
  *  @return void
 */
 void LoginForm::mouseMoveEvent(QMouseEvent* event)
@@ -49,7 +53,7 @@ void LoginForm::mouseMoveEvent(QMouseEvent* event)
  *  @details При нажатии на левую, правую или среднюю кнопку мыши
  *  меняет приватную переменную m_mouse_point
  *
- *  @param *event События нажатия кнопки мыши
+ *  @param *event Указатель на событие поведения мыши
  *
  *  @return void
 */
@@ -154,7 +158,7 @@ void LoginForm::getLoginStatus(QNetworkReply *reply)
 
 }
 
-/*! @brief Получает статус регистрации пользователя
+/*! @brief Получение статуса регистрации пользователя
  *
  *  @details Получает ответ от сервера и открывает форму для ввода идентификатора игры
  *  или выводит текст ошибки

@@ -471,8 +471,7 @@ class FieldViewSet(ViewSet):
 
         # Проверка осталось ли столько кораблей
         if not SHIP_LENGTHS[ship_length](field=field):
-            return Response(
-            {
+            return Response({
                 "error": f"There no {ship_length}-deck ships last"
             })
 
@@ -486,8 +485,7 @@ class FieldViewSet(ViewSet):
             return Response(data)
         else:
             if (hasCollisions(ships=ships, cells=cells)):
-                return Response(
-                {
+                return Response({
                     "error": "Collisions"
                 })
             else:
@@ -596,8 +594,7 @@ class GameViewSet(ViewSet):
         try:
             game = Game.objects.get(game_id=game_id)
         except Game.DoesNotExist:
-            return Response(
-            {
+            return Response({
                 "critical_error": "Game does not exist"
             })
 

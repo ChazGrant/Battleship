@@ -35,12 +35,15 @@ private slots:
     void getRegistrateStatus(QNetworkReply *reply);
 
 private:
+    //! Указатель на виджет класса
+    Ui::LoginForm *ui;
+    //! Точка на экране
     QPoint m_mouse_point;
+    //! Указатель на обработчик запросов
+    QNetworkAccessManager *m_manager;
+
     void mouseMoveEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent* event);
-    Ui::LoginForm *ui;
-
-    QNetworkAccessManager *m_manager;
 
     void login();
     void registrate();

@@ -39,9 +39,6 @@ public:
     explicit MainWindow(QWidget *parent = nullptr, QString t_game_id="", QString t_user_id="");
     ~MainWindow();
 
-    void fire(QTableWidgetItem *item);
-    bool gameIsOver();
-
     virtual void closeEvent(QCloseEvent *event) override;
 
 private slots:
@@ -58,14 +55,21 @@ private slots:
     void acceptCloseEvent(QNetworkReply* reply);
 
 private:
+    //! Указатель на виджет класса
     Ui::MainWindow *ui;
-
+    //! Указатель на обработчик запросов
     QNetworkAccessManager* m_manager;
-    QString gameId, userId;
-    bool closeEventIsAccepted;
+    //! Идентификатор игры
+    QString m_gameId;
+    //! Идентификатор пользователя
+    QString m_userId;
+    //! Было нажато подтверждение закрытия окна
+    bool m_closeEventIsAccepted;
 
     // Таймеры
+    //! Указатель на таймер ожидания начала игры
     QTimer *timerForGameStart;
+    //! Указатель на таймер ожидания начала хода
     QTimer *timerForUserTurn;
 
     bool getErrorMessage(QJsonObject jsonObj);
@@ -73,11 +77,6 @@ private:
     // Устанавливает количество рядов и колонок
     void setTable();
     void setOpponentTable();
-
-    // Убивает корабль, закрашивая его части красным цветом
-    void findDeadShips();
-
-    void lockAllButtons(bool lockState);
 
     // Запросы на сервер
     void getShipsAmountResponse();

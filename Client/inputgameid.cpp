@@ -4,10 +4,10 @@
 
 /*! @brief Конструктор класса
  *
+ *  @details Создаёт объект класса QNetworkAccessManager, идентификатор игры и пользователя
+ *
  *  @param *parent Родительский класс
  *  @param userId Идентификатор пользователя
- *
- *  @details Создаёт объект класса QNetworkAccessManager, идентификатор игры и пользователя
  *
  *  @return InputGameID
 */
@@ -89,7 +89,10 @@ void InputGameID::connectToGame(QNetworkReply *reply)
     }
 }
 
-//! @brief Закрывает окно
+/*! @brief Закрывает окно
+ *
+ *  @return void
+*/
 void InputGameID::on_cancelButton_clicked()
 {
     this->close();
