@@ -92,3 +92,13 @@ class Weapon(models.Model):
 
     weapon_type = models.ForeignKey(WeaponType, on_delete=models.CASCADE)
     user_weapon = models.ForeignKey(UserWeapons, on_delete=models.CASCADE)
+
+
+class Friends(models.Model):
+    first_friend = models.ForeignKey(User, related_name='first_friend', on_delete=models.CASCADE)
+    second_friend = models.ForeignKey(User, related_name='second_friend', on_delete=models.CASCADE)
+
+
+class FriendRequest(models.Model):
+    from_user = models.ForeignKey(User, related_name='from_user', on_delete=models.CASCADE)
+    to_user = models.ForeignKey(User, related_name='to_user', on_delete=models.CASCADE)

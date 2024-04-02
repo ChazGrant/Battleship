@@ -1,14 +1,14 @@
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from django.db.models import F
+from django.db.models import F, Q
 
 from django.db.utils import IntegrityError
 
 import random
 
-from .models import Game, Field, Ship, ShipPart, MarkedCell, User
-from .serializers import GameSerializer, FieldSerializer, ShipSerializer
+from .models import Game, Field, Ship, ShipPart, MarkedCell, User, FriendRequest, Friends
+from .serializers import GameSerializer, FieldSerializer, ShipSerializer, UserSerializer
 
 from typing import List
 
@@ -941,15 +941,22 @@ class GameViewSet(ViewSet):
         })
 
 
-"""
-    ViewSet пользователя
-
-    Описывает поведение при запросе на адрес адрес_сервера/users/имя_метода
-
-    @author     ChazGrant
-    @version    1.0
-"""
 class UserViewSet(ViewSet):
+    """
+        ViewSet пользователя
+
+        Описывает поведение при запросе на адрес адрес_сервера/users/имя_метода
+
+        @author     ChazGrant
+        @version    1.0
+    """
+    @action(detail=False, methods=["get"])
+    def get_users(self, request) -> Response:
+        users = User.objects.all()
+        serialzer = UserSerializer(users, many=True)
+
+        return Response(serialzer.data)
+
     @action(detail=False, methods=["post"])
     def login(self, request) -> Response:
         """
@@ -985,7 +992,7 @@ class UserViewSet(ViewSet):
 
         return Response({
                 "login_successful": True,
-                "username": user.user_name
+                "user_id": user.user_id
             })
 
     @action(detail=False, methods=["post"])
@@ -1015,9 +1022,16 @@ class UserViewSet(ViewSet):
         #     })
         
         # known_ips.append(ip)
-        user_name = request.data["user_name"]
-        password = request.data["password"]
-        email = request.data["email"]
+        try:
+            user_name = request.data["user_name"]
+            password = request.data["password"]
+            email = request.data["email"]
+        except KeyError:
+            return Response({
+                "registration_successful": False,
+                "error": "Недостаточно параметров"
+            })
+        
         try:
             last_user_id = int(User.objects.latest("user_id").user_id)
         except User.DoesNotExist:
@@ -1025,15 +1039,124 @@ class UserViewSet(ViewSet):
 
         try:
             created_user = User.objects.create(user_name=user_name, 
-                                               user_password=password, 
-                                               user_email=email,
-                                               user_id=last_user_id + 1)
-        except IntegrityError:
+                                user_password=password, 
+                                user_email=email,
+                                user_id=last_user_id + 1)
+        except IntegrityError as e:
+            if "user_name" in e.args[0]:
+                error = "Данное имя пользователя занято"
+            elif "user_email" in e.args[0]:
+                error = "Данная почта занята"
             return Response({
                 "registration_successful": False,
-                "error": "Данное имя пользователя занято"
+                "error": error
             })
 
         return Response({
-            "registration_successful": True
+            "registration_successful": True,
+            "user_id": created_user.user_id
+        })
+
+
+class FriendsViewSet(ViewSet):
+    """
+        ViewSet друзей
+
+        Описывает поведение при запросе на адрес адрес_сервера/friends/имя_метода
+
+        @author     ChazGrant
+        @version    1.0
+    """
+    @action(detail=False, methods=["post"])
+    def send_friend_request(self, request) -> Response:
+        """
+            Отправляет запрос в друзья пользователю
+
+            Аргументы:
+                sender_id - Идентификатор пользователя который отправляет запрос
+                receiver_id - Идентификатор пользователя которому отправляется запрос
+            
+            Возвращает:
+                True если запрос отправлен, иначе False и текст ошибки
+
+            @todo Закончить метод
+        """
+        try:
+            sender_id = request.data["sender_id"]
+            receiver_id = request.data["receiver_id"]
+        except KeyError:
+            return Response({
+                "error": "Недостаточно аргументов"
+            })
+        
+        try:
+            from_user = User.objects.get(user_id=sender_id)
+            to_user = User.objects.get(user_id=receiver_id)
+        except User.DoesNotExist:
+            return Response({
+                "error": "Одного из пользователей не существует"
+            })
+
+    @action(detail=False, methods=["post"])
+    def accept_friend_request(self, request) -> Response:
+        """
+            Принимает входящий запрос в друзья
+
+            Аргументы:
+                user_id - Идентификатор пользователя, которому поступил запрос
+                friend_id - Идентификатор пользователя, который подал заявку
+            
+            Возвращает:
+                True если запрос подтверждён, иначе False и текст ошибки
+        """
+        ...
+
+    @action(detail=False, methods=["post"])
+    def get_incoming_friend_requests(self, request) -> Response:
+        """
+            Получает входящие запросы в друзья
+
+            Аргументы:
+                user_id - Идентификатор пользователя, который хочет получить входящие заявки
+            
+            Возвращает:
+                Список имён пользователей, которые отправили запрос на друзья
+        """
+        ...
+
+    @action(detail=False, methods=["post"])
+    def get_friends(self, request) -> Response:
+        """
+            Получает друзей
+
+            Аргументы:
+                user_id - Идентификатор пользователя, который хочет получить своих друзей
+            
+            Возвращает:
+                Список имён пользователей, которые в друзьях у запрошенного пользователя
+        """
+        try:
+            user_id = request.data["user_id"]
+        except KeyError:
+            return Response({
+                "error": "Недостаточно параметров"
+            })
+        
+        friends_names: List[str] = []
+        try:
+            user = User.objects.get(user_id=user_id)
+        except User.DoesNotExist:
+            return Response({
+                "error": "Пользователя с указанным идентификатором не существует"
+            })
+        
+        user_friends = Friends.objects.filter(Q(first_friend=user) | Q(second_friend=user))
+        for user_friend in user_friends:
+            if user_friend.second_friend.user_name == user.user_name:
+                friends_names.append(user_friend.first_friend.user_name)
+            else:
+                friends_names.append(user_friend.first_friend.user_name)
+
+        return Response({
+            "friends": friends_names
         })

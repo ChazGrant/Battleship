@@ -19,6 +19,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     additionalfunctions.cpp \
+    friendadder.cpp \
     inputgameid.cpp \
     loginform.cpp \
     main.cpp \
@@ -27,12 +28,14 @@ SOURCES += \
 
 HEADERS += \
     additionalfunctions.h \
+    friendadder.h \
     inputgameid.h \
     loginform.h \
     mainmenu.h \
     mainwindow.h
 
 FORMS += \
+    friendadder.ui \
     inputgameid.ui \
     loginform.ui \
     mainmenu.ui \

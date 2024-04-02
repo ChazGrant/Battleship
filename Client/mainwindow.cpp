@@ -8,8 +8,8 @@ const QColor YELLOW = QColor("darkyellow");
 const QColor RED = QColor("darkred");
 const QColor GRAY = QColor("darkgray");
 
-const int ROW_COUNT = 10;
-const int COLUMN_COUNT = 10;
+const int FIELD_ROW_COUNT = 10;
+const int FIELD_COLUMN_COUNT = 10;
 
 
 /*! @brief Конструктор класса
@@ -22,12 +22,12 @@ const int COLUMN_COUNT = 10;
  *
  *  @return MainWindow
 */
-MainWindow::MainWindow(QWidget *parent, QString t_game_id, QString t_user_id)
+MainWindow::MainWindow(QWidget *parent, QString t_gameId, int t_userId)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , m_gameId(t_gameId)
+    , m_userId(t_userId)
 {
-    this->m_gameId = m_gameId;
-    this->m_userId = m_userId;
     this->m_closeEventIsAccepted = false;
 
     showMessage("Ваше айди: " + this->m_userId, QMessageBox::Icon::Information);
@@ -222,7 +222,7 @@ void MainWindow::getDamagedCells()
 
     QUrlQuery query;
 
-    query.addQueryItem("user_id", this->m_userId);
+    query.addQueryItem("user_id", QString::number(this->m_userId));
 
     QUrl queryUrl;
     queryUrl.setQuery(query);
@@ -285,7 +285,7 @@ void MainWindow::checkForWinner()
     QUrlQuery query;
 
     query.addQueryItem("game_id", this->m_gameId);
-    query.addQueryItem("user_id", this->m_userId);
+    query.addQueryItem("user_id", QString::number(this->m_userId));
 
     QUrl queryUrl;
     queryUrl.setQuery(query);
@@ -336,7 +336,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
     QUrlQuery query;
 
-    query.addQueryItem("user_id", this->m_userId);
+    query.addQueryItem("user_id", QString::number(this->m_userId));
     query.addQueryItem("game_id", this->m_gameId);
 
     QUrl queryUrl;
@@ -479,7 +479,7 @@ void MainWindow::getShipsAmountResponse()
 
     QUrlQuery query;
 
-    query.addQueryItem("owner_id", this->m_userId);
+    query.addQueryItem("owner_id", QString::number(this->m_userId));
 
     QUrl queryUrl;
     queryUrl.setQuery(query);
@@ -498,10 +498,10 @@ void MainWindow::getShipsAmountResponse()
 */
 void MainWindow::setTable()
 {
-    ui->yourField->setRowCount(ROW_COUNT);
-    ui->yourField->setColumnCount(COLUMN_COUNT);
-    for (int y = 0; y < ROW_COUNT; ++y)
-        for (int x = 0;x < COLUMN_COUNT; ++x) {
+    ui->yourField->setRowCount(FIELD_ROW_COUNT);
+    ui->yourField->setColumnCount(FIELD_COLUMN_COUNT);
+    for (int y = 0; y < FIELD_ROW_COUNT; ++y)
+        for (int x = 0;x < FIELD_COLUMN_COUNT; ++x) {
             QTableWidgetItem *item = new QTableWidgetItem();
             item->setText(QString(" "));
 
@@ -523,10 +523,10 @@ void MainWindow::setTable()
 */
 void MainWindow::setOpponentTable()
 {
-    ui->opponentField->setRowCount(ROW_COUNT);
-    ui->opponentField->setColumnCount(COLUMN_COUNT);
-    for (int y = 0; y < ROW_COUNT; ++y)
-        for (int x = 0;x < COLUMN_COUNT; ++x) {
+    ui->opponentField->setRowCount(FIELD_ROW_COUNT);
+    ui->opponentField->setColumnCount(FIELD_COLUMN_COUNT);
+    for (int y = 0; y < FIELD_ROW_COUNT; ++y)
+        for (int x = 0;x < FIELD_COLUMN_COUNT; ++x) {
             QTableWidgetItem *item = new QTableWidgetItem();
             item->setText(QString(" "));
 
@@ -609,7 +609,7 @@ void MainWindow::on_placeShipButton_clicked()
         values += " ";
     }
     QByteArray json = "{ \"cells\":\"" + values.toUtf8() + \
-            "\", \"owner_id\":\"" + this->m_userId.toUtf8() + \
+            "\", \"owner_id\":\"" + QString::number(this->m_userId).toUtf8() + \
             "\", \"game_id\":\"" +  this->m_gameId.toUtf8() + "\" }";
 
 
@@ -738,7 +738,7 @@ void MainWindow::shoot()
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
 
     QUrlQuery jsonData;
-    jsonData.addQueryItem("user_id", this->m_userId);
+    jsonData.addQueryItem("user_id", QString::number(this->m_userId));
     jsonData.addQueryItem("game_id", this->m_gameId);
 
     jsonData.addQueryItem("x", QString::number(selectedCell->column()));

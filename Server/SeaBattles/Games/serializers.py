@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Game, Field, Ship
+from .models import Game, Field, Ship, User
 
 
 class GameSerializer(serializers.ModelSerializer):
@@ -19,3 +19,9 @@ class ShipSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ship
         fields = ('ship_length', 'shippart_set')
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('user_id', 'user_name')

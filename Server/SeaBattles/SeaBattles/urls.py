@@ -18,7 +18,7 @@ from django.urls import path, include
 
 from rest_framework.routers import DefaultRouter
 
-from Games.views import GameViewSet, FieldViewSet, ShipViewSet, UserViewSet
+from Games.views import GameViewSet, FieldViewSet, ShipViewSet, UserViewSet, FriendsViewSet
 
 
 router = DefaultRouter()
@@ -26,6 +26,7 @@ router.register(r'games', GameViewSet, basename='game')
 router.register(r'fields', FieldViewSet, basename='field')
 router.register(r'ships', ShipViewSet, basename='ship')
 router.register(r'users', UserViewSet, basename='user')
+router.register(r'friends', FriendsViewSet, basename='friends')
 
 urlpatterns = [
     path('', include('rest_framework.urls')),

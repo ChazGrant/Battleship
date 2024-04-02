@@ -144,18 +144,17 @@ void LoginForm::getLoginStatus(QNetworkReply *reply)
 
     bool login_successful = jsonObj["login_successful"].toBool();
     if (login_successful) {
-        QString username = jsonObj["username"].toString();
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("Вход успешен");
-        msgBox.setText("Ваше имя пользователя: " + username);
-        msgBox.exec();
+        int userId = jsonObj["user_id"].toInt();
+
+        window = new MainMenu(userId);
+        window->show();
+        close();
     } else {
         QMessageBox msgBox;
         msgBox.setWindowTitle("Вход не успешен");
         msgBox.setText("Введён неверный айди или пароль");
         msgBox.exec();
     }
-
 }
 
 /*! @brief Получение статуса регистрации пользователя
@@ -179,15 +178,14 @@ void LoginForm::getRegistrateStatus(QNetworkReply *reply)
     if (jsonObj.keys().size() == 0) {
         return showMessage("Во время обращения к серверу возникли ошибки", QMessageBox::Icon::Critical);
     }
-    bool registrate_successful = jsonObj["registrate_successful"].toBool();
+    bool registrate_successful = jsonObj["registration_successful"].toBool();
+    qDebug() << registrate_successful;
     if (registrate_successful) {
-        int user_id = jsonObj["user_id"].toInt();
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("Вход успешен");
-        msgBox.setText("Вам присвоен id: " + QString::number(user_id));
-        msgBox.exec();
+        int userId = jsonObj["user_id"].toInt();
+        window = new MainMenu(userId);
+
     } else {
-        QString error_message = jsonObj["error_message"].toString();
+        QString error_message = jsonObj["error"].toString();
         QMessageBox msgBox;
         msgBox.setWindowTitle("Вход не успешен");
         msgBox.setText(error_message);

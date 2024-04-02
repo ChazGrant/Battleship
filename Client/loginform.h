@@ -16,6 +16,7 @@
 #include <QJsonDocument>
 
 #include "additionalfunctions.h"
+#include "mainmenu.h"
 
 
 namespace Ui {
@@ -44,6 +45,8 @@ private:
 
     void mouseMoveEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent* event);
+
+    MainMenu *window;
 
     void login();
     void registrate();

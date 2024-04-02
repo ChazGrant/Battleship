@@ -11,15 +11,15 @@
  *
  *  @return InputGameID
 */
-InputGameID::InputGameID(QWidget *parent, QString t_userId) :
-    QDialog(parent),
-    ui(new Ui::InputGameID)
+InputGameID::InputGameID(int t_userId, QWidget *parent) :
+    QDialog(parent)
+    , ui(new Ui::InputGameID)
+    , m_userId(t_userId)
 {
     ui->setupUi(this);
 
     m_manager = new QNetworkAccessManager(this);
     this->m_gameId = "";
-    this->m_userId = t_userId;
 }
 
 //! @brief Деструктор класса

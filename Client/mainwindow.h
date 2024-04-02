@@ -36,7 +36,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr, QString t_game_id="", QString t_user_id="");
+    explicit MainWindow(QWidget *parent = nullptr, QString t_game_id="", int t_user_id=0);
     ~MainWindow();
 
     virtual void closeEvent(QCloseEvent *event) override;
@@ -62,7 +62,7 @@ private:
     //! Идентификатор игры
     QString m_gameId;
     //! Идентификатор пользователя
-    QString m_userId;
+    int m_userId;
     //! Было нажато подтверждение закрытия окна
     bool m_closeEventIsAccepted;
 

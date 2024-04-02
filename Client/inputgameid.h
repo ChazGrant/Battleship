@@ -19,7 +19,7 @@ class InputGameID : public QDialog
     Q_OBJECT
 
 public:
-    explicit InputGameID(QWidget *parent = nullptr, QString t_userId="");
+    explicit InputGameID(int t_userId, QWidget *parent = nullptr);
     ~InputGameID();
 
 signals:
