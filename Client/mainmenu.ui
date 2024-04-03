@@ -103,6 +103,9 @@
        <height>281</height>
       </rect>
      </property>
+     <property name="styleSheet">
+      <string notr="true">background: transparent</string>
+     </property>
      <property name="currentIndex">
       <number>0</number>
      </property>
@@ -113,9 +116,9 @@
       <widget class="QListWidget" name="friendsListWidget">
        <property name="geometry">
         <rect>
-         <x>-10</x>
+         <x>0</x>
          <y>0</y>
-         <width>261</width>
+         <width>241</width>
          <height>261</height>
         </rect>
        </property>
@@ -125,12 +128,12 @@
       <attribute name="title">
        <string>Заявки в друзья</string>
       </attribute>
-      <widget class="QListWidget" name="listWidget_2">
+      <widget class="QListWidget" name="friendRequestsListWidget">
        <property name="geometry">
         <rect>
-         <x>-10</x>
+         <x>0</x>
          <y>0</y>
-         <width>261</width>
+         <width>241</width>
          <height>261</height>
         </rect>
        </property>

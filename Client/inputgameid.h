@@ -29,7 +29,7 @@ signals:
      *
      * @return void
     */
-    void acceptConnection(QString t_gameId);
+    void connectionAccepted(QString t_gameId);
 
 private slots:
     void on_connectToGameButton_clicked();

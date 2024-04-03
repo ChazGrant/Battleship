@@ -15,9 +15,10 @@
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QHttpPart>
 
-#include "mainwindow.h"
 #include "additionalfunctions.h"
+#include "mainwindow.h"
 #include "friendadder.h"
+#include "inputgameid.h"
 
 
 namespace Ui {
@@ -39,11 +40,12 @@ private slots:
     void on_connectToExistingGame_clicked();
     void openMainWindow(QString t_gameId);
 
+    void updateFriendsTab(int t_tabIndex);
+
     void fillFriendsTab(QNetworkReply *reply);
+    void fillFriendsRequestsTab(QNetworkReply *reply);
     void getFriendRequestStatus(QNetworkReply *reply);
 private:
-    void sendServerRequest(QString t_requestUrl, QMap<QString, QString> t_queryItems);
-
     void getFriends();
     void sendFriendRequest(int t_friendId);
     //! Указатель на виджет класса
@@ -54,10 +56,12 @@ private:
     MainWindow *m_mainWindow;
     //! Указатель на класс FriendAdder
     FriendAdder *m_friendAdderWindow;
+    //! Указатель на класс InputGameID
+    InputGameID *m_inputGameIdWindow;
     //! Идентификатор пользователя
     int m_userId;
 
-    void openFriendAdder();
+    void openFriendAdder();    
 };
 
 #endif // MAINMENU_H

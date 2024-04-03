@@ -4,6 +4,10 @@
 #include <QString>
 #include <QMessageBox>
 
-void showMessage(QString t_message_text, QMessageBox::Icon t_message_icon);
+#include <QNetworkRequest>
+#include <QNetworkAccessManager>
+
+inline void showMessage(const QString t_messageText, QMessageBox::Icon t_messageIcon);
+inline void sendServerRequest(const QString t_requestUrl, QMap<QString, QString> t_queryParams, QNetworkAccessManager *t_manager);
 
 #endif // ADDITIONALFUNCTIONS_H

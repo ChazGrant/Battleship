@@ -6,9 +6,10 @@ from django.db.models import F, Q
 from django.db.utils import IntegrityError
 
 import random
+import hashlib
 
 from .models import Game, Field, Ship, ShipPart, MarkedCell, User, FriendRequest, Friends
-from .serializers import GameSerializer, FieldSerializer, ShipSerializer, UserSerializer
+from .serializers import GameSerializer, FieldSerializer, ShipSerializer, UserSerializer, FriendRequestSerializer
 
 from typing import List
 
@@ -950,12 +951,51 @@ class UserViewSet(ViewSet):
         @author     ChazGrant
         @version    1.0
     """
+    def hashPassword(self, email: str, username: str, password: str) -> str:
+        """
+            Хэширует пароль
+
+            Аргументы:
+                email - Почта пользователя
+                username - Имя пользователя
+                password - Пароль
+            
+            Возвращает:
+                Захэшированный пароль с солью
+        """
+        salt = ""
+
+        for part in range(0, len(email), 2):
+            salt += email[part]
+
+        for part in range(0, len(username), 2):
+            salt += username[part]
+        
+        return hashlib.md5((password + salt).encode()).hexdigest()
+
     @action(detail=False, methods=["get"])
     def get_users(self, request) -> Response:
+        """
+            Возвращает всех пользователей
+
+            *DEBUG
+        """
         users = User.objects.all()
         serialzer = UserSerializer(users, many=True)
 
         return Response(serialzer.data)
+
+    @action(detail=False, methods=["get"])
+    def delete_users(self, request) -> Response:
+        """
+            Удаляет пользователей
+
+            *DEBUG
+        """
+        User.objects.all().delete()
+        return Response({
+            "status": "ok"
+        })
 
     @action(detail=False, methods=["post"])
     def login(self, request) -> Response:
@@ -964,10 +1004,10 @@ class UserViewSet(ViewSet):
 
             Аргументы:
                 user_id - Идентификатор пользователя
+                password - Незашифрованный пароль пользователя
 
             Возвращает:
-                Текст ошибки и/или результат о логине
-                *DEBUG возвращает имя пользователя
+                Текст ошибки и результат о логине или идентификатор пользователя
         """
         try:
             user_id = int(request.data["user_id"])
@@ -984,7 +1024,9 @@ class UserViewSet(ViewSet):
             }) 
 
         try:
-            user = User.objects.get(user_id=user_id, user_password=password)
+            user = User.objects.get(user_id=user_id)
+            hashed_password = self.hashPassword(user.user_email, user.user_name, password)
+            User.objects.get(user_id=user_id, user_password=hashed_password)
         except User.DoesNotExist:
             return Response({
                 "login_successful": False
@@ -992,7 +1034,7 @@ class UserViewSet(ViewSet):
 
         return Response({
                 "login_successful": True,
-                "user_id": user.user_id
+                "user_id": int(user.user_id)
             })
 
     @action(detail=False, methods=["post"])
@@ -1007,8 +1049,6 @@ class UserViewSet(ViewSet):
 
             Возвращает:
                 Информацию об успешной регистрации или текст ошибки
-
-            @TODO принимать хэш пароля а не сам пароль
         """
         # x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
         # if x_forwarded_for:
@@ -1038,8 +1078,9 @@ class UserViewSet(ViewSet):
             last_user_id = 0
 
         try:
+            hashed_password = self.hashPassword(email, user_name, password)
             created_user = User.objects.create(user_name=user_name, 
-                                user_password=password, 
+                                user_password=hashed_password, 
                                 user_email=email,
                                 user_id=last_user_id + 1)
         except IntegrityError as e:
@@ -1096,6 +1137,28 @@ class FriendsViewSet(ViewSet):
             return Response({
                 "error": "Одного из пользователей не существует"
             })
+        
+        try:
+            FriendRequest.objects.get(from_user=from_user, to_user=to_user)
+            return Response({
+                "error": "Вы уже отправили заявку этому пользователю"
+            })
+        except FriendRequest.DoesNotExist:
+            try:
+                FriendRequest.objects.get(from_user=to_user, to_user=from_user)
+                if self.acceptFriendRequest(to_user, from_user):
+                    return Response({
+                        "success": True
+                    })
+                else:
+                    return Response({
+                        "error": "Во время принятия запроса дружбы возникла ошибка"
+                    })
+            except FriendRequest.DoesNotExist:
+                FriendRequest.objects.create(from_user=from_user, to_user=to_user)
+                return Response({
+                    "success": True
+                })
 
     @action(detail=False, methods=["post"])
     def accept_friend_request(self, request) -> Response:
@@ -1109,7 +1172,41 @@ class FriendsViewSet(ViewSet):
             Возвращает:
                 True если запрос подтверждён, иначе False и текст ошибки
         """
-        ...
+        try:
+            user_id = request.data["user_id"]
+            friend_id = request.data["friend_id"]
+        except KeyError:
+            return Response({
+                "error": "Недостаточно параметров"
+            })
+        
+        try:
+            friend_request = FriendRequest.objects.get(from_user__user_id=friend_id, to_user__user_id=user_id)
+        except FriendRequest.DoesNotExist:
+            return Response({
+                "error": "Данной заявки не существует"
+            })
+        
+        try:
+            first_user = User.objects.get(user_id=user_id)
+            second_user = User.objects.get(user_id=friend_id)
+        except User.DoesNotExist:
+            return Response({
+                "error": "Одного из пользователей не существует"
+            })
+
+        Friends.objects.create(first_friend=first_user, second_friend=second_user)
+        friend_request.delete()
+
+        return Response({
+            "request_accepted": True
+        })
+
+    @action(detail=False, methods=["get"])
+    def get_friend_reqeusts(self, request) -> Response:
+        requests = FriendRequest.objects.all()
+        serializer = FriendRequestSerializer(requests, many=True)
+        return Response(serializer.data)
 
     @action(detail=False, methods=["post"])
     def get_incoming_friend_requests(self, request) -> Response:
@@ -1122,7 +1219,20 @@ class FriendsViewSet(ViewSet):
             Возвращает:
                 Список имён пользователей, которые отправили запрос на друзья
         """
-        ...
+        try:
+            user_id = request.data["user_id"]
+        except KeyError:
+            return Response({
+                "error": "Недостаточно параметров"
+            })
+        
+        friend_requests: List[str] = []
+        for friend_request in FriendRequest.objects.filter(to_user__user_id=user_id):
+            friend_requests.append(friend_request.to_user.user_name)
+
+        return Response({
+            "friend_requests": friend_requests
+        })
 
     @action(detail=False, methods=["post"])
     def get_friends(self, request) -> Response:

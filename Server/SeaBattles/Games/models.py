@@ -11,7 +11,7 @@ from django.core.validators import MinLengthValidator
 class User(models.Model):
     user_name = models.CharField(max_length=20, validators=[MinLengthValidator(4)], unique=True)
     user_password = models.CharField(max_length=25, validators=[MinLengthValidator(8)])
-    user_id = models.CharField(max_length=30, validators=[MinLengthValidator(30)], unique=True)
+    user_id = models.CharField(max_length=30, unique=True)
     user_email = models.CharField(max_length=40, validators=[MinLengthValidator(5)], unique=True)
 
     class Meta:
@@ -60,6 +60,10 @@ class Ship(models.Model):
     is_dead = models.BooleanField(default=False)
 
     field = models.ForeignKey(Field, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Ship"
+        verbose_name_plural = "Ships"
 
 
 class ShipPart(models.Model):

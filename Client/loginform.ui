@@ -23,13 +23,13 @@
     </rect>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="tab">
     <attribute name="title">
      <string>Вход</string>
     </attribute>
-    <widget class="QLineEdit" name="loginUserID_lineEdit">
+    <widget class="QLineEdit" name="loginUserIdLineEdit">
      <property name="geometry">
       <rect>
        <x>50</x>
@@ -45,7 +45,7 @@
       <string>Введите ID</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="loginPassword_lineEdit">
+    <widget class="QLineEdit" name="loginPasswordLineEdit">
      <property name="geometry">
       <rect>
        <x>50</x>
@@ -70,7 +70,7 @@
       <string>Введите пароль</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="login_pushButton">
+    <widget class="QPushButton" name="loginButton">
      <property name="geometry">
       <rect>
        <x>50</x>
@@ -83,7 +83,7 @@
       <string>Войти</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="exit_pushButton">
+    <widget class="QPushButton" name="exitButton">
      <property name="geometry">
       <rect>
        <x>50</x>
@@ -101,7 +101,7 @@
     <attribute name="title">
      <string>Регистрация</string>
     </attribute>
-    <widget class="QPushButton" name="registrate_pushButton">
+    <widget class="QPushButton" name="registrateButton">
      <property name="geometry">
       <rect>
        <x>40</x>
@@ -114,7 +114,7 @@
       <string>Зарегистрироваться</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="registratePassword_lineEdit">
+    <widget class="QLineEdit" name="registratePasswordLineEdit">
      <property name="geometry">
       <rect>
        <x>40</x>
@@ -127,7 +127,7 @@
       <string>Придумайте пароль</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="registrateUsername_lineEdit">
+    <widget class="QLineEdit" name="registrateUsernameLineEdit">
      <property name="geometry">
       <rect>
        <x>40</x>
@@ -140,7 +140,7 @@
       <string>Придумайте имя</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="registrateEmail_lineEdit">
+    <widget class="QLineEdit" name="registrateEmailLineEdit">
      <property name="geometry">
       <rect>
        <x>40</x>
@@ -153,7 +153,7 @@
       <string>Введите Вашу почту</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="exit2_pushButton">
+    <widget class="QPushButton" name="exit2Button">
      <property name="geometry">
       <rect>
        <x>40</x>

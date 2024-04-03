@@ -6,3 +6,6 @@ __pycache__
 migrations
 *.pro.user
 *.pro.user.*
+Include/
+docs/
+test.py

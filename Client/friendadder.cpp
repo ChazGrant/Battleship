@@ -26,4 +26,5 @@ void FriendAdder::addFriend()
         return showMessage("Введите число", QMessageBox::Icon::Critical);
 
     emit friendAdded(friendId);
+    close();
 }

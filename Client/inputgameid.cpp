@@ -69,14 +69,14 @@ void InputGameID::on_connectToGameButton_clicked()
 */
 void InputGameID::connectToGame(QNetworkReply *reply)
 {
-    QString strReply = reply->readAll();
+    const QString strReply = reply->readAll();
 
     QJsonObject jsonObj = QJsonDocument::fromJson(strReply.toUtf8()).object();
 
     if (jsonObj.contains("game_id"))
     {
         // Подключены к игре
-        emit acceptConnection(jsonObj["game_id"].toString());
+        emit connectionAccepted(jsonObj["game_id"].toString());
         this->close();
     }
     else if(jsonObj.contains("errors"))

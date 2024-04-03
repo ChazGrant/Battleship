@@ -8,9 +8,35 @@
  *
  *  @return void
 */
-inline void showMessage(QString t_message_text, QMessageBox::Icon t_message_icon) {
+inline void showMessage(QString t_messageText, QMessageBox::Icon t_messageIcon) {
     QMessageBox msgbox;
     msgbox.setWindowTitle("Ошибка");
-    msgbox.setText(t_message_text);
+    msgbox.setText(t_messageText);
+    msgbox.setIcon(t_messageIcon);
     msgbox.exec();
+}
+
+/*! @brief Отправка POST запроса на указанный адрес сервера
+ *
+ *  @param t_requestUrl Адрес на который нужно отправить запрос
+ *  @param t_queryItems Хэш-таблица, содержащая имя параметра и значение
+ *  @param *t_manager Указатель на менеджер отправки запросов
+ *
+ *  @return void
+*/
+inline void sendServerRequest(const QString t_requestUrl, QMap<QString, QString> t_queryParams, QNetworkAccessManager *t_manager)
+{
+    QUrl url(t_requestUrl);
+    QNetworkRequest request( url );
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+
+    QUrlQuery query;
+
+    for (QString queryKey : t_queryParams.keys())
+        query.addQueryItem(queryKey, t_queryParams[queryKey]);
+
+    QUrl queryUrl;
+    queryUrl.setQuery(query);
+
+    t_manager->post(request, queryUrl.toEncoded().remove(0, 1));
 }

@@ -15,6 +15,8 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 
+#include <QCryptographicHash>
+
 #include "additionalfunctions.h"
 #include "mainmenu.h"
 
@@ -47,6 +49,8 @@ private:
     void mousePressEvent(QMouseEvent* event);
 
     MainMenu *window;
+
+    QString generateSalt(QString t_firstPart, QString t_secondPart);
 
     void login();
     void registrate();

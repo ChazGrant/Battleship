@@ -1,7 +1,6 @@
 #include "mainmenu.h"
 #include "ui_mainmenu.h"
 
-#include "inputgameid.h"
 #include "mainwindow.h"
 
 
@@ -23,11 +22,15 @@ MainMenu::MainMenu(int t_userId, QWidget *parent) :
     this->setWindowFlags(Qt::FramelessWindowHint);
 
     m_manager = new QNetworkAccessManager(this);
+    ui->userID->setText("Ваш ID: " + QString::number(t_userId));
+
+    ui->tabWidget->setStyleSheet("QTabWidget::pane { border: 0; }");
 
     connect(ui->addFriendButton, &QPushButton::clicked, this, &MainMenu::openFriendAdder);
+    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(updateFriendsTab(int)));
     connect(ui->exitButton, &QPushButton::clicked, this, &MainMenu::close);
 
-    this->getFriends();
+    this->updateFriendsTab(ui->tabWidget->currentIndex());
 }
 
 //! @brief Деструктор класса
@@ -46,19 +49,11 @@ MainMenu::~MainMenu()
 */
 void MainMenu::on_createNewGameButton_clicked()
 {
-    QUrl url("http://127.0.0.1:8000/games/create_game/");
-    QNetworkRequest request( url );
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-
-    QUrlQuery query;
-    query.addQueryItem("user_id", QString::number(m_userId));
-
-    QUrl queryUrl;
-    queryUrl.setQuery(query);
+    QMap<QString, QString> queryItems;
+    queryItems["user_id"] = QString::number(m_userId);
 
     QObject::connect(m_manager, SIGNAL( finished( QNetworkReply* ) ), SLOT(connectToCreatedGame(QNetworkReply* )));
-
-    m_manager->post(request, queryUrl.toEncoded().remove(0, 1));
+    sendServerRequest("http://127.0.0.1:8000/games/create_game/", queryItems, m_manager);
 }
 
 /*! @brief Подключение к указанной игре
@@ -77,10 +72,8 @@ void MainMenu::connectToCreatedGame(QNetworkReply *reply)
     // Конвертируем строку в json object
     QJsonObject jsonResponse = QJsonDocument::fromJson(strReply.toUtf8()).object();
 
-
     // Если ответ содержит id игры, значит она создана и ошибок нет
-    if (jsonResponse.contains("game_id"))
-    {
+    if (jsonResponse.contains("game_id")) {
         QString gameId = jsonResponse["game_id"].toString();
         QMessageBox msgBox;
         msgBox.setText("ID вашей игры:\n" + gameId);
@@ -102,10 +95,10 @@ void MainMenu::connectToCreatedGame(QNetworkReply *reply)
 */
 void MainMenu::on_connectToExistingGame_clicked()
 {
-    InputGameID *widget = new InputGameID(this->m_userId);
-    widget->show();
+    m_inputGameIdWindow = new InputGameID(this->m_userId);
+    m_inputGameIdWindow->show();
 
-    QObject::connect(widget, &InputGameID::acceptConnection, this, &MainMenu::openMainWindow);
+    QObject::connect(m_inputGameIdWindow, &InputGameID::connectionAccepted, this, &MainMenu::openMainWindow);
 }
 
 /*! @brief Открытие окна с игрой
@@ -116,10 +109,10 @@ void MainMenu::on_connectToExistingGame_clicked()
 */
 void MainMenu::openMainWindow(QString t_gameId)
 {
-    this->m_mainWindow = new MainWindow (nullptr, t_gameId, m_userId);
+    m_mainWindow = new MainWindow (nullptr, t_gameId, m_userId);
 
     m_mainWindow->show();
-    this->close();
+    close();
 }
 
 /*! @brief Получение друзей пользователя
@@ -128,21 +121,12 @@ void MainMenu::openMainWindow(QString t_gameId)
 */
 void MainMenu::getFriends()
 {
-    QUrl url("http://127.0.0.1:8000/friends/get_friends/");
-    QNetworkRequest request( url );
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-
-    QUrlQuery query;
-    QString userId = ui->userID->text().split(": ")[1];
-
-    query.addQueryItem("user_id", userId);
-
-    QUrl queryUrl;
-    queryUrl.setQuery(query);
+    QMap<QString, QString> queryItems;
+    QString uID = QString::number(m_userId);
+    queryItems["user_id"] = QString::number(m_userId);
 
     QObject::connect(m_manager, SIGNAL( finished( QNetworkReply* ) ), SLOT(fillFriendsTab(QNetworkReply* )));
-
-    m_manager->post(request, queryUrl.toEncoded().remove(0, 1));
+    sendServerRequest("http://127.0.0.1:8000/friends/get_friends/", queryItems, m_manager);
 }
 
 /*! @brief Добавление друга
@@ -160,8 +144,8 @@ void MainMenu::sendFriendRequest(int t_friendId)
     queryItems["sender_id"] = QString::number(m_userId);
     queryItems["receiver_id"] = QString::number(t_friendId);
 
-    connect(m_manager, SIGNAL( finished( QNetworkReply* ) ), SLOT(getFriendRequestStatus(QNetworkReply* )));
-    sendServerRequest("http://127.0.0.1:8000/friends/send_friend_request/", queryItems);
+    connect(m_manager, SIGNAL(finished(QNetworkReply*)), SLOT(getFriendRequestStatus(QNetworkReply*)));
+    sendServerRequest("http://127.0.0.1:8000/friends/send_friend_request/", queryItems, m_manager);
 }
 
 /*! @brief Открытие окна для ввода идентификатора друга
@@ -174,6 +158,25 @@ void MainMenu::openFriendAdder()
     m_friendAdderWindow->show();
 
     connect(m_friendAdderWindow, &FriendAdder::friendAdded, this, &MainMenu::sendFriendRequest);
+}
+
+/*! @brief Обрабатывание события при изменение активной вкладки
+ *
+ *  @param t_tabIndex Текущий идентификатор вкладки
+ *
+ *  @return void
+*/
+void MainMenu::updateFriendsTab(int t_tabIndex)
+{
+    QMap<QString, QString> queryParams;
+    queryParams["user_id"] = QString::number(m_userId);
+    if (t_tabIndex == 0) {
+        connect(m_manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(fillFriendsTab(QNetworkReply*)));
+        sendServerRequest("http://127.0.0.1:8000/friends/get_friends/", queryParams, m_manager);
+    } else if (t_tabIndex == 1) {
+        connect(m_manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(fillFriendsRequestsTab(QNetworkReply*)));
+        sendServerRequest("http://127.0.0.1:8000/friends/get_incoming_friend_requests/", queryParams, m_manager);
+    }
 }
 
 /*! @brief Заполнение списка пользователями
@@ -198,6 +201,28 @@ void MainMenu::fillFriendsTab(QNetworkReply *reply)
     }
 }
 
+/*! @brief Заполнение списка заявок в друзья
+ *
+ *  @param *reply Указатель на ответ от сервера
+ *
+ *  @return void
+*/
+void MainMenu::fillFriendsRequestsTab(QNetworkReply *reply)
+{
+    QString strReply = reply->readAll();
+    QJsonObject jsonResponse = QJsonDocument::fromJson(strReply.toUtf8()).object();
+
+    if (jsonResponse.contains("error")) {
+        QString error_message = jsonResponse["error"].toString();
+        return showMessage(error_message, QMessageBox::Icon::Critical);
+    }
+
+    QJsonArray jsonArray = jsonResponse["friend_requests"].toArray();
+    for (int i = 0; i < jsonArray.size(); ++i) {
+        ui->friendRequestsListWidget->addItem(jsonArray[i].toString());
+    }
+}
+
 /*! @brief Получение результата отправки запроса в друзья
  *
  *  @param *reply Указатель на ответ от сервера
@@ -206,31 +231,13 @@ void MainMenu::fillFriendsTab(QNetworkReply *reply)
 */
 void MainMenu::getFriendRequestStatus(QNetworkReply *reply)
 {
+    QString strReply = reply->readAll();
+    QJsonObject jsonResponse = QJsonDocument::fromJson(strReply.toUtf8()).object();
 
-}
+    if (jsonResponse.contains("error")) {
+        QString errorMessage = jsonResponse["error"].toString();
+        return showMessage(errorMessage, QMessageBox::Icon::Critical);
+    }
 
-/*! @brief Отправка POST запроса на указанный адрес сервера
- *
- *  @param t_requestUrl Адрес на который нужно отправить запрос
- *  @param t_queryItems Хэш-таблица, содержащая имя параметра и значение
- *
- *  @return void
-*/
-void MainMenu::sendServerRequest(QString t_requestUrl, QMap<QString, QString> t_queryItems)
-{
-    qDebug() << t_requestUrl;
-
-    QUrl url(t_requestUrl);
-    QNetworkRequest request( url );
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-
-    QUrlQuery query;
-
-    for (QString queryKey : t_queryItems.keys())
-        query.addQueryItem(queryKey, t_queryItems[queryKey]);
-
-    QUrl queryUrl;
-    queryUrl.setQuery(query);
-
-    m_manager->post(request, queryUrl.toEncoded().remove(0, 1));
+    showMessage("Заявка в друзья была успешно отправлена", QMessageBox::Icon::Information);
 }

@@ -22,7 +22,7 @@ const int FIELD_COLUMN_COUNT = 10;
  *
  *  @return MainWindow
 */
-MainWindow::MainWindow(QWidget *parent, QString t_gameId, int t_userId)
+MainWindow::MainWindow(QWidget *parent, const QString t_gameId, int t_userId)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , m_gameId(t_gameId)
@@ -71,7 +71,7 @@ MainWindow::MainWindow(QWidget *parent, QString t_gameId, int t_userId)
 */
 void MainWindow::getUserIdTurn(QNetworkReply *reply)
 {
-    QString replyStr = reply->readAll();
+    const QString replyStr = reply->readAll();
 
     QJsonObject jsonObj = QJsonDocument::fromJson(replyStr.toUtf8()).object();
 
@@ -127,7 +127,7 @@ void MainWindow::waitForTurn()
 */
 void MainWindow::fillField(QNetworkReply *reply)
 {
-    QString replyStr = reply->readAll();
+    const QString replyStr = reply->readAll();
     qDebug() << "GET FILL FIELD";
     qDebug() << replyStr;
 
@@ -243,7 +243,7 @@ void MainWindow::getDamagedCells()
 */
 void MainWindow::getWinner(QNetworkReply *reply)
 {
-    QString replyStr = reply->readAll();
+    const QString replyStr = reply->readAll();
     qDebug() << "GET GAME OVER STATE";
     qDebug() << replyStr;
 
@@ -304,7 +304,7 @@ void MainWindow::checkForWinner()
 void MainWindow::acceptCloseEvent(QNetworkReply *reply)
 {
     this->m_closeEventIsAccepted = true;
-    QString replyStr = reply->readAll();
+    const QString replyStr = reply->readAll();
 
     QJsonObject jsonObj = QJsonDocument::fromJson(replyStr.toUtf8()).object();
 
@@ -381,7 +381,7 @@ bool MainWindow::getErrorMessage(QJsonObject t_json_obj)
 */
 void MainWindow::getGameState(QNetworkReply* reply)
 {
-    QString replyStr = reply->readAll();
+    const QString replyStr = reply->readAll();
 
     QJsonObject jsonObj = QJsonDocument::fromJson(replyStr.toUtf8()).object();
 
@@ -433,7 +433,7 @@ void MainWindow::waitForGameStart()
 */
 void MainWindow::setShipsAmountLabel(QNetworkReply* reply)
 {
-    QString replyStr = reply->readAll();
+    const QString replyStr = reply->readAll();
     QJsonObject jsonObj = QJsonDocument::fromJson(replyStr.toUtf8()).object();
 
     if (this->getErrorMessage(jsonObj))
@@ -553,7 +553,7 @@ MainWindow::~MainWindow()
 */
 void MainWindow::placeShip(QNetworkReply* reply)
 {
-    QString replyStr = reply->readAll();
+    const QString replyStr = reply->readAll();
 
     QJsonObject jsonObj = QJsonDocument::fromJson(replyStr.toUtf8()).object();
 
@@ -631,7 +631,7 @@ void MainWindow::on_placeShipButton_clicked()
 void MainWindow::getFireStatus(QNetworkReply *reply)
 {
     ui->opponentField->clearSelection();
-    QString replyStr = reply->readAll();
+    const QString replyStr = reply->readAll();
 
     QJsonObject jsonObj = QJsonDocument::fromJson(replyStr.toUtf8()).object();
 

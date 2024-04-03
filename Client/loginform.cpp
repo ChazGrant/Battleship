@@ -1,6 +1,7 @@
 #include "loginform.h"
 #include "ui_loginform.h"
 
+
 /*! @brief Констркутор класса
  *
  *  @details Создаёт экземпляр класса, делая форму безрамочной
@@ -15,15 +16,18 @@ LoginForm::LoginForm(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    ui->loginUserIdLineEdit->setText("1");
+    ui->loginPasswordLineEdit->setText("password");
+
     m_manager = new QNetworkAccessManager(this);
 
     this->setWindowFlags(Qt::FramelessWindowHint);
 
-    connect(ui->login_pushButton, &QPushButton::clicked, this, &LoginForm::login);
-    connect(ui->registrate_pushButton, &QPushButton::clicked, this, &LoginForm::registrate);
+    connect(ui->loginButton, &QPushButton::clicked, this, &LoginForm::login);
+    connect(ui->registrateButton, &QPushButton::clicked, this, &LoginForm::registrate);
 
-    connect(ui->exit_pushButton, &QPushButton::clicked, this, &LoginForm::close);
-    connect(ui->exit2_pushButton, &QPushButton::clicked, this, &LoginForm::close);
+    connect(ui->exitButton, &QPushButton::clicked, this, &LoginForm::close);
+    connect(ui->exit2Button, &QPushButton::clicked, this, &LoginForm::close);
 }
 
 //! @brief Дестркутор класса
@@ -77,22 +81,13 @@ void LoginForm::mousePressEvent(QMouseEvent *event)
 */
 void LoginForm::login()
 {
-    QString user_id = ui->loginUserID_lineEdit->text();
-    QString password = ui->loginPassword_lineEdit->text();
+    QMap<QString, QString> queryParams;
 
-    QNetworkRequest request(QUrl("http://127.0.0.1:8000/users/login/"));
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    queryParams["user_id"] = ui->loginUserIdLineEdit->text();
+    queryParams["password"] = ui->loginPasswordLineEdit->text();
 
-    QUrlQuery query;
-    query.addQueryItem("user_id", user_id);
-    query.addQueryItem("password", password);
-
-    QUrl queryUrl;
-    queryUrl.setQuery(query);
-
-    QObject::connect(m_manager, SIGNAL(finished(QNetworkReply *)), SLOT(getLoginStatus(QNetworkReply *)));
-
-    m_manager->post(request, queryUrl.toEncoded().remove(0, 1));
+    QObject::connect(m_manager, SIGNAL(finished(QNetworkReply*)), SLOT(getLoginStatus(QNetworkReply*)));
+    sendServerRequest("http://127.0.0.1:8000/users/login/", queryParams, m_manager);
 }
 
 /*! @brief Регистрация пользователя
@@ -106,22 +101,20 @@ void LoginForm::login()
 */
 void LoginForm::registrate()
 {
-    QString user_name = ui->registrateUsername_lineEdit->text();
-    QString password = ui->registratePassword_lineEdit->text();
-    QString email = ui->registrateEmail_lineEdit->text();
-    QNetworkRequest request(QUrl("http://127.0.0.1:8000/users/registrate/"));
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    QMap<QString, QString> queryParams;
 
-    QUrlQuery query;
-    query.addQueryItem("user_name", user_name);
-    query.addQueryItem("password", password);
-    query.addQueryItem("email", email);
+    QString email = ui->registrateEmailLineEdit->text();
+    QString userName = ui->registrateUsernameLineEdit->text();
+    QString password = ui->registratePasswordLineEdit->text();
+    if (email == "" || userName == "" || password == "")
+        return showMessage("Одно из полей не было заполнено", QMessageBox::Icon::Critical);
 
-    QUrl queryUrl;
-    queryUrl.setQuery(query);
+    queryParams["user_name"] = ui->registrateUsernameLineEdit->text();
+    queryParams["password"] = ui->registratePasswordLineEdit->text();
+    queryParams["email"] = ui->registrateEmailLineEdit->text();
 
-    m_manager->post(request, queryUrl.toEncoded().remove(0, 1));
     QObject::connect(m_manager, SIGNAL(finished(QNetworkReply *)), SLOT(getRegistrateStatus(QNetworkReply *)));
+    sendServerRequest("http://127.0.0.1:8000/users/registrate/", queryParams, m_manager);
 }
 
 /*! @brief Вход в систему
@@ -139,7 +132,7 @@ void LoginForm::getLoginStatus(QNetworkReply *reply)
 {
     QObject::disconnect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getLoginStatus(QNetworkReply* )));
 
-    QString strReply = reply->readAll();
+    const QString strReply = reply->readAll();
     QJsonObject jsonObj = QJsonDocument::fromJson(strReply.toUtf8()).object();
 
     bool login_successful = jsonObj["login_successful"].toBool();
@@ -165,14 +158,12 @@ void LoginForm::getLoginStatus(QNetworkReply *reply)
  *  @param *reply Указатель на ответ от сервера
  *
  *  @return void
- *
- *  @todo Открывать InputGameID
 */
 void LoginForm::getRegistrateStatus(QNetworkReply *reply)
 {
     QObject::disconnect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getRegistrateStatus(QNetworkReply* )));
 
-    QString strReply = reply->readAll();
+    const QString strReply = reply->readAll();
     QJsonObject jsonObj = QJsonDocument::fromJson(strReply.toUtf8()).object();
 
     if (jsonObj.keys().size() == 0) {
@@ -183,9 +174,10 @@ void LoginForm::getRegistrateStatus(QNetworkReply *reply)
     if (registrate_successful) {
         int userId = jsonObj["user_id"].toInt();
         window = new MainMenu(userId);
-
+        window->show();
+        close();
     } else {
-        QString error_message = jsonObj["error"].toString();
+        const QString error_message = jsonObj["error"].toString();
         QMessageBox msgBox;
         msgBox.setWindowTitle("Вход не успешен");
         msgBox.setText(error_message);

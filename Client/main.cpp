@@ -8,7 +8,7 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    MainMenu form(1);
+    LoginForm form;
     form.show();
     return a.exec();
 }
