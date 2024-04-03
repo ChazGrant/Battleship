@@ -1,6 +1,6 @@
 from pdoc.cli import *
 
-OUTPUT_DIR = "../pdoc3_output"
+OUTPUT_DIR = "../docs"
 
 # Programmatically provide settings module
 SETTINGS_MODULE = "SeaBattles.settings"
