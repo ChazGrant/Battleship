@@ -15,11 +15,23 @@
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QHttpPart>
 
+#include <QMenu>
+
 #include "additionalfunctions.h"
 #include "mainwindow.h"
 #include "friendadder.h"
 #include "inputgameid.h"
 
+
+enum FriendRequestAction {
+    DECLINE_REQUEST,
+    ACCEPT_REQUEST
+};
+
+enum FriendAction {
+    SEND_FRIENDLY_DUEL_REQUEST,
+    DELETE_FRIEND
+};
 
 namespace Ui {
 class MainMenu;
@@ -34,17 +46,25 @@ public:
     ~MainMenu();
 
 private slots:
-    void on_createNewGameButton_clicked();
-    void connectToCreatedGame(QNetworkReply* t_reply);
+    void on_createNewGameButton_clicked();    
+
+    void showFriendRequestsContextMenu(const QPoint &point);
+    void showFriendsContextMenu(const QPoint &point);
+
+    void interactWithFriend(QString t_friendUserName, int t_action);
+    void processFriendRequestAction(QString t_friendUserName, int t_action);
 
     void on_connectToExistingGame_clicked();
     void openMainWindow(QString t_gameId);
 
     void updateFriendsTab(int t_tabIndex);
 
-    void fillFriendsTab(QNetworkReply *reply);
-    void fillFriendsRequestsTab(QNetworkReply *reply);
-    void getFriendRequestStatus(QNetworkReply *reply);
+    void connectToCreatedGame(QNetworkReply* t_reply);
+    void fillFriendsTab(QNetworkReply *t_reply);
+    void fillFriendsRequestsTab(QNetworkReply *t_reply);
+    void getFriendRequestStatus(QNetworkReply *t_reply);
+    void getIncomingFriendRequestProcessStatus(QNetworkReply *t_reply);
+    void getDeleteFriendRequestStatus(QNetworkReply *t_reply);
 private:
     void getFriends();
     void sendFriendRequest(int t_friendId);
@@ -60,6 +80,14 @@ private:
     InputGameID *m_inputGameIdWindow;
     //! Идентификатор пользователя
     int m_userId;
+
+    QStringList friendRequestsActionsText;
+    QStringList friendsActionsText;
+    QList<FriendRequestAction> friendRequestsActionsData;
+    QList<FriendAction> friendsActionsData;
+    QMenu *menu;
+
+    void setActionsLists();
 
     void openFriendAdder();    
 };

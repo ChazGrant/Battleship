@@ -9,7 +9,8 @@ import random
 import hashlib
 
 from .models import Game, Field, Ship, ShipPart, MarkedCell, User, FriendRequest, Friends
-from .serializers import GameSerializer, FieldSerializer, ShipSerializer, UserSerializer, FriendRequestSerializer
+from .serializers import (GameSerializer, FieldSerializer, ShipSerializer, UserSerializer, 
+                          FriendRequestSerializer, FriendsSerializer)
 
 from typing import List
 
@@ -1138,6 +1139,16 @@ class FriendsViewSet(ViewSet):
                 "error": "Одного из пользователей не существует"
             })
         
+        friends = Friends.objects.filter((Q(first_friend__user_name=from_user.user_name) &
+                    Q(second_friend__user_name=to_user.user_name)) | 
+                    (Q(first_friend__user_name=to_user.user_name) &
+                    Q(second_friend__user_name=from_user.user_name)))
+        if len(friends):
+            return Response({
+                "error": "Вы уже друзья с данным пользователем"
+            })
+            
+
         try:
             FriendRequest.objects.get(from_user=from_user, to_user=to_user)
             return Response({
@@ -1161,45 +1172,47 @@ class FriendsViewSet(ViewSet):
                 })
 
     @action(detail=False, methods=["post"])
-    def accept_friend_request(self, request) -> Response:
+    def process_friend_request(self, request) -> Response:
         """
             Принимает входящий запрос в друзья
 
             Аргументы:
                 user_id - Идентификатор пользователя, которому поступил запрос
-                friend_id - Идентификатор пользователя, который подал заявку
+                friend_username - Имя пользователя, который подал заявку
+                process_status - Статус обработки заявки(1 - подтверждён, 0 - отклонён)
             
             Возвращает:
                 True если запрос подтверждён, иначе False и текст ошибки
         """
         try:
             user_id = request.data["user_id"]
-            friend_id = request.data["friend_id"]
+            friend_username = request.data["friend_username"]
+            process_status = int(request.data["process_status"])
         except KeyError:
             return Response({
                 "error": "Недостаточно параметров"
             })
-        
+        except ValueError:
+            return Response({
+                "error": "Неверный формат статуса обработки"
+            })
+
         try:
-            friend_request = FriendRequest.objects.get(from_user__user_id=friend_id, to_user__user_id=user_id)
+            friend_request = FriendRequest.objects.get(from_user__user_name=friend_username, 
+                                                       to_user__user_id=user_id)
         except FriendRequest.DoesNotExist:
             return Response({
                 "error": "Данной заявки не существует"
             })
         
-        try:
-            first_user = User.objects.get(user_id=user_id)
-            second_user = User.objects.get(user_id=friend_id)
-        except User.DoesNotExist:
-            return Response({
-                "error": "Одного из пользователей не существует"
-            })
-
-        Friends.objects.create(first_friend=first_user, second_friend=second_user)
         friend_request.delete()
+        if not (process_status == 0):
+            first_user = User.objects.get(user_id=user_id)
+            second_user = User.objects.get(user_name=friend_username)
+            Friends.objects.create(first_friend=first_user, second_friend=second_user)
 
         return Response({
-            "request_accepted": True
+            "request_processed": True
         })
 
     @action(detail=False, methods=["get"])
@@ -1208,7 +1221,7 @@ class FriendsViewSet(ViewSet):
         serializer = FriendRequestSerializer(requests, many=True)
         return Response(serializer.data)
 
-    @action(detail=False, methods=["post"])
+    @action(detail=False, methods=["post", "get"])
     def get_incoming_friend_requests(self, request) -> Response:
         """
             Получает входящие запросы в друзья
@@ -1220,7 +1233,7 @@ class FriendsViewSet(ViewSet):
                 Список имён пользователей, которые отправили запрос на друзья
         """
         try:
-            user_id = request.data["user_id"]
+            user_id = int(request.data["user_id"])
         except KeyError:
             return Response({
                 "error": "Недостаточно параметров"
@@ -1228,13 +1241,58 @@ class FriendsViewSet(ViewSet):
         
         friend_requests: List[str] = []
         for friend_request in FriendRequest.objects.filter(to_user__user_id=user_id):
-            friend_requests.append(friend_request.to_user.user_name)
+            friend_requests.append(friend_request.from_user.user_name)
 
         return Response({
             "friend_requests": friend_requests
         })
 
+    """
+{
+"user_id": 2,
+"friend_username": "user"
+}
+    """
     @action(detail=False, methods=["post"])
+    def delete_friend(self, request) -> Response:
+        """
+            Удаляет друга из списка друзей
+
+            Аргументы:
+                user_id - Идентификатор пользователя, который хочет удалить друга
+                friend_username - Имя пользователя, которого нужно удалить из списка друзей
+
+            Возвращает:
+                True если удаление успешно, иначе False и текст ошибки
+        """
+        try:
+            user_id = int(request.data["user_id"])
+            friend_username = request.data["friend_username"]
+        except KeyError:
+            return Response({
+                "error": "Недостаточно параметров"
+            })
+        except ValueError:
+            return Response({
+                "error": "Неверный формат параметров"
+            })
+        
+        try:
+            username = User.objects.get(user_id=user_id).user_name
+            Friends.objects.filter((Q(first_friend__user_name=friend_username) &
+                                   Q(second_friend__user_name=username)) | 
+                                   (Q(first_friend__user_name=username) &
+                                   Q(second_friend__user_name=friend_username))).delete()
+        except User.DoesNotExist:
+            return Response({
+                "error": "Данного пользователя не существует"
+            })
+        
+        return Response({
+            "friend_deleted": True
+        })
+
+    @action(detail=False, methods=["post", "get"])
     def get_friends(self, request) -> Response:
         """
             Получает друзей
@@ -1245,6 +1303,13 @@ class FriendsViewSet(ViewSet):
             Возвращает:
                 Список имён пользователей, которые в друзьях у запрошенного пользователя
         """
+        
+        # *DEBUG
+        if request.method == "GET":
+            friends = Friends.objects.all()
+            serializer = FriendsSerializer(friends, many=True)
+            return Response(serializer.data)
+    
         try:
             user_id = request.data["user_id"]
         except KeyError:
@@ -1265,7 +1330,7 @@ class FriendsViewSet(ViewSet):
             if user_friend.second_friend.user_name == user.user_name:
                 friends_names.append(user_friend.first_friend.user_name)
             else:
-                friends_names.append(user_friend.first_friend.user_name)
+                friends_names.append(user_friend.second_friend.user_name)
 
         return Response({
             "friends": friends_names

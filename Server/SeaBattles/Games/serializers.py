@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Game, Field, Ship, User, FriendRequest
+from .models import Game, Field, Ship, User, FriendRequest, Friends
 
 
 class GameSerializer(serializers.ModelSerializer):
@@ -31,3 +31,11 @@ class FriendRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = FriendRequest
         fields = '__all__'
+
+
+class FriendsSerializer(serializers.ModelSerializer):
+    first_friend_id = serializers.CharField(source='first_friend.user_id')
+    second_friend_id = serializers.CharField(source='second_friend.user_id')
+    class Meta:
+        model = Friends
+        fields = ('first_friend_id', 'second_friend_id')
