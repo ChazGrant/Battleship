@@ -11,6 +11,14 @@ import os
 
 from django.core.asgi import get_asgi_application
 
+import urls
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'SeaBattles.settings')
 
+# Сокеты
+from django.core.asgi import get_asgi_application
+from websocket.middleware import websockets
+
+
 application = get_asgi_application()
+application = websockets(application)

@@ -23,6 +23,8 @@ LoginForm::LoginForm(QWidget *parent) :
 
     this->setWindowFlags(Qt::FramelessWindowHint);
 
+    sendSocketRequest();
+
     connect(ui->loginButton, &QPushButton::clicked, this, &LoginForm::login);
     connect(ui->registrateButton, &QPushButton::clicked, this, &LoginForm::registrate);
 
@@ -183,4 +185,17 @@ void LoginForm::getRegistrateStatus(QNetworkReply *reply)
         msgBox.setText(error_message);
         msgBox.exec();
     }
+}
+
+void LoginForm::read()
+{
+    qDebug() << "read";
+}
+
+void LoginForm::sendSocketRequest()
+{
+    QWebSocket socket;
+
+    connect(&socket, &QWebSocket::connected, this, &LoginForm::read);
+    socket.open(QUrl("127.0.0.1:8000"));
 }

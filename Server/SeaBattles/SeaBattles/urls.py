@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 
 from rest_framework.routers import DefaultRouter
 
@@ -28,8 +28,15 @@ router.register(r'ships', ShipViewSet, basename='ship')
 router.register(r'users', UserViewSet, basename='user')
 router.register(r'friends', FriendsViewSet, basename='friends')
 
+# Сокеты
+import websockets
+from websocket import views
+
+urlpatterns = [
+    path("ws/", views.websocket_view),
+]
+
 urlpatterns = [
     path('', include('rest_framework.urls')),
-    path('', include(router.urls)),
-    # path('games/', include('Games.urls'))
+    path('', include(router.urls))
 ]
