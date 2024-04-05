@@ -187,15 +187,41 @@ void LoginForm::getRegistrateStatus(QNetworkReply *reply)
     }
 }
 
-void LoginForm::read()
+void LoginForm::slotConnected()
 {
-    qDebug() << "read";
+    m_pWebSocket->sendTextMessage("{\
+        \"user_id\": 1,\
+        \"message_type\": \"subscribe\"\
+    }");
+    qDebug() << "Connected";
+}
+
+void LoginForm::slotDisconnected()
+{
+    qDebug() << "Disconnected";
+}
+
+void LoginForm::slotError(QAbstractSocket::SocketError)
+{
+    qDebug() << "Error occurred";
+}
+
+void LoginForm::slotReceiveTextMessage(QString t_textMessage)
+{
+    qDebug() << t_textMessage;
+    QJsonObject jsonResponse = QJsonDocument::fromJson(t_textMessage.toUtf8()).object();
+    qDebug() << jsonResponse["status"];
 }
 
 void LoginForm::sendSocketRequest()
 {
-    QWebSocket socket;
+    m_pWebSocket = new QWebSocket();
 
-    connect(&socket, &QWebSocket::connected, this, &LoginForm::read);
-    socket.open(QUrl("127.0.0.1:8000"));
+    QUrl url = QUrl("ws://127.0.0.1:8080/ws/");
+    m_pWebSocket->open(url);
+
+    connect(m_pWebSocket, SIGNAL(connected()), this, SLOT(slotConnected()));
+    connect(m_pWebSocket, SIGNAL(disconnected()), this, SLOT(slotDisconnected()));
+    connect(m_pWebSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(slotError(QAbstractSocket::SocketError)));
+    connect(m_pWebSocket, SIGNAL(textMessageReceived(QString)), this, SLOT(slotReceiveTextMessage(QString)));
 }

@@ -40,7 +40,10 @@ private slots:
     void getLoginStatus(QNetworkReply *t_reply);
     void getRegistrateStatus(QNetworkReply *t_reply);
 
-    void read();
+    void slotConnected();
+    void slotDisconnected();
+    void slotError(QAbstractSocket::SocketError);
+    void slotReceiveTextMessage(QString t_textMessage);
 
 private:
     //! Указатель на виджет класса
@@ -58,6 +61,8 @@ private:
     MainMenu *window;
 
     QString generateSalt(QString t_firstPart, QString t_secondPart);
+
+    QWebSocket  *m_pWebSocket;
 
     void login();
     void registrate();

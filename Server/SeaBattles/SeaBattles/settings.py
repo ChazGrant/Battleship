@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'Games',
     'rest_framework',
+    'channels'
 ]
 
 MIDDLEWARE = [
@@ -70,17 +71,10 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'SeaBattles.wsgi.application'
+ASGI_APPLICATION = 'websocket.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
-    },
-}
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
