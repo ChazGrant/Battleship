@@ -9,5 +9,6 @@
 
 inline void showMessage(const QString t_messageText, QMessageBox::Icon t_messageIcon);
 inline void sendServerRequest(const QString t_requestUrl, QMap<QString, QString> t_queryParams, QNetworkAccessManager *t_manager);
+inline QString jsonObjectToQstring(const QJsonObject t_jsonObj);
 
 #endif // ADDITIONALFUNCTIONS_H

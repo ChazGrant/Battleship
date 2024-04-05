@@ -10,12 +10,16 @@
 #include <QMessageBox>
 #include <QCloseEvent>
 
+// HTTP запросы
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QHttpPart>
 
 #include <QMenu>
+
+// Сокеты
+#include <QtWebSockets/QWebSocket>
 
 #include "additionalfunctions.h"
 #include "mainwindow.h"
@@ -59,6 +63,12 @@ private slots:
 
     void updateFriendsTab(int t_tabIndex);
 
+    // Слоты сокетов
+    void onSocketConnected();
+    void onSocketDisconnected();
+    void onSocketMessageReceived(QString t_textMessage);
+    void onSocketErrorOccurred(QAbstractSocket::SocketError t_socketError);
+
     void connectToCreatedGame(QNetworkReply* t_reply);
     void fillFriendsTab(QNetworkReply *t_reply);
     void fillFriendsRequestsTab(QNetworkReply *t_reply);
@@ -68,6 +78,7 @@ private slots:
 private:
     void getFriends();
     void sendFriendRequest(int t_friendId);
+    void openFriendAdder();
     //! Указатель на виджет класса
     Ui::MainMenu *ui;
     //! Указатель на обработчик запросов
@@ -81,15 +92,26 @@ private:
     //! Идентификатор пользователя
     int m_userId;
 
+    // Сокеты
+    QWebSocket *m_friendsUpdateSocket;
+
+    QUrl m_friendsUpdateUrl;
+
+    void initSocket();
+    void sendSocketMessage();
+
+    //! Подписи для меню обработки запросов в друзья
     QStringList friendRequestsActionsText;
+    //! Подписи для меню друзей
     QStringList friendsActionsText;
+    //! Действия для меню обработки запросов в друзья
     QList<FriendRequestAction> friendRequestsActionsData;
+    //! Действия для меню друзей
     QList<FriendAction> friendsActionsData;
+    //! Указатель на контекстное меню
     QMenu *menu;
 
     void setActionsLists();
-
-    void openFriendAdder();    
 };
 
 #endif // MAINMENU_H

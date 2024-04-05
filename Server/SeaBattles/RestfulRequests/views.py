@@ -1111,68 +1111,6 @@ class FriendsViewSet(ViewSet):
         @version    1.0
     """
     @action(detail=False, methods=["post"])
-    def send_friend_request(self, request) -> Response:
-        """
-            Отправляет запрос в друзья пользователю
-
-            Аргументы:
-                sender_id - Идентификатор пользователя который отправляет запрос
-                receiver_id - Идентификатор пользователя которому отправляется запрос
-            
-            Возвращает:
-                True если запрос отправлен, иначе False и текст ошибки
-
-            @todo Закончить метод
-        """
-        try:
-            sender_id = request.data["sender_id"]
-            receiver_id = request.data["receiver_id"]
-        except KeyError:
-            return Response({
-                "error": "Недостаточно аргументов"
-            })
-        
-        try:
-            from_user = User.objects.get(user_id=sender_id)
-            to_user = User.objects.get(user_id=receiver_id)
-        except User.DoesNotExist:
-            return Response({
-                "error": "Одного из пользователей не существует"
-            })
-        
-        friends = Friends.objects.filter((Q(first_friend__user_name=from_user.user_name) &
-                    Q(second_friend__user_name=to_user.user_name)) | 
-                    (Q(first_friend__user_name=to_user.user_name) &
-                    Q(second_friend__user_name=from_user.user_name)))
-        if len(friends):
-            return Response({
-                "error": "Вы уже друзья с данным пользователем"
-            })
-            
-
-        try:
-            FriendRequest.objects.get(from_user=from_user, to_user=to_user)
-            return Response({
-                "error": "Вы уже отправили заявку этому пользователю"
-            })
-        except FriendRequest.DoesNotExist:
-            try:
-                FriendRequest.objects.get(from_user=to_user, to_user=from_user)
-                if self.acceptFriendRequest(to_user, from_user):
-                    return Response({
-                        "success": True
-                    })
-                else:
-                    return Response({
-                        "error": "Во время принятия запроса дружбы возникла ошибка"
-                    })
-            except FriendRequest.DoesNotExist:
-                FriendRequest.objects.create(from_user=from_user, to_user=to_user)
-                return Response({
-                    "success": True
-                })
-
-    @action(detail=False, methods=["post"])
     def process_friend_request(self, request) -> Response:
         """
             Принимает входящий запрос в друзья
@@ -1254,44 +1192,6 @@ class FriendsViewSet(ViewSet):
 "friend_username": "user"
 }
     """
-    @action(detail=False, methods=["post"])
-    def delete_friend(self, request) -> Response:
-        """
-            Удаляет друга из списка друзей
-
-            Аргументы:
-                user_id - Идентификатор пользователя, который хочет удалить друга
-                friend_username - Имя пользователя, которого нужно удалить из списка друзей
-
-            Возвращает:
-                True если удаление успешно, иначе False и текст ошибки
-        """
-        try:
-            user_id = int(request.data["user_id"])
-            friend_username = request.data["friend_username"]
-        except KeyError:
-            return Response({
-                "error": "Недостаточно параметров"
-            })
-        except ValueError:
-            return Response({
-                "error": "Неверный формат параметров"
-            })
-        
-        try:
-            username = User.objects.get(user_id=user_id).user_name
-            Friends.objects.filter((Q(first_friend__user_name=friend_username) &
-                                   Q(second_friend__user_name=username)) | 
-                                   (Q(first_friend__user_name=username) &
-                                   Q(second_friend__user_name=friend_username))).delete()
-        except User.DoesNotExist:
-            return Response({
-                "error": "Данного пользователя не существует"
-            })
-        
-        return Response({
-            "friend_deleted": True
-        })
 
     @action(detail=False, methods=["post", "get"])
     def get_friends(self, request) -> Response:

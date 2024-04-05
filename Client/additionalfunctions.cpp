@@ -40,3 +40,9 @@ inline void sendServerRequest(const QString t_requestUrl, QMap<QString, QString>
 
     t_manager->post(request, queryUrl.toEncoded().remove(0, 1));
 }
+
+QString jsonObjectToQstring(const QJsonObject t_jsonObj)
+{
+    return QString(QJsonDocument(t_jsonObj).toJson(
+           QJsonDocument::Compact).toStdString().c_str());
+}

@@ -1,3 +1,4 @@
+@echo off
 IF "%~1"=="-drf" ( 
     start python manage.py runserver 127.0.0.1:8000
 ) ELSE IF "%~1"=="-wss" (

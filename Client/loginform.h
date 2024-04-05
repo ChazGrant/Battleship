@@ -20,9 +20,6 @@
 #include "additionalfunctions.h"
 #include "mainmenu.h"
 
-// Сокеты
-#include <QtWebSockets/QWebSocket>
-
 
 namespace Ui {
 class LoginForm;
@@ -40,11 +37,6 @@ private slots:
     void getLoginStatus(QNetworkReply *t_reply);
     void getRegistrateStatus(QNetworkReply *t_reply);
 
-    void slotConnected();
-    void slotDisconnected();
-    void slotError(QAbstractSocket::SocketError);
-    void slotReceiveTextMessage(QString t_textMessage);
-
 private:
     //! Указатель на виджет класса
     Ui::LoginForm *ui;
@@ -58,11 +50,9 @@ private:
     void mouseMoveEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent* event);
 
-
     QString generateSalt(QString t_firstPart, QString t_secondPart);
 
     MainMenu *window;
-    QWebSocket  *m_pWebSocket;
 
     void login();
     void registrate();

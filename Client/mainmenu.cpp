@@ -39,6 +39,7 @@ MainMenu::MainMenu(int t_userId, QWidget *parent) :
 
     menu = new QMenu("Ответ на запрос в друзья", this);
 
+    initSocket();
     setActionsLists();
 
     this->updateFriendsTab(ui->tabWidget->currentIndex());
@@ -147,7 +148,6 @@ void MainMenu::interactWithFriend(QString t_friendUserName, int t_action)
     queryParams["user_id"] = QString::number(m_userId);
     queryParams["friend_username"] = t_friendUserName;
     if (t_action == FriendAction::DELETE_FRIEND) {
-
         connect(m_manager, &QNetworkAccessManager::finished,
                 this, &MainMenu::getDeleteFriendRequestStatus);
         sendServerRequest("http://127.0.0.1:8000/friends/delete_friend/", queryParams, m_manager);
@@ -251,12 +251,12 @@ void MainMenu::getFriends()
 */
 void MainMenu::sendFriendRequest(int t_friendId)
 {
-    QMap<QString, QString> queryItems;
+    QJsonObject queryItems;
+    queryItems["action_type"] = "send_friend_request";
     queryItems["sender_id"] = QString::number(m_userId);
     queryItems["receiver_id"] = QString::number(t_friendId);
 
-    connect(m_manager, SIGNAL(finished(QNetworkReply*)), SLOT(getFriendRequestStatus(QNetworkReply*)));
-    sendServerRequest("http://127.0.0.1:8000/friends/send_friend_request/", queryItems, m_manager);
+    m_friendsUpdateSocket->sendTextMessage(jsonObjectToQstring(queryItems));
 }
 
 /*!???*/
@@ -285,6 +285,25 @@ void MainMenu::openFriendAdder()
     connect(m_friendAdderWindow, &FriendAdder::friendAdded, this, &MainMenu::sendFriendRequest);
 }
 
+void MainMenu::initSocket()
+{
+    m_friendsUpdateSocket = new QWebSocket();
+
+    m_friendsUpdateUrl.setPort(8080);
+    m_friendsUpdateUrl.setHost("127.0.0.1");
+    m_friendsUpdateUrl.setPath("/friends_update/");
+    m_friendsUpdateUrl.setScheme("ws");
+
+    m_friendsUpdateSocket->open(m_friendsUpdateUrl);
+
+    connect(m_friendsUpdateSocket, SIGNAL(connected()), this, SLOT(onSocketConnected()));
+    connect(m_friendsUpdateSocket, SIGNAL(disconnected()), this, SLOT(onSocketDisconnected()));
+    connect(m_friendsUpdateSocket, SIGNAL(error(QAbstractSocket::SocketError)),
+            this, SLOT(onSocketErrorOccurred(QAbstractSocket::SocketError)));
+    connect(m_friendsUpdateSocket, SIGNAL(textMessageReceived(QString)),
+            this, SLOT(onSocketMessageReceived(QString)));
+}
+
 /*! @brief Обрабатывание события при изменение активной вкладки
  *
  *  @param t_tabIndex Текущий идентификатор вкладки
@@ -302,6 +321,45 @@ void MainMenu::updateFriendsTab(int t_tabIndex)
         connect(m_manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(fillFriendsRequestsTab(QNetworkReply*)));
         sendServerRequest("http://127.0.0.1:8000/friends/get_incoming_friend_requests/", queryParams, m_manager);
     }
+}
+
+void MainMenu::onSocketConnected()
+{
+    QJsonObject jsonObj;
+    jsonObj["user_id"] = m_userId;
+    jsonObj["action_type"] = "subscribe";
+    m_friendsUpdateSocket->sendTextMessage(jsonObjectToQstring(jsonObj));
+}
+
+void MainMenu::onSocketDisconnected()
+{
+
+}
+
+void MainMenu::onSocketMessageReceived(QString t_textMessage)
+{
+    QJsonObject jsonResponse = QJsonDocument::fromJson(t_textMessage.toUtf8()).object();
+    if (jsonResponse.contains("error")) {
+        return showMessage(jsonResponse["error"].toString(), QMessageBox::Icon::Critical);
+    }
+
+    if (jsonResponse.contains("subscribed")) {
+        return;
+    }
+
+    if (jsonResponse.contains("friend_deleted")) {
+        return showMessage("Друг был успешно удалён", QMessageBox::Icon::Information);
+    } else if (jsonResponse.contains("new_friend_request")) {
+        return showMessage("Вам поступил новый запрос дружбы", QMessageBox::Icon::Information);
+    } else {
+        return showMessage("Успешно", QMessageBox::Icon::Information);
+    }
+}
+
+void MainMenu::onSocketErrorOccurred(QAbstractSocket::SocketError t_socketError)
+{
+    showMessage("Возникла ошибка при обновлении", QMessageBox::Icon::Critical);
+    close();
 }
 
 /*! @brief Заполнение списка пользователями
