@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'Games',
+    'WebsocketRequests',
+    'RestfulRequests',
     'rest_framework',
     'channels'
 ]
@@ -71,7 +72,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'SeaBattles.wsgi.application'
-ASGI_APPLICATION = 'websocket.asgi.application'
+ASGI_APPLICATION = 'SeaBattles.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases

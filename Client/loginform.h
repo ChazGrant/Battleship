@@ -58,10 +58,10 @@ private:
     void mouseMoveEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent* event);
 
-    MainMenu *window;
 
     QString generateSalt(QString t_firstPart, QString t_secondPart);
 
+    MainMenu *window;
     QWebSocket  *m_pWebSocket;
 
     void login();

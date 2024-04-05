@@ -189,10 +189,11 @@ void LoginForm::getRegistrateStatus(QNetworkReply *reply)
 
 void LoginForm::slotConnected()
 {
-    m_pWebSocket->sendTextMessage("{\
-        \"user_id\": 1,\
-        \"message_type\": \"subscribe\"\
-    }");
+    QJsonObject jsonObj;
+    jsonObj["user_id"] = 33;
+    jsonObj["message_type"] = "subscribe";
+    m_pWebSocket->sendTextMessage(
+        QString(QJsonDocument(jsonObj).toJson(QJsonDocument::Compact).toStdString().c_str()));
     qDebug() << "Connected";
 }
 
@@ -210,14 +211,18 @@ void LoginForm::slotReceiveTextMessage(QString t_textMessage)
 {
     qDebug() << t_textMessage;
     QJsonObject jsonResponse = QJsonDocument::fromJson(t_textMessage.toUtf8()).object();
-    qDebug() << jsonResponse["status"];
+    qDebug() << jsonResponse["user_id"];
 }
 
 void LoginForm::sendSocketRequest()
 {
     m_pWebSocket = new QWebSocket();
 
-    QUrl url = QUrl("ws://127.0.0.1:8080/ws/");
+    QUrl url;
+    url.setPort(8080);
+    url.setHost("127.0.0.1");
+    url.setPath("/ws/");
+    url.setScheme("ws");
     m_pWebSocket->open(url);
 
     connect(m_pWebSocket, SIGNAL(connected()), this, SLOT(slotConnected()));

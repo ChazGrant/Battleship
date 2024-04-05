@@ -5,17 +5,6 @@ from django.db.models import F, Q
 
 from django.db.utils import IntegrityError
 
-# Сокеты
-from djangochannelsrestframework import permissions
-from djangochannelsrestframework.generics import GenericAsyncAPIConsumer
-from djangochannelsrestframework.mixins import (
-    ListModelMixin,
-    PatchModelMixin,
-    UpdateModelMixin,
-    CreateModelMixin,
-    DeleteModelMixin,
-)
-
 import random
 import hashlib
 

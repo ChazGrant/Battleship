@@ -1,6 +1,16 @@
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from asgiref.sync import sync_to_async
+
+import os
+import django
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'SeaBattles.settings')
+django.setup()
+
+from RestfulRequests.models import User
 
 from typing import Dict
+
 
 listeners:Dict[str, AsyncJsonWebsocketConsumer] = dict()
 
@@ -11,13 +21,17 @@ class EchoConsumer(AsyncJsonWebsocketConsumer):
 
     async def receive(self, text_data):
         json_event = await self.decode_json(text_data)
-        print("JSON EVENT: ", json_event)
         message_type = json_event["message_type"]
         if message_type == "subscribe":
             user_id = json_event["user_id"]
             listeners[user_id] = self
 
-            await self.send(text_data=await self.encode_json({"status": "subscribed"}))
+            try:
+                user = await sync_to_async(User.objects.get)(user_id=user_id)
+            except User.DoesNotExist:
+                return await self.send(text_data=await self.encode_json({"status": "error"}))
+
+            await self.send(text_data=await self.encode_json({"user_id": str(user.user_id)}))
         elif message_type == "send_invite":
             from_user_id: str = json_event["from_user_id"]
             to_user_id: str = json_event["to_user_id"]

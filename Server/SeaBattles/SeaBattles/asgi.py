@@ -1,21 +1,19 @@
 import os
-from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application # for the asgi application
+
+from channels.routing import ProtocolTypeRouter, URLRouter
+from WebsocketRequests.consumers import EchoConsumer # it is used for the applications views
+
 from django.urls import path   # provide the url path 
-from websocket.consumers import * # it is used for the applications views
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'SeaBattles.settings')
 
-application = get_asgi_application()
-
 ws_patterns= [
-        
-    path('ws/',EchoConsumer.as_asgi())
+    path('ws/', EchoConsumer.as_asgi())
 ]
 
+get_asgi_application()
+
 application= ProtocolTypeRouter({
-
     'websocket' : URLRouter(ws_patterns)
-
-
 })
