@@ -22,6 +22,7 @@ INVALID_ARGUMENTS_TYPE_JSON = {
     "error": "Неверный тип данных"
 }
 
+
 class FriendRequestHandler():
     # @staticmethod
     # async def acceptFriendRequest(first_friend_id: int, second_friend_id: int) -> Tuple[bool, str]:
@@ -31,7 +32,18 @@ class FriendRequestHandler():
     #         Q(second_friend__user_name=from_user.user_name)))
 
     @staticmethod
-    def declineFriendRequest():
+    def declineFriendRequest(user_id: int, incoming_friend_name: str) -> Tuple[bool, str]:
+        """
+            Отменяет запрос в друзья
+
+            Аргументы:
+                user_id - Идентификатор пользователя
+                incoming_friend_name - Имя друга, отправившего запрос в друзья
+            
+            Возвращает:
+                Результат запроса и текст ошибки
+
+        """
         ...
 
     @staticmethod
@@ -44,7 +56,7 @@ class FriendRequestHandler():
                 receiver_id - Идентификатор пользователя которому отправляется запрос
             
             Возвращает:
-                True если запрос отправлен, иначе False и текст ошибки
+                Результат запроса и текст ошибки
         """
         try:
             from_user = await sync_to_async(User.objects.get)(user_id=sender_id)
@@ -83,7 +95,7 @@ class FriendRequestHandler():
                 friend_username - Имя пользователя, которого нужно удалить из списка друзей
 
             Возвращает:
-                True если удаление успешно, иначе False и текст ошибки
+                Результат запроса и текст ошибки
         """       
         try:
             username: str = await sync_to_async(User.objects.get)(user_id=user_id).user_name
@@ -100,9 +112,28 @@ class FriendRequestHandler():
 class FriendsUpdateConsumer(AsyncJsonWebsocketConsumer):
     listeners: Dict[int, AsyncJsonWebsocketConsumer] = dict()
     async def connect(self):
+        """
+            Обрабатывает поведение при отключении сокета от сервера
+        """
         await self.accept()
 
     async def receive(self, text_data: str) -> Coroutine:
+        """
+            Получает информацию от сокета
+
+            text_data может содержать следующие параметры
+            action_type - Тип действия
+            user_id - Идентификатор пользователя
+            sender_id - Идентификатор пользователя, отправившего заявку в друзья
+            receiver_id - Идентификатор пользователя, получившего заявку в друзья
+            friend_username - Никнейм друга
+            
+            Аргументы:
+                text_data - Полученная информация
+
+            Возвращает:
+                Текст ошибки или результат об успешной обработке
+        """
         json_event = await self.decode_json(text_data)
         try:
             action_type = json_event["action_type"]
@@ -142,8 +173,9 @@ class FriendsUpdateConsumer(AsyncJsonWebsocketConsumer):
         elif action_type == "delete_friend":
             return
             try:
+                friend_username
                 user_id = int(json_event["user_id"])
-                friend_username = json_event["friend_username"]
+                friend_username = json_event[""]
             except KeyError:
                 return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
             except ValueError:
@@ -163,6 +195,12 @@ class FriendsUpdateConsumer(AsyncJsonWebsocketConsumer):
         print(self.listeners)
 
     async def disconnect(self, event):
+        """
+            Обрабатывает поведение при отключении сокета от сервера
+
+            @TODO Сделать менее затратный цикл(возможно перейти на обратный dict по ключам
+            в виде сокетов и значений в виде user_id)
+        """
         for user_id in self.listeners.keys():
             if self.listeners[user_id] == self:
                 self.listeners.pop(user_id)
@@ -172,13 +210,32 @@ class FriendsUpdateConsumer(AsyncJsonWebsocketConsumer):
 
 
 class FriendlyDuelConsumer(AsyncJsonWebsocketConsumer):
-    async def connect(self):
+    async def connect(self) -> Coroutine:
+        """
+            Обрабатывает поведение при отключении сокета от сервера
+        """
         await self.accept()
 
-    async def receive(self, text_data):
+    async def receive(self, text_data: str) -> Coroutine:
+        """
+            Получает информацию от сокета
+
+            text_data может содержать следующие параметры
+            action_type - Тип действия
+            user_id - Идентификатор пользователя
+            from_user_id - Идентификатор пользователя, отправившего вызов на дуэль
+            to_user_id - Идентификатор пользователя, получившего вызов на дуэль
+            game_id - Идентификатор игры для дуэли
+            
+            Аргументы:
+                text_data - Полученная информация
+
+            Возвращает:
+                Текст ошибки или результат об успешной обработке
+        """
         json_event = await self.decode_json(text_data)
-        message_type = json_event["message_type"]
-        if message_type == "subscribe":
+        action_type = json_event["action_type"]
+        if action_type == "subscribe":
             user_id = json_event["user_id"]
             listeners[user_id] = self
 
@@ -192,7 +249,7 @@ class FriendlyDuelConsumer(AsyncJsonWebsocketConsumer):
             await self.send(text_data=await self.encode_json({
                 "user_id": str(user.user_id)
             }))
-        elif message_type == "send_invite":
+        elif action_type == "send_invite":
             from_user_id: str = json_event["from_user_id"]
             to_user_id: str = json_event["to_user_id"]
             game_id: str = json_event["game_id"]
@@ -202,7 +259,7 @@ class FriendlyDuelConsumer(AsyncJsonWebsocketConsumer):
                 "game_id": str(game_id), 
                 "from_user_id": str(from_user_id)
             }))
-        elif message_type == "accept_invite":
+        elif action_type == "accept_invite":
             from_user_id: str = json_event["from_user_id"]
             to_user_id: str = json_event["to_user_id"]
             await listeners[to_user_id].send(text_data=await self.encode_json({
@@ -216,4 +273,7 @@ class FriendlyDuelConsumer(AsyncJsonWebsocketConsumer):
             }))
 
     async def disconnect(self, event):
+        """
+            Обрабатывает поведение при отключении сокета от сервера
+        """
         print("Disconnected from server")

@@ -19,9 +19,11 @@ public:
     ~FriendAdder();
 
 signals:
+    //! @brief Сигнал срабатываемый когда нажимается кнопка добавить друга
     void friendAdded(int);
 
 private:
+    //! @brief Указатель на интерфейс класса
     Ui::FriendAdder *ui;
 
     void addFriend();

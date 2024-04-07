@@ -1,4 +1,4 @@
-from pdoc.cli import *
+from pdoc.cli import main, parser, os
 
 OUTPUT_DIR = "../docs"
 

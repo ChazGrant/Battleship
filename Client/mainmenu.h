@@ -94,6 +94,8 @@ private:
 
     // Сокеты
     QWebSocket *m_friendsUpdateSocket;
+    //! @todo Добавить обработки для сокета по отправке дуэлей
+    QWebSocket *m_friendlyDuelSocket;
 
     QUrl m_friendsUpdateUrl;
 

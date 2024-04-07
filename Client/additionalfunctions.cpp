@@ -24,7 +24,9 @@ inline void showMessage(QString t_messageText, QMessageBox::Icon t_messageIcon) 
  *
  *  @return void
 */
-inline void sendServerRequest(const QString t_requestUrl, QMap<QString, QString> t_queryParams, QNetworkAccessManager *t_manager)
+inline void sendServerRequest(const QString t_requestUrl,
+                              QMap<QString, QString> t_queryParams,
+                              QNetworkAccessManager *t_manager)
 {
     QUrl url(t_requestUrl);
     QNetworkRequest request( url );
@@ -41,6 +43,12 @@ inline void sendServerRequest(const QString t_requestUrl, QMap<QString, QString>
     t_manager->post(request, queryUrl.toEncoded().remove(0, 1));
 }
 
+/*! @brief Превращает json объект в строку
+ *
+ *  @param t_jsonObj json объект который нужно конвертировать
+ *
+ *  @return QString
+*/
 QString jsonObjectToQstring(const QJsonObject t_jsonObj)
 {
     return QString(QJsonDocument(t_jsonObj).toJson(

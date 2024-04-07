@@ -97,7 +97,14 @@ void MainMenu::connectToCreatedGame(QNetworkReply *t_reply)
     }
 }
 
-/*!???*/
+/*! @brief Вывод контекстного меню на виджет
+ *
+ *  @details Заполняет контекстное меню действиями, которые можно совершить с заявками в друзья
+ *
+ *  @param &point Ссылка на точку, где была нажата кнопка ЛКМ
+ *
+ *  @return void
+*/
 void MainMenu::showFriendRequestsContextMenu(const QPoint &point)
 {
     QListWidgetItem *item = ui->friendRequestsListWidget->itemAt(point);
@@ -119,7 +126,14 @@ void MainMenu::showFriendRequestsContextMenu(const QPoint &point)
     menu->exec(actions, ui->friendRequestsListWidget->mapToGlobal(point));
 }
 
-/*!???*/
+/*! @brief Вывод контекстного меню на виджет
+ *
+ *  @details Заполняет контекстное меню действиями, которые можно совершить с имеющимися друзьями
+ *
+ *  @param &point Ссылка на точку, где была нажата кнопка ЛКМ
+ *
+ *  @return void
+*/
 void MainMenu::showFriendsContextMenu(const QPoint &point)
 {
     QListWidgetItem *item = ui->friendsListWidget->itemAt(point);
@@ -141,7 +155,15 @@ void MainMenu::showFriendsContextMenu(const QPoint &point)
     menu->exec(actions, ui->friendsListWidget->mapToGlobal(point));
 }
 
-/*!???*/
+/*! @brief Обработка действия вызванного в контекстном меню
+ *
+ *  @details Обрабатывает действие, которое пользователь хочет применить к имеющемуся другу
+ *
+ *  @param t_friendUserName Никнейм друга
+ *  @param t_action Код действия над другом
+ *
+ *  @return void
+*/
 void MainMenu::interactWithFriend(QString t_friendUserName, int t_action)
 {
     QMap<QString, QString> queryParams;
@@ -151,10 +173,20 @@ void MainMenu::interactWithFriend(QString t_friendUserName, int t_action)
         connect(m_manager, &QNetworkAccessManager::finished,
                 this, &MainMenu::getDeleteFriendRequestStatus);
         sendServerRequest("http://127.0.0.1:8000/friends/delete_friend/", queryParams, m_manager);
+    } else if (t_action == FriendAction::SEND_FRIENDLY_DUEL_REQUEST) {
+        return;
     }
 }
 
-/*!???*/
+/*! @brief Обработка действия вызванного в контекстном меню
+ *
+ *  @details Обрабатывает действие, которое пользователь хочет применить к заявке в друзья
+ *
+ *  @param t_friendUserName Никнейм друга
+ *  @param t_action Код действия над другом
+ *
+ *  @return void
+*/
 void MainMenu::processFriendRequestAction(QString t_friendUserName, int t_action)
 {
     QMap<QString, QString> queryParams;
@@ -167,7 +199,12 @@ void MainMenu::processFriendRequestAction(QString t_friendUserName, int t_action
     sendServerRequest("http://127.0.0.1:8000/friends/process_friend_request/", queryParams, m_manager);
 }
 
-/*!???*/
+/*! @brief Получение статуса ответа на заявку в друзья
+ *
+ *  @param *t_reply Указатель на ответ от сервера
+ *
+ *  @return void
+*/
 void MainMenu::getIncomingFriendRequestProcessStatus(QNetworkReply *t_reply)
 {
     disconnect(m_manager, &QNetworkAccessManager::finished,
@@ -183,6 +220,12 @@ void MainMenu::getIncomingFriendRequestProcessStatus(QNetworkReply *t_reply)
     updateFriendsTab(ui->tabWidget->currentIndex());
 }
 
+/*! @brief Получение статуса удаления друга
+ *
+ *  @param *t_reply Указатель на ответ от сервера
+ *
+ *  @return void
+*/
 void MainMenu::getDeleteFriendRequestStatus(QNetworkReply *t_reply)
 {
     QJsonObject jsonResponse = QJsonDocument::fromJson(QString(t_reply->readAll()).toUtf8()).object();
@@ -259,7 +302,12 @@ void MainMenu::sendFriendRequest(int t_friendId)
     m_friendsUpdateSocket->sendTextMessage(jsonObjectToQstring(queryItems));
 }
 
-/*!???*/
+/*! @brief Установка списка действий
+ *
+ *  @details Заполняет списков действий и их описаний
+ *
+ *  @return void
+*/
 void MainMenu::setActionsLists()
 {
     friendRequestsActionsText = QStringList() << "Принять запрос" << "Отклонить запрос";
@@ -285,6 +333,10 @@ void MainMenu::openFriendAdder()
     connect(m_friendAdderWindow, &FriendAdder::friendAdded, this, &MainMenu::sendFriendRequest);
 }
 
+/*! @brief Инициалиализация сокетов их адресов и сигналов
+ *
+ *  @return void
+*/
 void MainMenu::initSocket()
 {
     m_friendsUpdateSocket = new QWebSocket();
@@ -323,6 +375,10 @@ void MainMenu::updateFriendsTab(int t_tabIndex)
     }
 }
 
+/*! @brief Обработчик подключения сокета к серверу
+ *
+ *  @return void
+*/
 void MainMenu::onSocketConnected()
 {
     QJsonObject jsonObj;
@@ -331,11 +387,21 @@ void MainMenu::onSocketConnected()
     m_friendsUpdateSocket->sendTextMessage(jsonObjectToQstring(jsonObj));
 }
 
+/*! @brief Обработчик отключения сокета от сервера
+ *
+ *  @return void
+*/
 void MainMenu::onSocketDisconnected()
 {
 
 }
 
+/*! @brief Обработчик получения информации с сервера через сокет
+ *
+ *  @param t_textMessage Текст полученного сообщения
+ *
+ *  @return void
+*/
 void MainMenu::onSocketMessageReceived(QString t_textMessage)
 {
     QJsonObject jsonResponse = QJsonDocument::fromJson(t_textMessage.toUtf8()).object();
@@ -356,6 +422,12 @@ void MainMenu::onSocketMessageReceived(QString t_textMessage)
     }
 }
 
+/*! @brief Обработчик ошибки, полученной во время отправки запроса на сервер через сокет
+ *
+ *  @param t_socketError Вид ошибки, полученной при передачи данных
+ *
+ *  @return void
+*/
 void MainMenu::onSocketErrorOccurred(QAbstractSocket::SocketError t_socketError)
 {
     showMessage("Возникла ошибка при обновлении", QMessageBox::Icon::Critical);

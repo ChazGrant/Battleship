@@ -1,6 +1,12 @@
 #include "friendadder.h"
 #include "ui_friendadder.h"
 
+/*! @brief Конструктор класса
+ *
+ *  @param *parent Указатель на родительский класс виджета
+ *
+ *  @return FriendAdder
+*/
 FriendAdder::FriendAdder(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::FriendAdder)
@@ -13,11 +19,18 @@ FriendAdder::FriendAdder(QWidget *parent) :
     connect(ui->closeWindowButton, &QPushButton::clicked, this, &FriendAdder::close);
 }
 
+//! @brief Деструктор класса FriendAdder
 FriendAdder::~FriendAdder()
 {
     delete ui;
 }
 
+/*! @brief Добавление нового друга
+ *
+ *  @details Берёт айди друга из lineEdit и если оно является числом активирует сигнал friendAdded
+ *
+ *  @return void
+*/
 void FriendAdder::addFriend()
 {
     bool ok;
