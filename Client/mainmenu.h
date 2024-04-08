@@ -77,8 +77,12 @@ private slots:
     void getDeleteFriendRequestStatus(QNetworkReply *t_reply);
 private:
     void getFriends();
+    void getFriendsRequests();
     void sendFriendRequest(int t_friendId);
+    void deleteFriend(int t_userId, QString t_friendUserName);
     void openFriendAdder();
+
+
     //! Указатель на виджет класса
     Ui::MainMenu *ui;
     //! Указатель на обработчик запросов

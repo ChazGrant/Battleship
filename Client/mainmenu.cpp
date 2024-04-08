@@ -166,13 +166,8 @@ void MainMenu::showFriendsContextMenu(const QPoint &point)
 */
 void MainMenu::interactWithFriend(QString t_friendUserName, int t_action)
 {
-    QMap<QString, QString> queryParams;
-    queryParams["user_id"] = QString::number(m_userId);
-    queryParams["friend_username"] = t_friendUserName;
     if (t_action == FriendAction::DELETE_FRIEND) {
-        connect(m_manager, &QNetworkAccessManager::finished,
-                this, &MainMenu::getDeleteFriendRequestStatus);
-        sendServerRequest("http://127.0.0.1:8000/friends/delete_friend/", queryParams, m_manager);
+        deleteFriend(m_userId, t_friendUserName);
     } else if (t_action == FriendAction::SEND_FRIENDLY_DUEL_REQUEST) {
         return;
     }
@@ -276,11 +271,19 @@ void MainMenu::openMainWindow(QString t_gameId)
 void MainMenu::getFriends()
 {
     QMap<QString, QString> queryItems;
-    QString uID = QString::number(m_userId);
     queryItems["user_id"] = QString::number(m_userId);
 
     connect(m_manager, SIGNAL( finished( QNetworkReply* ) ), SLOT(fillFriendsTab(QNetworkReply* )));
     sendServerRequest("http://127.0.0.1:8000/friends/get_friends/", queryItems, m_manager);
+}
+
+void MainMenu::getFriendsRequests()
+{
+    QMap<QString, QString> queryParams;
+    queryParams["user_id"] = QString::number(m_userId);
+
+    connect(m_manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(fillFriendsRequestsTab(QNetworkReply*)));
+    sendServerRequest("http://127.0.0.1:8000/friends/get_incoming_friend_requests/", queryParams, m_manager);
 }
 
 /*! @brief Добавление друга
@@ -300,6 +303,16 @@ void MainMenu::sendFriendRequest(int t_friendId)
     queryItems["receiver_id"] = QString::number(t_friendId);
 
     m_friendsUpdateSocket->sendTextMessage(jsonObjectToQstring(queryItems));
+}
+
+void MainMenu::deleteFriend(int t_userId, QString t_friendUserName)
+{
+    QJsonObject queryParams;
+    queryParams["action_type"] = "delete_friend";
+    queryParams["user_id"] = QString::number(t_userId);
+    queryParams["friend_username"] = t_friendUserName;
+
+    m_friendsUpdateSocket->sendTextMessage(jsonObjectToQstring(queryParams));
 }
 
 /*! @brief Установка списка действий
@@ -364,14 +377,10 @@ void MainMenu::initSocket()
 */
 void MainMenu::updateFriendsTab(int t_tabIndex)
 {
-    QMap<QString, QString> queryParams;
-    queryParams["user_id"] = QString::number(m_userId);
     if (t_tabIndex == 0) {
-        connect(m_manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(fillFriendsTab(QNetworkReply*)));
-        sendServerRequest("http://127.0.0.1:8000/friends/get_friends/", queryParams, m_manager);
+        getFriends();
     } else if (t_tabIndex == 1) {
-        connect(m_manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(fillFriendsRequestsTab(QNetworkReply*)));
-        sendServerRequest("http://127.0.0.1:8000/friends/get_incoming_friend_requests/", queryParams, m_manager);
+        getFriendsRequests();
     }
 }
 
@@ -409,16 +418,21 @@ void MainMenu::onSocketMessageReceived(QString t_textMessage)
         return showMessage(jsonResponse["error"].toString(), QMessageBox::Icon::Critical);
     }
 
-    if (jsonResponse.contains("subscribed")) {
+    if (!jsonResponse.contains("action_type")) {
         return;
     }
+    QString actionType = jsonResponse["action_type"].toString();
+    if (actionType == "subscribed") {
 
-    if (jsonResponse.contains("friend_deleted")) {
-        return showMessage("Друг был успешно удалён", QMessageBox::Icon::Information);
-    } else if (jsonResponse.contains("new_friend_request")) {
-        return showMessage("Вам поступил новый запрос дружбы", QMessageBox::Icon::Information);
+    } else if  (actionType == "deleted_by_friend"){
+        getFriends();
+    } else if (actionType == "friend_deleted") {
+        showMessage("Друг был успешно удалён", QMessageBox::Icon::Information);
+        getFriends();
+    } else if (actionType == "new_friend_request") {
+        getFriendsRequests();
     } else {
-        return showMessage("Успешно", QMessageBox::Icon::Information);
+        showMessage("Успешно", QMessageBox::Icon::Information);
     }
 }
 
@@ -430,7 +444,7 @@ void MainMenu::onSocketMessageReceived(QString t_textMessage)
 */
 void MainMenu::onSocketErrorOccurred(QAbstractSocket::SocketError t_socketError)
 {
-    showMessage("Возникла ошибка при обновлении", QMessageBox::Icon::Critical);
+    showMessage("Возникла ошибка при подключении к серверу", QMessageBox::Icon::Critical);
     close();
 }
 

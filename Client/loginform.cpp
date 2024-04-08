@@ -125,8 +125,6 @@ void LoginForm::registrate()
  *  @param *reply Указатель на ответ от сервера
  *
  *  @return void
- *
- *  @todo Открывать форму InputGameId
 */
 void LoginForm::getLoginStatus(QNetworkReply *reply)
 {

@@ -14,7 +14,6 @@ django.setup()
 from RestfulRequests.models import User, FriendRequest, Friends
 
 
-listeners:Dict[str, AsyncJsonWebsocketConsumer] = dict()
 NOT_ENOUGH_ARGUMENTS_JSON = {
     "error": "Недостаточно аргументов"
 }
@@ -23,13 +22,20 @@ INVALID_ARGUMENTS_TYPE_JSON = {
 }
 
 
+async def getUserIdByUsername(username: str) -> int:
+    try:
+        return int((await sync_to_async(User.objects.get)(user_name=username)).user_id)
+    except User.DoesNotExist:
+        return 0
+
+
 class FriendRequestHandler():
-    # @staticmethod
-    # async def acceptFriendRequest(first_friend_id: int, second_friend_id: int) -> Tuple[bool, str]:
-    #     friends = FriendRequest.objects.filter((Q(first_friend__user_id=first_friend_id) &
-    #         Q(second_friend__user_name=to_user.user_name)) | 
-    #         (Q(first_friend__user_name=to_user.user_name) &
-    #         Q(second_friend__user_name=from_user.user_name)))
+    @staticmethod
+    async def acceptFriendRequest(first_friend_id: int, second_friend_id: int) -> Tuple[bool, str]:
+        friends = FriendRequest.objects.filter((Q(first_friend__user_id=first_friend_id) &
+            Q(second_friend__user_name=second_friend_id.user_name)) | 
+            (Q(first_friend__user_name=second_friend_id.user_name) &
+            Q(second_friend__user_name=first_friend_id.user_name)))
 
     @staticmethod
     def declineFriendRequest(user_id: int, incoming_friend_name: str) -> Tuple[bool, str]:
@@ -72,7 +78,7 @@ class FriendRequestHandler():
             return False, "Вы уже друзья с данным пользователем"
 
         try:
-            sync_to_async(FriendRequest.objects.get)(from_user=from_user, to_user=to_user)
+            await sync_to_async(FriendRequest.objects.get)(from_user=from_user, to_user=to_user)
             return False, "Вы уже отправили заявку этому пользователю"
         except FriendRequest.DoesNotExist:
             try:
@@ -96,17 +102,19 @@ class FriendRequestHandler():
 
             Возвращает:
                 Результат запроса и текст ошибки
+            
+            @TODO Удалять найденную связь друзей
         """       
         try:
-            username: str = await sync_to_async(User.objects.get)(user_id=user_id).user_name
-            Friends.objects.filter((Q(first_friend__user_name=friend_username) &
+            username: str = (await sync_to_async(User.objects.get)(user_id=user_id)).user_name
+            await (sync_to_async(Friends.objects.filter)((Q(first_friend__user_name=friend_username) &
                                    Q(second_friend__user_name=username)) | 
                                    (Q(first_friend__user_name=username) &
-                                   Q(second_friend__user_name=friend_username)))
+                                   Q(second_friend__user_name=friend_username))))
         except User.DoesNotExist:
-            return await False, "Данного пользователя не существует"
+            return False, "Данного пользователя не существует"
         
-        return await True, ""
+        return True, ""
 
 
 class FriendsUpdateConsumer(AsyncJsonWebsocketConsumer):
@@ -138,16 +146,17 @@ class FriendsUpdateConsumer(AsyncJsonWebsocketConsumer):
         try:
             action_type = json_event["action_type"]
         except KeyError:
-            self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
+            return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
             
         if action_type == "subscribe":
             try:
                 user_id = int(json_event["user_id"])
                 self.listeners[user_id] = self
+                print(self.listeners)
             except ValueError:
                 return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
 
-            await self.send_json({"subscribed": True})
+            await self.send_json({"action_type": "subscribed"})
         elif action_type == "accept_friend_request":
             ...
         elif action_type == "decline_friend_request":
@@ -166,16 +175,18 @@ class FriendsUpdateConsumer(AsyncJsonWebsocketConsumer):
                 return await self.send_json({
                     "error": error
                 })
+            
+            await self.listeners[receiver_id].send({
+                "action_type": "new_friend_request"
+            })
 
             return await self.send_json({
-                "friend_request_sent": True
+                "action_type": "friend_request_sent"
             })
         elif action_type == "delete_friend":
-            return
             try:
-                friend_username
                 user_id = int(json_event["user_id"])
-                friend_username = json_event[""]
+                friend_username = json_event["friend_username"]
             except KeyError:
                 return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
             except ValueError:
@@ -187,8 +198,13 @@ class FriendsUpdateConsumer(AsyncJsonWebsocketConsumer):
                     "error": error
                 })
 
+            friend_id = await getUserIdByUsername(friend_username)
+            await self.listeners[friend_id].send_json({
+                "action_type": "deleted_by_friend"
+            })
+
             await self.send_json({
-                "friend_deleted": True
+                "action_type": "friend_deleted"
             })
         
 
@@ -210,6 +226,7 @@ class FriendsUpdateConsumer(AsyncJsonWebsocketConsumer):
 
 
 class FriendlyDuelConsumer(AsyncJsonWebsocketConsumer):
+    listeners:Dict[str, AsyncJsonWebsocketConsumer] = dict()
     async def connect(self) -> Coroutine:
         """
             Обрабатывает поведение при отключении сокета от сервера
@@ -237,7 +254,7 @@ class FriendlyDuelConsumer(AsyncJsonWebsocketConsumer):
         action_type = json_event["action_type"]
         if action_type == "subscribe":
             user_id = json_event["user_id"]
-            listeners[user_id] = self
+            self.listeners[user_id] = self
 
             try:
                 user = await sync_to_async(User.objects.get)(user_id=user_id)
@@ -254,7 +271,7 @@ class FriendlyDuelConsumer(AsyncJsonWebsocketConsumer):
             to_user_id: str = json_event["to_user_id"]
             game_id: str = json_event["game_id"]
 
-            await listeners[to_user_id].send(text_data=await self.encode_json({
+            await self.listeners[to_user_id].send(text_data=await self.encode_json({
                 "type": "game_invite", 
                 "game_id": str(game_id), 
                 "from_user_id": str(from_user_id)
@@ -262,13 +279,12 @@ class FriendlyDuelConsumer(AsyncJsonWebsocketConsumer):
         elif action_type == "accept_invite":
             from_user_id: str = json_event["from_user_id"]
             to_user_id: str = json_event["to_user_id"]
-            await listeners[to_user_id].send(text_data=await self.encode_json({
+            await self.listeners[to_user_id].send(text_data=await self.encode_json({
                 "type": "game_accept",
                 "from_user_id":str(from_user_id)
             }))
 
-            await self.send(text_data=await self.encode_json(
-            {
+            await self.send(text_data=await self.encode_json({
                 "status": "accepted"
             }))
 
