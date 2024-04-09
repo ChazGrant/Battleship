@@ -640,7 +640,6 @@ class GameViewSet(ViewSet):
                 "critical_error": "Game doesn't exist"
             })
 
-
         # Если у игры не 2 поля, значит второй игрок закрыл игру
         fields = Field.objects.filter(game=game)
 
@@ -708,8 +707,7 @@ class GameViewSet(ViewSet):
         try:  
             user_id = request.data["user_id"]
         except KeyError:
-            return Response(
-            {
+            return Response({
                 "error": "Not enough arguments"
             })
 

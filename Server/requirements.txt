@@ -5,3 +5,4 @@ pdoc3
 djangochannelsrestframework
 uvicorn
 channels
+websockets

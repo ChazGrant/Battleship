@@ -28,6 +28,8 @@ class Game(models.Model):
     game_is_over = models.BooleanField(default=False)
     has_winner = models.BooleanField(default=False)
 
+    is_friendly = models.BooleanField(default=False)
+
     class Meta:
         verbose_name = "Game"
         verbose_name_plural = "Games"

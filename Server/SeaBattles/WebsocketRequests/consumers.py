@@ -1,17 +1,32 @@
-from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from channels.generic.websocket import AsyncJsonWebsocketConsumer, json
 from asgiref.sync import sync_to_async
 
 from django.db.models import Q
 
 import os
 import django
+import random
 
-from typing import Dict, Tuple, Union, Coroutine
+from typing import Dict, Tuple, Coroutine
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'SeaBattles.settings')
 django.setup()
 
-from RestfulRequests.models import User, FriendRequest, Friends
+from RestfulRequests.models import User, FriendRequest, Friends, Game, Field
+from RestfulRequests.views import MAX_LIMIT
+
+
+async def generateGameId() -> str:
+    """
+        Создаёт идентификатор игры
+
+        Возврашает:
+            Строку, содержащую идентификатор для созданной игры
+    """
+    game_id = ""
+    async for _ in range(8):
+        game_id += await sync_to_async(str)(await sync_to_async(random.randint)(0, MAX_LIMIT))
+    return game_id
 
 
 NOT_ENOUGH_ARGUMENTS_JSON = {
@@ -25,6 +40,9 @@ USER_DOES_NOT_EXIST_JSON = {
 }
 INVALID_ACTION_TYPE_JSON = {
     "error": "Неизвестный тип действия"
+}
+INVALID_JSON_FORMATS = {
+    "error": "Неверный формат json"
 }
 
 
@@ -58,6 +76,25 @@ class UserDatabaseAccessor:
             return True
         except User.DoesNotExist:
             return False
+
+
+class GameDatabaseAccessor:
+    @staticmethod
+    async def createGame(creator_id: int) -> Tuple[int, str]:
+        try:
+            await sync_to_async(Field.objects.get)(owner_id=creator_id)
+            return 0, "Игрок уже находится в игре"
+        except Field.DoesNotExist:
+            ...
+
+        created_game = await sync_to_async(Game.objects.create)(
+            game_id=await generateGameId(),
+            user_id_turn=creator_id,
+            is_friendly=True
+        )
+        await sync_to_async(Field.objects.create)(owner_id=creator_id, game=created_game)
+
+        return created_game.game_id, ""
 
 
 class FriendRequestHandler():
@@ -167,6 +204,7 @@ class FriendsUpdateConsumer(AsyncJsonWebsocketConsumer):
 
         @author     ChazGrant
         @version    1.0
+
         # TODO       Переделать if, else if... на словарь доступных команд и вызывать методы, привязанные
         к этим командам
     """
@@ -305,11 +343,23 @@ class FriendsUpdateConsumer(AsyncJsonWebsocketConsumer):
         print("User({}) has been disconnected".format(user_id))
 
 
-class FriendlyDuelConsumer(AsyncJsonWebsocketConsumer):
-    listeners:Dict[str, AsyncJsonWebsocketConsumer] = dict()
+class GameConsumer(AsyncJsonWebsocketConsumer):
+    """
+        Обработчик websocket запросов действий с друзьями
+
+        Обрабатывает запросы, посылаемые на адрес ws://адрес_сервера/game/
+
+        @author     ChazGrant
+        @version    1.0
+
+        # TODO       Переделать if, else if... на словарь доступных команд и вызывать методы, привязанные
+        к этим командам
+    """
+    listeners: Dict[int, AsyncJsonWebsocketConsumer] = dict()
+    reversed_listeners: Dict[AsyncJsonWebsocketConsumer, int] = dict()
     async def connect(self) -> Coroutine:
         """
-            Обрабатывает поведение при отключении сокета от сервера
+            Обрабатывает поведение при подключении сокета к серверу
         """
         await self.accept()
 
@@ -330,34 +380,60 @@ class FriendlyDuelConsumer(AsyncJsonWebsocketConsumer):
             Возвращает:
                 Текст ошибки или результат об успешной обработке
         """
-        json_event = await self.decode_json(text_data)
-        action_type = json_event["action_type"]
+        try:
+            json_event = await self.decode_json(text_data)
+        except json.JSONDecodeError:
+            return await self.send_json(INVALID_JSON_FORMATS)
+        
+        try:
+            action_type = json_event["action_type"]
+        except KeyError:
+            return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
+        
         if action_type == "subscribe":
-            user_id = json_event["user_id"]
-            self.listeners[user_id] = self
-
             try:
-                user = await sync_to_async(User.objects.get)(user_id=user_id)
-            except User.DoesNotExist:
-                return await self.send(text_data=await self.encode_json({
-                    "error": "Данного пользователя не существует"
-                }))
+                user_id = int(json_event["user_id"])
+            except KeyError:
+                return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
+            except ValueError:
+                return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
+            
+            if not (await UserDatabaseAccessor.userExists(user_id)):
+                return await self.send_json(USER_DOES_NOT_EXIST_JSON)
 
-            await self.send(text_data=await self.encode_json({
-                "user_id": str(user.user_id)
-            }))
+            self.listeners[user_id] = self
+            self.reversed_listeners[self] = user_id
         # TODO закончить логику
         elif action_type == "send_invite":
-            from_user_id: str = json_event["from_user_id"]
-            to_user_id: str = json_event["to_user_id"]
-            game_id: str = json_event["game_id"]
+            try:
+                from_user_id: int = int(json_event["from_user_id"])
+                to_user_id: int = int(json_event["to_user_id"])
+                game_id: int = int(json_event["game_id"])
+            except KeyError:
+                return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
+            except ValueError:
+                return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
 
-            if to_user_id in self.listeners.keys():
-                await self.listeners[to_user_id].send(text_data=await self.encode_json({
-                    "type": "game_invite", 
-                    "game_id": str(game_id), 
-                    "from_user_id": str(from_user_id)
-                }))
+            if not (to_user_id in self.listeners.keys()):
+                return await self.send_json({
+                    "error": "Данного пользователя нет в сети"
+                })
+            
+            game_id, error = await GameDatabaseAccessor.createGame(creator_id=user_id)
+            if game_id == 0:
+                return await self.send_json({
+                    "error": error
+                })
+            
+            await self.listeners[to_user_id].send_json({
+                "action_type": "game_invite", 
+                "game_id": str(game_id)
+            })
+
+            return await self.send_json({
+                "action_type": "game_invite_sent",
+                "game_id": str(game_id)
+            })
         elif action_type == "accept_invite":
             from_user_id: str = json_event["from_user_id"]
             to_user_id: str = json_event["to_user_id"]
@@ -370,6 +446,16 @@ class FriendlyDuelConsumer(AsyncJsonWebsocketConsumer):
             await self.send(text_data=await self.encode_json({
                 "status": "accepted"
             }))
+        # Отправляет второму игроку что игра отменена
+        # на клиенте закрывается окно с игрой и удаляется поле и игра
+        elif action_type == "decline_invite":
+            ...
+        # Создаёт поле игры, отправляет второму игроку что игра начата
+        # на клиенте запускает таймер ожидания хода
+        elif action_type == "connect_to_game":
+            ...
+        else:
+            return await self.send_json(INVALID_ACTION_TYPE_JSON)
 
     async def disconnect(self, event):
         """
