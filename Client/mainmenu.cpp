@@ -184,56 +184,13 @@ void MainMenu::interactWithFriend(QString t_friendUserName, int t_action)
 */
 void MainMenu::processFriendRequestAction(QString t_friendUserName, int t_action)
 {
-    QMap<QString, QString> queryParams;
-    queryParams["user_id"] = QString::number(m_userId);
+    QJsonObject queryParams;
+    queryParams["action_type"] = "process_friend_request";
     queryParams["friend_username"] = t_friendUserName;
+    queryParams["user_id"] = QString::number(m_userId);
     queryParams["process_status"] = QString::number(t_action == FriendRequestAction::ACCEPT_REQUEST);
 
-    connect(m_manager, &QNetworkAccessManager::finished,
-            this, &MainMenu::getIncomingFriendRequestProcessStatus);
-    sendServerRequest("http://127.0.0.1:8000/friends/process_friend_request/", queryParams, m_manager);
-}
-
-/*! @brief Получение статуса ответа на заявку в друзья
- *
- *  @param *t_reply Указатель на ответ от сервера
- *
- *  @return void
-*/
-void MainMenu::getIncomingFriendRequestProcessStatus(QNetworkReply *t_reply)
-{
-    disconnect(m_manager, &QNetworkAccessManager::finished,
-               this, &MainMenu::getIncomingFriendRequestProcessStatus);
-
-    QJsonObject jsonResponse = QJsonDocument::fromJson(QString(t_reply->readAll()).toUtf8()).object();
-    if (jsonResponse.contains("error")) {
-        QString error = jsonResponse["error"].toString();
-        return showMessage(error, QMessageBox::Icon::Critical);
-    }
-
-    showMessage("Готово", QMessageBox::Icon::Information);
-    updateFriendsTab(ui->tabWidget->currentIndex());
-}
-
-/*! @brief Получение статуса удаления друга
- *
- *  @param *t_reply Указатель на ответ от сервера
- *
- *  @return void
-*/
-void MainMenu::getDeleteFriendRequestStatus(QNetworkReply *t_reply)
-{
-    QJsonObject jsonResponse = QJsonDocument::fromJson(QString(t_reply->readAll()).toUtf8()).object();
-
-    if (jsonResponse.contains("error")) {
-        QString error_message = jsonResponse["error"].toString();
-        return showMessage(error_message, QMessageBox::Icon::Critical);
-    }
-
-    showMessage("Друг был успешно удалён", QMessageBox::Icon::Information);
-    disconnect(m_manager, &QNetworkAccessManager::finished,
-            this, &MainMenu::getDeleteFriendRequestStatus);
-    updateFriendsTab(ui->tabWidget->currentIndex());
+    m_friendsUpdateSocket->sendTextMessage(jsonObjectToQString(queryParams));
 }
 
 /*! @brief Обработчик нажатия кнопки "Подключиться"
@@ -273,10 +230,14 @@ void MainMenu::getFriends()
     QMap<QString, QString> queryItems;
     queryItems["user_id"] = QString::number(m_userId);
 
-    connect(m_manager, SIGNAL( finished( QNetworkReply* ) ), SLOT(fillFriendsTab(QNetworkReply* )));
+    connect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(fillFriendsTab(QNetworkReply* )));
     sendServerRequest("http://127.0.0.1:8000/friends/get_friends/", queryItems, m_manager);
 }
 
+/*! @brief Получение запросов в друзья
+ *
+ *  @return void
+*/
 void MainMenu::getFriendsRequests()
 {
     QMap<QString, QString> queryParams;
@@ -302,9 +263,16 @@ void MainMenu::sendFriendRequest(int t_friendId)
     queryItems["sender_id"] = QString::number(m_userId);
     queryItems["receiver_id"] = QString::number(t_friendId);
 
-    m_friendsUpdateSocket->sendTextMessage(jsonObjectToQstring(queryItems));
+    m_friendsUpdateSocket->sendTextMessage(jsonObjectToQString(queryItems));
 }
 
+/*! @brief Удаление друга
+ *
+ *  @param t_userId Идентифиатор пользователя, который хочет удалить друга
+ *  @param t_friendUserName Имя друга, которого нужно удалить
+ *
+ *  @return void
+*/
 void MainMenu::deleteFriend(int t_userId, QString t_friendUserName)
 {
     QJsonObject queryParams;
@@ -312,7 +280,7 @@ void MainMenu::deleteFriend(int t_userId, QString t_friendUserName)
     queryParams["user_id"] = QString::number(t_userId);
     queryParams["friend_username"] = t_friendUserName;
 
-    m_friendsUpdateSocket->sendTextMessage(jsonObjectToQstring(queryParams));
+    m_friendsUpdateSocket->sendTextMessage(jsonObjectToQString(queryParams));
 }
 
 /*! @brief Установка списка действий
@@ -393,7 +361,7 @@ void MainMenu::onSocketConnected()
     QJsonObject jsonObj;
     jsonObj["user_id"] = m_userId;
     jsonObj["action_type"] = "subscribe";
-    m_friendsUpdateSocket->sendTextMessage(jsonObjectToQstring(jsonObj));
+    m_friendsUpdateSocket->sendTextMessage(jsonObjectToQString(jsonObj));
 }
 
 /*! @brief Обработчик отключения сокета от сервера
@@ -417,13 +385,13 @@ void MainMenu::onSocketMessageReceived(QString t_textMessage)
     if (jsonResponse.contains("error")) {
         return showMessage(jsonResponse["error"].toString(), QMessageBox::Icon::Critical);
     }
-
     if (!jsonResponse.contains("action_type")) {
         return;
     }
+
     QString actionType = jsonResponse["action_type"].toString();
     if (actionType == "subscribed") {
-
+        return;
     } else if  (actionType == "deleted_by_friend"){
         getFriends();
     } else if (actionType == "friend_deleted") {
@@ -431,6 +399,9 @@ void MainMenu::onSocketMessageReceived(QString t_textMessage)
         getFriends();
     } else if (actionType == "new_friend_request") {
         getFriendsRequests();
+    } else if (actionType == "friend_request_processed") {
+        getFriends();
+        connect(this, MainMenu::friendsPulled, this, MainMenu::getFriendsRequests);
     } else {
         showMessage("Успешно", QMessageBox::Icon::Information);
     }
@@ -459,6 +430,14 @@ void MainMenu::fillFriendsTab(QNetworkReply *t_reply)
     disconnect(m_manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(fillFriendsTab(QNetworkReply*)));
     QJsonObject jsonResponse = QJsonDocument::fromJson(QString(t_reply->readAll()).toUtf8()).object();
 
+    qDebug() << "fillFriendsTab";
+    qDebug() << jsonResponse;
+    if (jsonResponse.isEmpty()) {
+        showMessage("Сервер недоступен", QMessageBox::Icon::Critical);
+        close();
+        return;
+    }
+
     if (jsonResponse.contains("error")) {
         QString error_message = jsonResponse["error"].toString();
         return showMessage(error_message, QMessageBox::Icon::Critical);
@@ -470,6 +449,10 @@ void MainMenu::fillFriendsTab(QNetworkReply *t_reply)
         QListWidgetItem *friend_name = new QListWidgetItem(friends[i].toString());
         ui->friendsListWidget->addItem(friend_name);
     }
+
+    // Используется чтобы после запроса на получения друзей
+    // запустить запрос на получение заявок в друзья
+    emit friendsPulled();
 }
 
 /*! @brief Заполнение списка заявок в друзья
@@ -483,6 +466,12 @@ void MainMenu::fillFriendsRequestsTab(QNetworkReply *t_reply)
     disconnect(m_manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(fillFriendsRequestsTab(QNetworkReply*)));
     QJsonObject jsonResponse = QJsonDocument::fromJson(QString(t_reply->readAll()).toUtf8()).object();
 
+    if (jsonResponse.isEmpty()) {
+        showMessage("Сервер недоступен", QMessageBox::Icon::Critical);
+        close();
+        return;
+    }
+
     if (jsonResponse.contains("error")) {
         QString error_message = jsonResponse["error"].toString();
         return showMessage(error_message, QMessageBox::Icon::Critical);
@@ -493,24 +482,4 @@ void MainMenu::fillFriendsRequestsTab(QNetworkReply *t_reply)
     for (int i = 0; i < jsonArray.size(); ++i) {
         ui->friendRequestsListWidget->addItem(jsonArray[i].toString());
     }
-}
-
-/*! @brief Получение результата отправки запроса в друзья
- *
- *  @param *reply Указатель на ответ от сервера
- *
- *  @return void
-*/
-void MainMenu::getFriendRequestStatus(QNetworkReply *t_reply)
-{
-    disconnect(m_manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(getFriendRequestStatus(QNetworkReply*)));
-    QString strReply = t_reply->readAll();
-    QJsonObject jsonResponse = QJsonDocument::fromJson(strReply.toUtf8()).object();
-
-    if (jsonResponse.contains("error")) {
-        QString errorMessage = jsonResponse["error"].toString();
-        return showMessage(errorMessage, QMessageBox::Icon::Critical);
-    }
-
-    showMessage("Заявка в друзья была успешно отправлена", QMessageBox::Icon::Information);
 }

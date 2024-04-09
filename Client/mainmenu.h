@@ -49,6 +49,9 @@ public:
     explicit MainMenu(int t_userId, QWidget *parent = nullptr);
     ~MainMenu();
 
+signals:
+    void friendsPulled();
+
 private slots:
     void on_createNewGameButton_clicked();    
 
@@ -72,16 +75,12 @@ private slots:
     void connectToCreatedGame(QNetworkReply* t_reply);
     void fillFriendsTab(QNetworkReply *t_reply);
     void fillFriendsRequestsTab(QNetworkReply *t_reply);
-    void getFriendRequestStatus(QNetworkReply *t_reply);
-    void getIncomingFriendRequestProcessStatus(QNetworkReply *t_reply);
-    void getDeleteFriendRequestStatus(QNetworkReply *t_reply);
 private:
     void getFriends();
     void getFriendsRequests();
     void sendFriendRequest(int t_friendId);
     void deleteFriend(int t_userId, QString t_friendUserName);
     void openFriendAdder();
-
 
     //! Указатель на виджет класса
     Ui::MainMenu *ui;

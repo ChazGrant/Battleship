@@ -113,7 +113,8 @@ void LoginForm::registrate()
     queryParams["password"] = ui->registratePasswordLineEdit->text();
     queryParams["email"] = ui->registrateEmailLineEdit->text();
 
-    QObject::connect(m_manager, SIGNAL(finished(QNetworkReply *)), SLOT(getRegistrateStatus(QNetworkReply *)));
+    QObject::connect(m_manager, SIGNAL(finished(QNetworkReply *)),
+                     SLOT(getRegistrateStatus(QNetworkReply *)));
     sendServerRequest("http://127.0.0.1:8000/users/registrate/", queryParams, m_manager);
 }
 
@@ -132,6 +133,12 @@ void LoginForm::getLoginStatus(QNetworkReply *reply)
 
     const QString strReply = reply->readAll();
     QJsonObject jsonObj = QJsonDocument::fromJson(strReply.toUtf8()).object();
+
+    if (jsonObj.isEmpty()) {
+        showMessage("Сервер недоступен", QMessageBox::Icon::Critical);
+        close();
+        return;
+    }
 
     bool login_successful = jsonObj["login_successful"].toBool();
     if (login_successful) {
@@ -164,11 +171,13 @@ void LoginForm::getRegistrateStatus(QNetworkReply *reply)
     const QString strReply = reply->readAll();
     QJsonObject jsonObj = QJsonDocument::fromJson(strReply.toUtf8()).object();
 
-    if (jsonObj.keys().size() == 0) {
-        return showMessage("Во время обращения к серверу возникли ошибки", QMessageBox::Icon::Critical);
+    if (jsonObj.isEmpty()) {
+        showMessage("Сервер недоступен", QMessageBox::Icon::Critical);
+        close();
+        return;
     }
+
     bool registrate_successful = jsonObj["registration_successful"].toBool();
-    qDebug() << registrate_successful;
     if (registrate_successful) {
         int userId = jsonObj["user_id"].toInt();
         window = new MainMenu(userId);

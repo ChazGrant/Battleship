@@ -1171,6 +1171,7 @@ class FriendsViewSet(ViewSet):
             Возвращает:
                 Список имён пользователей, которые отправили запрос на друзья
         """
+        print("get_incoming_friend_requests accessed")
         try:
             user_id = int(request.data["user_id"])
         except KeyError:
