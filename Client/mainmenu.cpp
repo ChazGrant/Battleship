@@ -169,7 +169,7 @@ void MainMenu::interactWithFriend(QString t_friendUserName, int t_action)
     if (t_action == FriendAction::DELETE_FRIEND) {
         deleteFriend(m_userId, t_friendUserName);
     } else if (t_action == FriendAction::SEND_FRIENDLY_DUEL_REQUEST) {
-        return;
+        sendFriendlyDuelRequest(t_friendUserName);
     }
 }
 
@@ -266,6 +266,15 @@ void MainMenu::sendFriendRequest(int t_friendId)
     m_friendsUpdateSocket->sendTextMessage(jsonObjectToQString(queryItems));
 }
 
+void MainMenu::sendFriendlyDuelRequest(QString t_friendUsername)
+{
+    QJsonObject jsonObj;
+    jsonObj["from_user_id"] = QString::number(m_userId);
+    jsonObj["to_user_name"] = QString::number(t_friendUsername);
+
+    m_friendlyDuelSocket->sendTextMessage(jsonObjectToQString(jsonObj));
+}
+
 /*! @brief Удаление друга
  *
  *  @param t_userId Идентифиатор пользователя, который хочет удалить друга
@@ -318,7 +327,13 @@ void MainMenu::openFriendAdder()
  *
  *  @return void
 */
-void MainMenu::initSocket()
+void MainMenu::initSockets()
+{
+    initFriendsUpdateSocket();
+    initFriendlyDuelSocket();
+}
+
+void MainMenu::initFriendsUpdateSocket()
 {
     m_friendsUpdateSocket = new QWebSocket();
 
@@ -329,12 +344,31 @@ void MainMenu::initSocket()
 
     m_friendsUpdateSocket->open(m_friendsUpdateUrl);
 
-    connect(m_friendsUpdateSocket, SIGNAL(connected()), this, SLOT(onSocketConnected()));
-    connect(m_friendsUpdateSocket, SIGNAL(disconnected()), this, SLOT(onSocketDisconnected()));
+    connect(m_friendsUpdateSocket, SIGNAL(connected()), this, SLOT(onFriendsUpdateSocketConnected()));
+    connect(m_friendsUpdateSocket, SIGNAL(disconnected()), this, SLOT(onFriendsUpdateSocketDisconnected()));
     connect(m_friendsUpdateSocket, SIGNAL(error(QAbstractSocket::SocketError)),
-            this, SLOT(onSocketErrorOccurred(QAbstractSocket::SocketError)));
+            this, SLOT(onFriendsUpdateSocketErrorOccurred(QAbstractSocket::SocketError)));
     connect(m_friendsUpdateSocket, SIGNAL(textMessageReceived(QString)),
-            this, SLOT(onSocketMessageReceived(QString)));
+            this, SLOT(onFriendsUpdateSocketMessageReceived(QString)));
+}
+
+void MainMenu::initFriendlyDuelSocket()
+{
+    m_friendlyDuelSocket = new QWebSocket();
+
+    m_friendlyDuelUrl.setPort(8080);
+    m_friendlyDuelUrl.setHost("127.0.0.1");
+    m_friendlyDuelUrl.setPath("/friendly_duel/");
+    m_friendlyDuelUrl.setScheme("ws");
+
+    m_friendlyDuelSocket->open(m_friendlyDuelUrl);
+
+    connect(m_friendlyDuelSocket, SIGNAL(connected()), this, SLOT(onFriendsUpdateSocketConnected()));
+    connect(m_friendlyDuelSocket, SIGNAL(disconnected()), this, SLOT(onFriendsUpdateSocketDisconnected()));
+    connect(m_friendlyDuelSocket, SIGNAL(error(QAbstractSocket::SocketError)),
+            this, SLOT(onFriendsUpdateSocketErrorOccurred(QAbstractSocket::SocketError)));
+    connect(m_friendlyDuelSocket, SIGNAL(textMessageReceived(QString)),
+            this, SLOT(onFriendsUpdateSocketMessageReceived(QString)));
 }
 
 /*! @brief Обрабатывание события при изменение активной вкладки
@@ -356,7 +390,7 @@ void MainMenu::updateFriendsTab(int t_tabIndex)
  *
  *  @return void
 */
-void MainMenu::onSocketConnected()
+void MainMenu::onFriendsUpdateSocketConnected()
 {
     QJsonObject jsonObj;
     jsonObj["user_id"] = m_userId;
@@ -368,7 +402,7 @@ void MainMenu::onSocketConnected()
  *
  *  @return void
 */
-void MainMenu::onSocketDisconnected()
+void MainMenu::onFriendsUpdateSocketDisconnected()
 {
 
 }
@@ -379,7 +413,7 @@ void MainMenu::onSocketDisconnected()
  *
  *  @return void
 */
-void MainMenu::onSocketMessageReceived(QString t_textMessage)
+void MainMenu::onFriendsUpdateSocketMessageReceived(QString t_textMessage)
 {
     QJsonObject jsonResponse = QJsonDocument::fromJson(t_textMessage.toUtf8()).object();
     if (jsonResponse.contains("error")) {
@@ -398,6 +432,7 @@ void MainMenu::onSocketMessageReceived(QString t_textMessage)
         showMessage("Друг был успешно удалён", QMessageBox::Icon::Information);
         getFriends();
     } else if (actionType == "new_friend_request") {
+        qDebug() << "new_friend_request";
         getFriendsRequests();
     } else if (actionType == "friend_request_processed") {
         getFriends();
@@ -413,10 +448,30 @@ void MainMenu::onSocketMessageReceived(QString t_textMessage)
  *
  *  @return void
 */
-void MainMenu::onSocketErrorOccurred(QAbstractSocket::SocketError t_socketError)
+void MainMenu::onFriendsUpdateSocketErrorOccurred(QAbstractSocket::SocketError t_socketError)
 {
     showMessage("Возникла ошибка при подключении к серверу", QMessageBox::Icon::Critical);
     close();
+}
+
+void MainMenu::onFriendlyDuelSocketConnected()
+{
+
+}
+
+void MainMenu::onFriendlyDuelSocketDisconnected()
+{
+
+}
+
+void MainMenu::onFriendlyDuelSocketMessageReceived(QString t_textMessage)
+{
+
+}
+
+void MainMenu::onFriendlyDuelSocketErrorOccurred(QAbstractSocket::SocketError t_socketError)
+{
+
 }
 
 /*! @brief Заполнение списка пользователями

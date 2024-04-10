@@ -67,10 +67,15 @@ private slots:
     void updateFriendsTab(int t_tabIndex);
 
     // Слоты сокетов
-    void onSocketConnected();
-    void onSocketDisconnected();
-    void onSocketMessageReceived(QString t_textMessage);
-    void onSocketErrorOccurred(QAbstractSocket::SocketError t_socketError);
+    void onFriendsUpdateSocketConnected();
+    void onFriendsUpdateSocketDisconnected();
+    void onFriendsUpdateSocketMessageReceived(QString t_textMessage);
+    void onFriendsUpdateSocketErrorOccurred(QAbstractSocket::SocketError t_socketError);
+
+    void onFriendlyDuelSocketConnected();
+    void onFriendlyDuelSocketDisconnected();
+    void onFriendlyDuelSocketMessageReceived(QString t_textMessage);
+    void onFriendlyDuelSocketErrorOccurred(QAbstractSocket::SocketError t_socketError);
 
     void connectToCreatedGame(QNetworkReply* t_reply);
     void fillFriendsTab(QNetworkReply *t_reply);
@@ -79,6 +84,7 @@ private:
     void getFriends();
     void getFriendsRequests();
     void sendFriendRequest(int t_friendId);
+    void sendFriendlyDuelRequest(QString t_friendUsername);
     void deleteFriend(int t_userId, QString t_friendUserName);
     void openFriendAdder();
 
@@ -101,8 +107,11 @@ private:
     QWebSocket *m_friendlyDuelSocket;
 
     QUrl m_friendsUpdateUrl;
+    QUrl m_friendlyDuelUrl;
 
-    void initSocket();
+    void initSockets();
+    void initFriendsUpdateSocket();
+    void initFriendlyDuelSocket();
     void sendSocketMessage();
 
     //! Подписи для меню обработки запросов в друзья

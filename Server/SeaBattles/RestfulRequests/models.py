@@ -29,6 +29,7 @@ class Game(models.Model):
     has_winner = models.BooleanField(default=False)
 
     is_friendly = models.BooleanField(default=False)
+    game_invite_id = models.CharField(max_length=30, default="")
 
     class Meta:
         verbose_name = "Game"

@@ -7,7 +7,7 @@ import os
 import django
 import random
 
-from typing import Dict, Tuple, Coroutine
+from typing import Dict, Tuple, Coroutine, Callable
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'SeaBattles.settings')
 django.setup()
@@ -44,7 +44,9 @@ INVALID_ACTION_TYPE_JSON = {
 INVALID_JSON_FORMATS = {
     "error": "Неверный формат json"
 }
-
+USER_IS_OFFLINE_JSON = {
+    "error": "Данного пользователя нет в сети"
+}
 
 class UserDatabaseAccessor:
     @staticmethod
@@ -78,6 +80,14 @@ class UserDatabaseAccessor:
             return False
 
 
+class FieldDatabaseAccessor:
+    @staticmethod
+    async def getFieldOwnerId(game: Game):
+        try:
+            return (await sync_to_async(Field.objects.get)(game=game)).owner_id, ""
+        except Field.DoesNotExist:
+            return 0, "Данного поля не существует"
+
 class GameDatabaseAccessor:
     @staticmethod
     async def createGame(creator_id: int) -> Tuple[int, str]:
@@ -96,8 +106,16 @@ class GameDatabaseAccessor:
 
         return created_game.game_id, ""
 
+    @staticmethod
+    async def getGameCreatorId(game_id: int) -> int:
+        try:
+            game = await sync_to_async(Game.objects.get)(game_id=game_id)
+            return await FieldDatabaseAccessor.getFieldOwnerId(game)
+        except Game.DoesNotExist:
+            return 0
 
-class FriendRequestHandler():
+
+class FriendRequestDatabaseAccessor:
     @staticmethod
     async def processFriendRequest(first_friend_id: int, second_friend_username: str, accept: bool) -> Tuple[bool, str]:
         """
@@ -161,7 +179,7 @@ class FriendRequestHandler():
         except FriendRequest.DoesNotExist:
             try:
                 await sync_to_async(FriendRequest.objects.get)(from_user=to_user, to_user=from_user)
-                result, error = await FriendRequestHandler.processFriendRequest(to_user, from_user, True)
+                result, error = await FriendRequestDatabaseAccessor.processFriendRequest(to_user, from_user, True)
                 if not result:
                     return False, error
                 else:
@@ -204,28 +222,175 @@ class FriendsUpdateConsumer(AsyncJsonWebsocketConsumer):
 
         @author     ChazGrant
         @version    1.0
-
-        # TODO       Переделать if, else if... на словарь доступных команд и вызывать методы, привязанные
-        к этим командам
     """
+    groups = []
     listeners: Dict[int, AsyncJsonWebsocketConsumer] = dict()
     reversed_listeners: Dict[AsyncJsonWebsocketConsumer, int] = dict()
+    def __init__(self, *args, **kwargs):
+        """
+            Конструктор класса
+
+            Создаём список доступных действий и присваиваем им соответствующие методы
+        """
+        self._available_actions: Dict[str, Callable] = {
+            "subscribe": self.subscribe,
+            "process_friend_request": self.processFriendRequest,
+            "send_friend_request": self.sendFriendRequest,
+            "delete_friend": self.deleteFriend      
+        }
+
     async def connect(self):
         """
             Обрабатывает поведение при отключении сокета от сервера
         """
         await self.accept()
 
-    async def receive(self, text_data: str) -> Coroutine:
+    async def subscribe(self, json_object: dict) -> None:
+        """
+            Подписывает сокет на события
+
+            Аргументы:
+                json_object - Словарь, содержащий идентификатор пользователя, который хочет подписаться
+
+            Возвращает:
+                Ответ сокету, содержащий текст ошибки или информацию, что он подписался
+        """
+        try:
+            user_id = int(json_object["user_id"])
+        except KeyError:
+            return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
+        except ValueError:
+            return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
+        
+        if not (await UserDatabaseAccessor.userExists(user_id)):
+            return await self.send_json(USER_DOES_NOT_EXIST_JSON)
+
+        self.listeners[user_id] = self
+        self.reversed_listeners[self] = user_id
+
+        await self.send_json({
+            "action_type": "subscribed"
+        })
+
+    async def processFriendRequest(self, json_object: dict) -> None:
+        """
+            Обрабатывает запрос в друзья
+
+            Аргументы:
+                json_object - Словарь, содержащий 
+                имя пользователя друга,
+                идентификатор пользователя, которому поступил запрос в друзья,
+                статус обработки
+
+            Возвращает:
+                Ответ сокету, содержащий текст ошибки или информацию, что запрос обработан
+        """
+        try:
+            friend_username = json_object["friend_username"]
+            user_id = int(json_object["user_id"])
+            process_status = int(json_object["process_status"])
+        except KeyError:
+            return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
+        except ValueError:
+            return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
+                    
+        result, error = await FriendRequestDatabaseAccessor.processFriendRequest(user_id, friend_username, process_status)
+
+        if not result:
+            return await self.send_json({
+                "error": error
+            })
+
+        friend_id = await UserDatabaseAccessor.getUserIdByUsername(friend_username)
+        if friend_id in self.listeners.keys():
+            await self.listeners[friend_id].send_json({
+                "action_type": "friend_request_processed"
+            })
+
+        await self.send_json({
+            "action_type": "friend_request_processed"
+        })
+
+    async def sendFriendRequest(self, json_object: dict) -> None:
+        """
+            Отправляет запрос в друзья
+
+            Аргументы:
+                json_object - Словарь, содержащий 
+                идентификатор получателя запроса в друзья,
+                идентификатор отправителя запроса в друзья
+
+            Возвращает:
+                Ответ сокету, содержащий текст ошибки или информацию, что запрос отправлен
+        """
+        try:
+            sender_id = int(json_object["sender_id"])
+            receiver_id = int(json_object["receiver_id"])
+        except KeyError:
+            return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
+        except ValueError:
+            return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
+        
+        status, error = await FriendRequestDatabaseAccessor.sendFriendRequest(sender_id, receiver_id)
+        if not status:
+            return await self.send_json({
+                "error": error
+            })
+        
+        if receiver_id in self.listeners.keys():
+            await self.listeners[receiver_id].send_json({
+                "action_type": "new_friend_request"
+            })
+
+        await self.send_json({
+            "action_type": "friend_request_sent"
+        })
+
+    async def deleteFriend(self, json_object: dict) -> None:
+        """
+            Удаляет друга
+
+            Аргументы:
+                json_object - Словарь, содержащий 
+                идентификатор пользователя, который удаляет друга,
+                имя пользователя, котрого нужно удалить из друзей
+
+            Возвращает:
+                Ответ сокету, содержащий текст ошибки или информацию, что друг удалён
+        """
+        try:
+            user_id = int(json_object["user_id"])
+            friend_username = json_object["friend_username"]
+        except KeyError:
+            return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
+        except ValueError:
+            return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
+        
+        status, error = await FriendRequestDatabaseAccessor.deleteFriend(user_id, friend_username)
+        if not status:
+            return await self.send_json({
+                "error": error
+            })
+
+        friend_id = await UserDatabaseAccessor.getUserIdByUsername(friend_username)
+        if friend_id == 0:
+            return await self.send_json(USER_DOES_NOT_EXIST_JSON)
+        
+        if friend_id in self.listeners.keys():
+            await self.listeners[friend_id].send_json({
+                "action_type": "deleted_by_friend"
+            })
+
+        await self.send_json({
+            "action_type": "friend_deleted"
+        })
+
+    async def receive(self, text_data: str) -> None:
         """
             Получает информацию от сокета
 
-            text_data может содержать следующие параметры
+            text_data содержит action_type, отвечающий за тип действия
             action_type - Тип действия
-            user_id - Идентификатор пользователя
-            sender_id - Идентификатор пользователя, отправившего заявку в друзья
-            receiver_id - Идентификатор пользователя, получившего заявку в друзья
-            friend_username - Никнейм друга
             
             Аргументы:
                 text_data - Полученная информация
@@ -233,104 +398,16 @@ class FriendsUpdateConsumer(AsyncJsonWebsocketConsumer):
             Возвращает:
                 Текст ошибки или результат об успешной обработке
         """
-        json_event = await self.decode_json(text_data)
+        json_object = await self.decode_json(text_data)
         try:
-            action_type = json_event["action_type"]
+            action_type = json_object["action_type"]
         except KeyError:
             return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
             
-        if action_type == "subscribe":
-            try:
-                user_id = int(json_event["user_id"])
-                if await UserDatabaseAccessor.userExists(user_id):
-                    self.listeners[user_id] = self
-                    self.reversed_listeners[self] = user_id
-                else:
-                    return await self.send_json(USER_DOES_NOT_EXIST_JSON)
-            except ValueError:
-                return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
-
-            await self.send_json({"action_type": "subscribed"})
-        elif action_type == "process_friend_request":
-            try:
-                friend_username = json_event["friend_username"]
-                user_id = int(json_event["user_id"])
-                process_status = int(json_event["process_status"])
-            except KeyError:
-                return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
-            except ValueError:
-                return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
-                        
-            result, error = await FriendRequestHandler.processFriendRequest(user_id, friend_username, process_status)
-
-            if not result:
-                return await self.send_json({
-                    "error": error
-                })
-
-            friend_id = await UserDatabaseAccessor.getUserIdByUsername(friend_username)
-            if friend_id in self.listeners.keys():
-                await self.listeners[friend_id].send_json({
-                    "action_type": "friend_request_processed"
-                })
-
-            await self.send_json({
-                "action_type": "friend_request_processed"
-            })
-        elif action_type == "send_friend_request":
-            try:
-                sender_id = int(json_event["sender_id"])
-                receiver_id = int(json_event["receiver_id"])
-            except KeyError:
-                return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
-            except ValueError:
-                return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
-            
-            status, error = await FriendRequestHandler.sendFriendRequest(sender_id, receiver_id)
-            if not status:
-                return await self.send_json({
-                    "error": error
-                })
-            
-            if receiver_id in self.listeners.keys():
-                await self.listeners[receiver_id].send_json({
-                    "action_type": "new_friend_request"
-                })
-
-            await self.send_json({
-                "action_type": "friend_request_sent"
-            })
-        elif action_type == "delete_friend":
-            try:
-                user_id = int(json_event["user_id"])
-                friend_username = json_event["friend_username"]
-            except KeyError:
-                return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
-            except ValueError:
-                return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
-            
-            status, error = await FriendRequestHandler.deleteFriend(user_id, friend_username)
-            if not status:
-                return await self.send_json({
-                    "error": error
-                })
-
-            friend_id = await UserDatabaseAccessor.getUserIdByUsername(friend_username)
-            if friend_id == 0:
-                return await self.send_json(USER_DOES_NOT_EXIST_JSON)
-            
-            if friend_id in self.listeners.keys():
-                await self.listeners[friend_id].send_json({
-                    "action_type": "deleted_by_friend"
-                })
-
-            await self.send_json({
-                "action_type": "friend_deleted"
-            })
-        else:
-            await self.send_json(INVALID_ACTION_TYPE_JSON)
-
-        print(self.listeners)
+        if action_type in self._available_actions.keys():
+            return await self._available_actions[action_type](json_object)
+        
+        await self.send_json(INVALID_ACTION_TYPE_JSON)
 
     async def disconnect(self, event) -> Coroutine:
         """
@@ -345,25 +422,170 @@ class FriendsUpdateConsumer(AsyncJsonWebsocketConsumer):
 
 class GameConsumer(AsyncJsonWebsocketConsumer):
     """
-        Обработчик websocket запросов действий с друзьями
+        Обработчик websocket запросов обработки игры
 
-        Обрабатывает запросы, посылаемые на адрес ws://адрес_сервера/game/
+        Обрабатывает запросы, посылаемые на адрес ws://адрес_сервера/game_invite/
 
         @author     ChazGrant
         @version    1.0
-
-        # TODO       Переделать if, else if... на словарь доступных команд и вызывать методы, привязанные
-        к этим командам
     """
+    async def connectToGame(self, json_object: dict) -> None:
+        ...
+
+
+class FriendlyDuelConsumer(AsyncJsonWebsocketConsumer):
+    """
+        Обработчик websocket запросов обработки игры
+
+        Обрабатывает запросы, посылаемые на адрес ws://адрес_сервера/friendly_duel/
+
+        @author     ChazGrant
+        @version    1.0
+    """
+    groups = []
     listeners: Dict[int, AsyncJsonWebsocketConsumer] = dict()
     reversed_listeners: Dict[AsyncJsonWebsocketConsumer, int] = dict()
-    async def connect(self) -> Coroutine:
+    def __init__(self) -> None:
+        """
+            Конструктор класса
+
+            Создаём список доступных действий и присваиваем им соответствующие методы
+        """
+        self._available_actions: Dict[str, Callable] = {
+            "subscribe": self.subscribe,
+            "send_game_invite": self.sendGameInvite,
+            "decline_invite": self.declineInvite
+        }
+
+    async def abortDuel(self, game_id: int, abort_reason: str) -> None:
+        """
+            Отменяет дуэль
+
+            Отправляет игроку информацию о том, что дуэль была отменена
+
+            Аргументы:
+                game_id - Идентификатор игры
+                abort_reason - Причина отмены
+
+            Возвращает:
+                Запрос сокету о том, что игра была отменена и причину отмены
+        """
+        creator_id = await GameDatabaseAccessor.getGameCreatorId(game_id)
+        if creator_id == 0:
+            return
+
+        if creator_id in self.listeners.keys():
+            await self.listeners[creator_id].send_json({
+                "action_type": "duel_aborted",
+                "reason": abort_reason
+            })
+
+    async def subscribe(self, json_object: dict) -> None:
+        """
+            Подписывает сокет на события
+
+            Аргументы:
+                json_object - Словарь, содержащий идентификатор пользователя, который хочет подписаться
+
+            Возвращает:
+                Ответ сокету, содержащий текст ошибки или информацию, что он подписался
+        """
+        try:
+            user_id = int(json_object["user_id"])
+        except KeyError:
+            return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
+        except ValueError:
+            return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
+        
+        if not (await UserDatabaseAccessor.userExists(user_id)):
+            return await self.send_json(USER_DOES_NOT_EXIST_JSON)
+
+        self.listeners[user_id] = self
+        self.reversed_listeners[self] = user_id
+
+        await self.send_json({
+            "action_type": "subscribed"
+        })
+
+    async def sendGameInvite(self, json_object: dict) -> None:
+        """
+            Отправляет приглашение в игру пользователю
+
+            Аргументы:
+                json_object - Словарь, содержащий идентификатор пользователя, который отправил запрос
+                и идентификатор пользователя которому был отправлен запрос
+
+            Возвращает:
+                Ответ сокету, содержащий текст ошибки или информацию, что запрос был отправлен
+        """
+        try:
+            from_user_id: int = int(json_object["from_user_id"])
+            to_user_name: int = int(json_object["to_user_name"])
+        except KeyError:
+            return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
+        except ValueError:
+            return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
+
+        to_user_id = UserDatabaseAccessor.getUserIdByUsername(to_user_name)
+
+        if not UserDatabaseAccessor.userExists(from_user_id) or \
+           not to_user_id:
+            return await self.send_json(USER_DOES_NOT_EXIST_JSON)
+
+        if not (to_user_id in self.listeners.keys()):
+            return await self.send_json(USER_IS_OFFLINE_JSON)
+        
+        game_id, error = await GameDatabaseAccessor.createGame(creator_id=from_user_id)
+        if game_id == 0:
+            return await self.send_json({
+                "error": error
+            })
+        
+        if not(to_user_id in self.listeners.keys()):
+            return await self.send_json(USER_IS_OFFLINE_JSON)
+        
+        await self.listeners[to_user_id].send_json({
+            "action_type": "incoming_game_invite", 
+            "game_id": str(game_id)
+        })
+
+        return await self.send_json({
+            "action_type": "game_invite_sent",
+            "game_id": str(game_id)
+        })
+
+    async def declineInvite(self, json_object: dict) -> None:
+        """
+            Отменяет приглашение в игру
+
+            Аргументы:
+                json_object - Словарь, содержащий идентификатор пользователя, который отправил запрос,
+                идентификатор пользователя которому был отправлен запрос и идентификатор запроса игры
+
+            Возвращает:
+                Ответ сокету, содержащий текст ошибки или информацию, что запрос был отправлен
+        """
+        try:
+            user_id: str = int(json_object["user_id"])
+            game_id: str = json_object["game_id"]
+            game_invite_id: str = json_object["game_invite_id"]
+        except KeyError:
+            return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
+        except ValueError:
+            return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
+            
+        result, error = self.abortDuel(game_id, user_id, "Противник отменил запрос")
+        await self.send_json({
+            "action_type": "game_declined"
+        })
+
+    async def connect(self) -> None:
         """
             Обрабатывает поведение при подключении сокета к серверу
         """
         await self.accept()
 
-    async def receive(self, text_data: str) -> Coroutine:
+    async def receive(self, text_data: str) -> None:
         """
             Получает информацию от сокета
 
@@ -381,83 +603,21 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                 Текст ошибки или результат об успешной обработке
         """
         try:
-            json_event = await self.decode_json(text_data)
+            json_object = await self.decode_json(text_data)
         except json.JSONDecodeError:
             return await self.send_json(INVALID_JSON_FORMATS)
         
         try:
-            action_type = json_event["action_type"]
+            action_type = json_object["action_type"]
         except KeyError:
             return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
         
-        if action_type == "subscribe":
-            try:
-                user_id = int(json_event["user_id"])
-            except KeyError:
-                return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
-            except ValueError:
-                return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
-            
-            if not (await UserDatabaseAccessor.userExists(user_id)):
-                return await self.send_json(USER_DOES_NOT_EXIST_JSON)
+        if action_type in self._available_actions.keys():
+            return await self._available_actions[action_type](json_object)
 
-            self.listeners[user_id] = self
-            self.reversed_listeners[self] = user_id
-        # TODO закончить логику
-        elif action_type == "send_invite":
-            try:
-                from_user_id: int = int(json_event["from_user_id"])
-                to_user_id: int = int(json_event["to_user_id"])
-                game_id: int = int(json_event["game_id"])
-            except KeyError:
-                return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
-            except ValueError:
-                return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
+        return await self.send_json(INVALID_ACTION_TYPE_JSON)
 
-            if not (to_user_id in self.listeners.keys()):
-                return await self.send_json({
-                    "error": "Данного пользователя нет в сети"
-                })
-            
-            game_id, error = await GameDatabaseAccessor.createGame(creator_id=user_id)
-            if game_id == 0:
-                return await self.send_json({
-                    "error": error
-                })
-            
-            await self.listeners[to_user_id].send_json({
-                "action_type": "game_invite", 
-                "game_id": str(game_id)
-            })
-
-            return await self.send_json({
-                "action_type": "game_invite_sent",
-                "game_id": str(game_id)
-            })
-        elif action_type == "accept_invite":
-            from_user_id: str = json_event["from_user_id"]
-            to_user_id: str = json_event["to_user_id"]
-            if to_user_id in self.listeners.keys():
-                await self.listeners[to_user_id].send(text_data=await self.encode_json({
-                    "type": "game_accept",
-                    "from_user_id":str(from_user_id)
-                }))
-
-            await self.send(text_data=await self.encode_json({
-                "status": "accepted"
-            }))
-        # Отправляет второму игроку что игра отменена
-        # на клиенте закрывается окно с игрой и удаляется поле и игра
-        elif action_type == "decline_invite":
-            ...
-        # Создаёт поле игры, отправляет второму игроку что игра начата
-        # на клиенте запускает таймер ожидания хода
-        elif action_type == "connect_to_game":
-            ...
-        else:
-            return await self.send_json(INVALID_ACTION_TYPE_JSON)
-
-    async def disconnect(self, event):
+    async def disconnect(self, event) -> None:
         """
             Обрабатывает поведение при отключении сокета от сервера
         """
