@@ -5,7 +5,8 @@ from django.db.models import Q
 
 import os
 import django
-import random
+from random import randint
+from hashlib import md5
 
 from typing import Dict, Tuple, Coroutine, Callable
 
@@ -14,19 +15,6 @@ django.setup()
 
 from RestfulRequests.models import User, FriendRequest, Friends, Game, Field
 from RestfulRequests.views import MAX_LIMIT
-
-
-async def generateGameId() -> str:
-    """
-        Создаёт идентификатор игры
-
-        Возврашает:
-            Строку, содержащую идентификатор для созданной игры
-    """
-    game_id = ""
-    async for _ in range(8):
-        game_id += await sync_to_async(str)(await sync_to_async(random.randint)(0, MAX_LIMIT))
-    return game_id
 
 
 NOT_ENOUGH_ARGUMENTS_JSON = {
@@ -47,6 +35,36 @@ INVALID_JSON_FORMATS = {
 USER_IS_OFFLINE_JSON = {
     "error": "Данного пользователя нет в сети"
 }
+
+
+class Generator:
+    @staticmethod
+    async def generateGameId() -> str:
+        """
+            Создаёт идентификатор игры
+
+            Возврашает:
+                Строку, содержащую идентификатор для созданной игры
+        """
+        game_id = ""
+        async for _ in range(8):
+            game_id += await sync_to_async(str)(await sync_to_async(randint)(0, MAX_LIMIT))
+        return game_id
+
+    @staticmethod
+    async def generateGameInviteId(first_user_id: int, second_user_id: int) -> str:
+        """
+            Создаёт идентификатор приглашения в игру
+
+            Аргументы:
+                first_user_id - Идентификатор первого пользователя
+                second_user_id - Идентификатор второго пользователя
+            
+            Возвращает:
+                Строку, содержащую идентификатор приглашения
+        """
+        return md5(str(first_user_id) + str(second_user_id)).hexdigest()
+
 
 class UserDatabaseAccessor:
     @staticmethod
@@ -88,9 +106,10 @@ class FieldDatabaseAccessor:
         except Field.DoesNotExist:
             return 0, "Данного поля не существует"
 
+
 class GameDatabaseAccessor:
     @staticmethod
-    async def createGame(creator_id: int) -> Tuple[int, str]:
+    async def createGame(creator_id: int, another_user_id: int) -> Tuple[int, str]:
         try:
             await sync_to_async(Field.objects.get)(owner_id=creator_id)
             return 0, "Игрок уже находится в игре"
@@ -98,13 +117,13 @@ class GameDatabaseAccessor:
             ...
 
         created_game = await sync_to_async(Game.objects.create)(
-            game_id=await generateGameId(),
+            game_id=await Generator.generateGameId(),
             user_id_turn=creator_id,
-            is_friendly=True
+            is_friendly=True,
+            game_invite_id=await Generator.generateGameInviteId(creator_id, another_user_id)
         )
-        await sync_to_async(Field.objects.create)(owner_id=creator_id, game=created_game)
 
-        return created_game.game_id, ""
+        return created_game.game_id, created_game.game_invite_id, ""
 
     @staticmethod
     async def getGameCreatorId(game_id: int) -> int:
@@ -126,7 +145,7 @@ class FriendRequestDatabaseAccessor:
                 second_friend_username - Имя пользователя второго друга
 
             Возвращает:
-                Кортеж, содержащий результат выполнения и текс ошибки
+                Кортеж, содержащий результат выполнения и текст ошибки
         """
         second_friend_id = await UserDatabaseAccessor.getUserIdByUsername(second_friend_username)
         if second_friend_id == 0 or not (await UserDatabaseAccessor.userExists(first_friend_id)):
@@ -158,7 +177,7 @@ class FriendRequestDatabaseAccessor:
                 receiver_id - Идентификатор пользователя которому отправляется запрос
             
             Возвращает:
-                Результат запроса и dict ошибки
+                Результат запроса и ошибку
         """
         try:
             from_user = await sync_to_async(User.objects.get)(user_id=sender_id)
@@ -199,8 +218,6 @@ class FriendRequestDatabaseAccessor:
 
             Возвращает:
                 Результат запроса и текст ошибки
-            
-            #TODO Удалять найденную связь друзей
         """
         try:
             username: str = (await sync_to_async(User.objects.get)(user_id=user_id)).user_name
@@ -453,32 +470,8 @@ class FriendlyDuelConsumer(AsyncJsonWebsocketConsumer):
         """
         self._available_actions: Dict[str, Callable] = {
             "subscribe": self.subscribe,
-            "send_game_invite": self.sendGameInvite,
-            "decline_invite": self.declineInvite
+            "send_game_invite": self.sendGameInvite
         }
-
-    async def abortDuel(self, game_id: int, abort_reason: str) -> None:
-        """
-            Отменяет дуэль
-
-            Отправляет игроку информацию о том, что дуэль была отменена
-
-            Аргументы:
-                game_id - Идентификатор игры
-                abort_reason - Причина отмены
-
-            Возвращает:
-                Запрос сокету о том, что игра была отменена и причину отмены
-        """
-        creator_id = await GameDatabaseAccessor.getGameCreatorId(game_id)
-        if creator_id == 0:
-            return
-
-        if creator_id in self.listeners.keys():
-            await self.listeners[creator_id].send_json({
-                "action_type": "duel_aborted",
-                "reason": abort_reason
-            })
 
     async def subscribe(self, json_object: dict) -> None:
         """
@@ -535,48 +528,27 @@ class FriendlyDuelConsumer(AsyncJsonWebsocketConsumer):
         if not (to_user_id in self.listeners.keys()):
             return await self.send_json(USER_IS_OFFLINE_JSON)
         
-        game_id, error = await GameDatabaseAccessor.createGame(creator_id=from_user_id)
-        if game_id == 0:
+        game_id, game_invite_id, error = await GameDatabaseAccessor.createGame(
+            creator_id=from_user_id,
+            another_user_id=to_user_id
+        )
+        if not game_id:
             return await self.send_json({
                 "error": error
             })
-        
+
         if not(to_user_id in self.listeners.keys()):
             return await self.send_json(USER_IS_OFFLINE_JSON)
-        
+
         await self.listeners[to_user_id].send_json({
-            "action_type": "incoming_game_invite", 
+            "action_type": "incoming_game_invite",
+            "game_invite_id": game_invite_id,
             "game_id": str(game_id)
         })
 
         return await self.send_json({
             "action_type": "game_invite_sent",
             "game_id": str(game_id)
-        })
-
-    async def declineInvite(self, json_object: dict) -> None:
-        """
-            Отменяет приглашение в игру
-
-            Аргументы:
-                json_object - Словарь, содержащий идентификатор пользователя, который отправил запрос,
-                идентификатор пользователя которому был отправлен запрос и идентификатор запроса игры
-
-            Возвращает:
-                Ответ сокету, содержащий текст ошибки или информацию, что запрос был отправлен
-        """
-        try:
-            user_id: str = int(json_object["user_id"])
-            game_id: str = json_object["game_id"]
-            game_invite_id: str = json_object["game_invite_id"]
-        except KeyError:
-            return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
-        except ValueError:
-            return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
-            
-        result, error = self.abortDuel(game_id, user_id, "Противник отменил запрос")
-        await self.send_json({
-            "action_type": "game_declined"
         })
 
     async def connect(self) -> None:
@@ -595,7 +567,7 @@ class FriendlyDuelConsumer(AsyncJsonWebsocketConsumer):
             from_user_id - Идентификатор пользователя, отправившего вызов на дуэль
             to_user_id - Идентификатор пользователя, получившего вызов на дуэль
             game_id - Идентификатор игры для дуэли
-            
+
             Аргументы:
                 text_data - Полученная информация
 

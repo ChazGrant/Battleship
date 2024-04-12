@@ -8,6 +8,7 @@
  *
  *  @details Инициализирует свойство класса m_manager
  *
+ *  @param t_userId Идентификатор пользователя, который прошёл авторизацию
  *  @param *parent Указатель на родительский виджет
  *
  *  @return MainMenu
@@ -73,7 +74,7 @@ void MainMenu::on_createNewGameButton_clicked()
  *  @details Получает идентификатор игры из ответа сервера, выдаёт ошибку
  *  или открывает окно с игрой, передавая айди игры
  *
- *  @param *reply Указатель  на ответ от сервера
+ *  @param *t_reply Указатель  на ответ от сервера
  *
  *  @return void
 */
@@ -101,13 +102,13 @@ void MainMenu::connectToCreatedGame(QNetworkReply *t_reply)
  *
  *  @details Заполняет контекстное меню действиями, которые можно совершить с заявками в друзья
  *
- *  @param &point Ссылка на точку, где была нажата кнопка ЛКМ
+ *  @param &t_point Ссылка на точку, где была нажата кнопка ЛКМ
  *
  *  @return void
 */
-void MainMenu::showFriendRequestsContextMenu(const QPoint &point)
+void MainMenu::showFriendRequestsContextMenu(const QPoint &t_point)
 {
-    QListWidgetItem *item = ui->friendRequestsListWidget->itemAt(point);
+    QListWidgetItem *item = ui->friendRequestsListWidget->itemAt(t_point);
     if (item == NULL) return;
 
     assert(friendRequestsActionsText.size() == friendRequestsActionsData.size());
@@ -123,18 +124,18 @@ void MainMenu::showFriendRequestsContextMenu(const QPoint &point)
             });
     }
 
-    menu->exec(actions, ui->friendRequestsListWidget->mapToGlobal(point));
+    menu->exec(actions, ui->friendRequestsListWidget->mapToGlobal(t_point));
 }
 
 /*! @brief Вывод контекстного меню на виджет
  *
  *  @details Заполняет контекстное меню действиями, которые можно совершить с имеющимися друзьями
  *
- *  @param &point Ссылка на точку, где была нажата кнопка ЛКМ
+ *  @param &t_point Ссылка на точку, где была нажата кнопка ЛКМ
  *
  *  @return void
 */
-void MainMenu::showFriendsContextMenu(const QPoint &point)
+void MainMenu::showFriendsContextMenu(const QPoint &t_point)
 {
     QListWidgetItem *item = ui->friendsListWidget->itemAt(point);
     if (item == NULL) return;
@@ -266,6 +267,12 @@ void MainMenu::sendFriendRequest(int t_friendId)
     m_friendsUpdateSocket->sendTextMessage(jsonObjectToQString(queryItems));
 }
 
+/*!  @brief Отправка запроса на дуэль
+ *
+ *   @param t_friendUsername Имя пользователя, которому адресована дуэль
+ *
+ *   @return void
+*/
 void MainMenu::sendFriendlyDuelRequest(QString t_friendUsername)
 {
     QJsonObject jsonObj;
@@ -333,6 +340,10 @@ void MainMenu::initSockets()
     initFriendlyDuelSocket();
 }
 
+/*! @brief Создание сокета для обновления друзей и событий к нему
+ *
+ *  @return void
+*/
 void MainMenu::initFriendsUpdateSocket()
 {
     m_friendsUpdateSocket = new QWebSocket();
@@ -352,6 +363,10 @@ void MainMenu::initFriendsUpdateSocket()
             this, SLOT(onFriendsUpdateSocketMessageReceived(QString)));
 }
 
+/*! @brief Создание сокета для дуэлей и событий к нему
+ *
+ *  @return void
+*/
 void MainMenu::initFriendlyDuelSocket()
 {
     m_friendlyDuelSocket = new QWebSocket();
@@ -387,6 +402,8 @@ void MainMenu::updateFriendsTab(int t_tabIndex)
 }
 
 /*! @brief Обработчик подключения сокета к серверу
+ *
+ *  @details Отправляет серверу идентификатор пользователя чтоб подписаться на события
  *
  *  @return void
 */
@@ -454,9 +471,18 @@ void MainMenu::onFriendsUpdateSocketErrorOccurred(QAbstractSocket::SocketError t
     close();
 }
 
+/*! @brief Обработчик подключения сокета к серверу
+ *
+ *  @details Отправляет серверу идентификатор пользователя чтоб подписаться на события
+ *
+ *  @return void
+*/
 void MainMenu::onFriendlyDuelSocketConnected()
 {
-
+    QJsonObject jsonObj;
+    jsonObj["user_id"] = m_userId;
+    jsonObj["action_type"] = "subscribe";
+    m_friendlyDuelSocket->sendTextMessage(jsonObjectToQString(jsonObj));
 }
 
 void MainMenu::onFriendlyDuelSocketDisconnected()
@@ -466,7 +492,26 @@ void MainMenu::onFriendlyDuelSocketDisconnected()
 
 void MainMenu::onFriendlyDuelSocketMessageReceived(QString t_textMessage)
 {
+    QJsonObject jsonResponse = QJsonDocument::fromJson(t_textMessage.toUtf8()).object();
+    if (jsonResponse.contains("error")) {
+        return showMessage(jsonResponse["error"].toString(), QMessageBox::Icon::Critical);
+    }
+    if (!jsonResponse.contains("action_type")) {
+        return;
+    }
 
+    QString actionType = jsonResponse["action_type"].toString();
+    if (actionType == "subscribed") {
+        return;
+    }
+
+    if (actionType == "game_invite_sent"){
+        QString gameId = jsonResponse["game_id"];
+        // Открываем окно с игрой и подключаемся к игре
+    } else if (actionType == "incoming_game_invite") {
+        QString gameInviteId = jsonResponse["game_invite_id"];
+
+    }
 }
 
 void MainMenu::onFriendlyDuelSocketErrorOccurred(QAbstractSocket::SocketError t_socketError)
@@ -476,7 +521,7 @@ void MainMenu::onFriendlyDuelSocketErrorOccurred(QAbstractSocket::SocketError t_
 
 /*! @brief Заполнение списка пользователями
  *
- *  @param *reply Указатель на ответ от сервера
+ *  @param *t_reply Указатель на ответ от сервера
  *
  *  @return void
 */
@@ -512,7 +557,7 @@ void MainMenu::fillFriendsTab(QNetworkReply *t_reply)
 
 /*! @brief Заполнение списка заявок в друзья
  *
- *  @param *reply Указатель на ответ от сервера
+ *  @param *t_reply Указатель на ответ от сервера
  *
  *  @return void
 */

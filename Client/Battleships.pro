@@ -21,6 +21,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     additionalfunctions.cpp \
     friendadder.cpp \
+    gameinvitenotifier.cpp \
     inputgameid.cpp \
     loginform.cpp \
     main.cpp \
@@ -30,6 +31,7 @@ SOURCES += \
 HEADERS += \
     additionalfunctions.h \
     friendadder.h \
+    gameinvitenotifier.h \
     inputgameid.h \
     loginform.h \
     mainmenu.h \
@@ -37,6 +39,7 @@ HEADERS += \
 
 FORMS += \
     friendadder.ui \
+    gameinvitenotifier.ui \
     inputgameid.ui \
     loginform.ui \
     mainmenu.ui \

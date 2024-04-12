@@ -53,10 +53,10 @@ signals:
     void friendsPulled();
 
 private slots:
-    void on_createNewGameButton_clicked();    
+    void on_createNewGameButton_clicked();
 
-    void showFriendRequestsContextMenu(const QPoint &point);
-    void showFriendsContextMenu(const QPoint &point);
+    void showFriendRequestsContextMenu(const QPoint &t_point);
+    void showFriendsContextMenu(const QPoint &t_point);
 
     void interactWithFriend(QString t_friendUserName, int t_action);
     void processFriendRequestAction(QString t_friendUserName, int t_action);
