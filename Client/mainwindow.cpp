@@ -22,7 +22,7 @@ const int FIELD_COLUMN_COUNT = 10;
  *
  *  @return MainWindow
 */
-MainWindow::MainWindow(QWidget *parent, const QString t_gameId, int t_userId)
+MainWindow::MainWindow(const QString t_gameId, int t_userId, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , m_gameId(t_gameId)
@@ -30,14 +30,14 @@ MainWindow::MainWindow(QWidget *parent, const QString t_gameId, int t_userId)
 {
     this->m_closeEventIsAccepted = false;
 
-    showMessage("Ваше айди: " + this->m_userId, QMessageBox::Icon::Information);
+    showMessage("Ваше айди: " + QString::number(this->m_userId), QMessageBox::Icon::Information);
 
     ui->setupUi(this);
 
     ui->gameIdLabel->setText("ID игры: " + m_gameId);
-    ui->userIdLabel->setText("Ваш ID: " + m_userId);
+    ui->userIdLabel->setText("Ваш ID: " + QString::number(m_userId));
 
-    connect(ui->fireButton, &QPushButton::released, this, &MainWindow::shoot);
+    connect(ui->fireButton, &QPushButton::clicked, this, &MainWindow::shoot);
 
     ui->fireButton->hide();
     ui->opponentField->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
@@ -484,7 +484,8 @@ void MainWindow::getShipsAmountResponse()
     QUrl queryUrl;
     queryUrl.setQuery(query);
 
-    QObject::connect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(setShipsAmountLabel(QNetworkReply* )));
+    QObject::connect(m_manager, SIGNAL( finished( QNetworkReply* ) ),
+                     this, SLOT(setShipsAmountLabel(QNetworkReply* )));
 
     m_manager->post(request, queryUrl.toEncoded().remove(0, 1));
 }

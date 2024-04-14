@@ -6,7 +6,7 @@ from .models import Game, Field, Ship, User, FriendRequest, Friends
 class GameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Game
-        fields = ('game_id', 'user_id_turn', 'game_is_over')
+        fields = ('game_id', 'user_id_turn', 'game_is_over', 'is_friendly', 'game_invite_id')
 
 
 class FieldSerializer(serializers.ModelSerializer):

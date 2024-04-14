@@ -20,6 +20,8 @@
 #include <QtNetwork/QHttpPart>
 #include <QUrlQuery>
 
+#include <QtWebSockets/QWebSocket>
+
 #include <string>
 #include "additionalfunctions.cpp"
 
@@ -36,7 +38,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr, const QString t_game_id="", int t_user_id=0);
+    explicit MainWindow(const QString t_gameId, int t_userId, QString t_gameInviteId, QWidget *parent = nullptr);
     ~MainWindow();
 
     virtual void closeEvent(QCloseEvent *event) override;
@@ -54,6 +56,17 @@ private slots:
     void getWinner(QNetworkReply* t_reply);
     void acceptCloseEvent(QNetworkReply* t_reply);
 
+    // Слоты сокетов
+    void onGameSocketConnected();
+    void onGameSocketDisconnected();
+    void onGameSocketMessageReceived(QString t_textMessage);
+    void onGameSocketErrorOccurred(QAbstractSocket::SocketError t_socketError);
+
+    void onChatSocketConnected();
+    void onChatSocketDisconnected();
+    void onChatSocketMessageReceived(QString t_textMessage);
+    void onChatSocketErrorOccurred(QAbstractSocket::SocketError t_socketError);
+
 private:
     //! Указатель на виджет класса
     Ui::MainWindow *ui;
@@ -62,9 +75,15 @@ private:
     //! Идентификатор игры
     const QString m_gameId;
     //! Идентификатор пользователя
-    int m_userId;
+    const int m_userId;
     //! Было нажато подтверждение закрытия окна
     bool m_closeEventIsAccepted;
+
+    // Сокеты
+    //! Сокет для обработки игровых действий
+    QWebSocket *m_gameSocket;
+    //! Сокет для общения с противником
+    QWebSocket *m_ChatSocket;
 
     // Таймеры
     //! Указатель на таймер ожидания начала игры
@@ -80,10 +99,14 @@ private:
 
     // Запросы на сервер
     void getShipsAmountResponse();
+
+    // ----------------------------- //
     void waitForGameStart();
     void waitForTurn();
     void getDamagedCells();
     void checkForWinner();
+    // ----------------------------- //
+
     void shoot();
 
 };

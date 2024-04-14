@@ -22,7 +22,6 @@ MainMenu::MainMenu(int t_userId, QWidget *parent) :
 
     this->setWindowFlags(Qt::FramelessWindowHint);
 
-    m_manager = new QNetworkAccessManager(this);
     ui->userID->setText("Ваш ID: " + QString::number(t_userId));
 
     ui->tabWidget->setStyleSheet("QTabWidget::pane { border: 0; }");
@@ -30,17 +29,18 @@ MainMenu::MainMenu(int t_userId, QWidget *parent) :
     connect(ui->addFriendButton, &QPushButton::clicked, this, &MainMenu::openFriendAdder);
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(updateFriendsTab(int)));
     connect(ui->exitButton, &QPushButton::clicked, this, &MainMenu::close);
+    connect(ui->friendRequestsListWidget, SIGNAL(customContextMenuRequested(QPoint)),
+            this, SLOT(showFriendRequestsContextMenu(QPoint)));
+    connect(ui->friendsListWidget, SIGNAL(customContextMenuRequested(QPoint)),
+            this, SLOT(showFriendsContextMenu(QPoint)));
 
     ui->friendRequestsListWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->friendsListWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->friendRequestsListWidget, SIGNAL(customContextMenuRequested(const QPoint&)),
-            this, SLOT(showFriendRequestsContextMenu(const QPoint&)));
-    connect(ui->friendsListWidget, SIGNAL(customContextMenuRequested(const QPoint&)),
-            this, SLOT(showFriendsContextMenu(const QPoint&)));
 
     menu = new QMenu("Ответ на запрос в друзья", this);
+    m_manager = new QNetworkAccessManager(this);
 
-    initSocket();
+    initSockets();
     setActionsLists();
 
     this->updateFriendsTab(ui->tabWidget->currentIndex());
@@ -65,7 +65,7 @@ void MainMenu::on_createNewGameButton_clicked()
     QMap<QString, QString> queryItems;
     queryItems["user_id"] = QString::number(m_userId);
 
-    QObject::connect(m_manager, SIGNAL( finished( QNetworkReply* ) ), SLOT(connectToCreatedGame(QNetworkReply* )));
+    QObject::connect(m_manager, SIGNAL(finished(QNetworkReply*)), SLOT(connectToCreatedGame(QNetworkReply*)));
     sendServerRequest("http://127.0.0.1:8000/games/create_game/", queryItems, m_manager);
 }
 
@@ -137,7 +137,7 @@ void MainMenu::showFriendRequestsContextMenu(const QPoint &t_point)
 */
 void MainMenu::showFriendsContextMenu(const QPoint &t_point)
 {
-    QListWidgetItem *item = ui->friendsListWidget->itemAt(point);
+    QListWidgetItem *item = ui->friendsListWidget->itemAt(t_point);
     if (item == NULL) return;
 
     assert(friendsActionsText.size() == friendsActionsData.size());
@@ -153,7 +153,7 @@ void MainMenu::showFriendsContextMenu(const QPoint &t_point)
         });
     }
 
-    menu->exec(actions, ui->friendsListWidget->mapToGlobal(point));
+    menu->exec(actions, ui->friendsListWidget->mapToGlobal(t_point));
 }
 
 /*! @brief Обработка действия вызванного в контекстном меню
@@ -167,9 +167,9 @@ void MainMenu::showFriendsContextMenu(const QPoint &t_point)
 */
 void MainMenu::interactWithFriend(QString t_friendUserName, int t_action)
 {
-    if (t_action == FriendAction::DELETE_FRIEND) {
+    if (t_action == FriendAction::DELETE_FRIEND_ACTION) {
         deleteFriend(m_userId, t_friendUserName);
-    } else if (t_action == FriendAction::SEND_FRIENDLY_DUEL_REQUEST) {
+    } else if (t_action == FriendAction::SEND_FRIENDLY_DUEL_REQUEST_ACTION) {
         sendFriendlyDuelRequest(t_friendUserName);
     }
 }
@@ -189,7 +189,7 @@ void MainMenu::processFriendRequestAction(QString t_friendUserName, int t_action
     queryParams["action_type"] = "process_friend_request";
     queryParams["friend_username"] = t_friendUserName;
     queryParams["user_id"] = QString::number(m_userId);
-    queryParams["process_status"] = QString::number(t_action == FriendRequestAction::ACCEPT_REQUEST);
+    queryParams["process_status"] = QString::number(t_action == FriendRequestAction::ACCEPT_REQUEST_ACTION);
 
     m_friendsUpdateSocket->sendTextMessage(jsonObjectToQString(queryParams));
 }
@@ -231,7 +231,7 @@ void MainMenu::getFriends()
     QMap<QString, QString> queryItems;
     queryItems["user_id"] = QString::number(m_userId);
 
-    connect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(fillFriendsTab(QNetworkReply* )));
+    connect(m_manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(fillFriendsTab(QNetworkReply*)));
     sendServerRequest("http://127.0.0.1:8000/friends/get_friends/", queryItems, m_manager);
 }
 
@@ -276,8 +276,9 @@ void MainMenu::sendFriendRequest(int t_friendId)
 void MainMenu::sendFriendlyDuelRequest(QString t_friendUsername)
 {
     QJsonObject jsonObj;
+    jsonObj["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::SEND_GAME_INVITE];
     jsonObj["from_user_id"] = QString::number(m_userId);
-    jsonObj["to_user_name"] = QString::number(t_friendUsername);
+    jsonObj["to_user_name"] = t_friendUsername;
 
     m_friendlyDuelSocket->sendTextMessage(jsonObjectToQString(jsonObj));
 }
@@ -292,7 +293,7 @@ void MainMenu::sendFriendlyDuelRequest(QString t_friendUsername)
 void MainMenu::deleteFriend(int t_userId, QString t_friendUserName)
 {
     QJsonObject queryParams;
-    queryParams["action_type"] = "delete_friend";
+    queryParams["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::DELETE_FRIEND];
     queryParams["user_id"] = QString::number(t_userId);
     queryParams["friend_username"] = t_friendUserName;
 
@@ -309,13 +310,13 @@ void MainMenu::setActionsLists()
 {
     friendRequestsActionsText = QStringList() << "Принять запрос" << "Отклонить запрос";
     friendRequestsActionsData = QList<FriendRequestAction>()
-                                << FriendRequestAction::ACCEPT_REQUEST
-                                << FriendRequestAction::DECLINE_REQUEST;
+                                << FriendRequestAction::ACCEPT_REQUEST_ACTION
+                                << FriendRequestAction::DECLINE_REQUEST_ACTION;
 
     friendsActionsText = QStringList() << "Вызвать на дуэль" << "Удалить друга";
     friendsActionsData = QList<FriendAction>()
-                         << FriendAction::SEND_FRIENDLY_DUEL_REQUEST
-                         << FriendAction::DELETE_FRIEND;
+                         << FriendAction::SEND_FRIENDLY_DUEL_REQUEST_ACTION
+                         << FriendAction::DELETE_FRIEND_ACTION;
 }
 
 /*! @brief Открытие окна для ввода идентификатора друга
@@ -378,12 +379,12 @@ void MainMenu::initFriendlyDuelSocket()
 
     m_friendlyDuelSocket->open(m_friendlyDuelUrl);
 
-    connect(m_friendlyDuelSocket, SIGNAL(connected()), this, SLOT(onFriendsUpdateSocketConnected()));
-    connect(m_friendlyDuelSocket, SIGNAL(disconnected()), this, SLOT(onFriendsUpdateSocketDisconnected()));
+    connect(m_friendlyDuelSocket, SIGNAL(connected()), this, SLOT(onFriendlyDuelSocketConnected()));
+    connect(m_friendlyDuelSocket, SIGNAL(disconnected()), this, SLOT(onFriendlyDuelSocketDisconnected()));
     connect(m_friendlyDuelSocket, SIGNAL(error(QAbstractSocket::SocketError)),
-            this, SLOT(onFriendsUpdateSocketErrorOccurred(QAbstractSocket::SocketError)));
+            this, SLOT(onFriendlyDuelSocketErrorOccurred(QAbstractSocket::SocketError)));
     connect(m_friendlyDuelSocket, SIGNAL(textMessageReceived(QString)),
-            this, SLOT(onFriendsUpdateSocketMessageReceived(QString)));
+            this, SLOT(onFriendlyDuelSocketMessageReceived(QString)));
 }
 
 /*! @brief Обрабатывание события при изменение активной вкладки
@@ -411,7 +412,7 @@ void MainMenu::onFriendsUpdateSocketConnected()
 {
     QJsonObject jsonObj;
     jsonObj["user_id"] = m_userId;
-    jsonObj["action_type"] = "subscribe";
+    jsonObj["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::SUBSCRIBE];
     m_friendsUpdateSocket->sendTextMessage(jsonObjectToQString(jsonObj));
 }
 
@@ -437,23 +438,24 @@ void MainMenu::onFriendsUpdateSocketMessageReceived(QString t_textMessage)
         return showMessage(jsonResponse["error"].toString(), QMessageBox::Icon::Critical);
     }
     if (!jsonResponse.contains("action_type")) {
+        showMessage("Неожиданный ответ от сервера", QMessageBox::Icon::Critical);
+        close();
         return;
     }
 
     QString actionType = jsonResponse["action_type"].toString();
-    if (actionType == "subscribed") {
+    if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::SUBSCRIBED]) {
         return;
-    } else if  (actionType == "deleted_by_friend"){
+    } else if  (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::DELETED_BY_FRIEND]){
         getFriends();
-    } else if (actionType == "friend_deleted") {
+    } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::FRIEND_DELETED]) {
         showMessage("Друг был успешно удалён", QMessageBox::Icon::Information);
         getFriends();
-    } else if (actionType == "new_friend_request") {
-        qDebug() << "new_friend_request";
+    } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::NEW_FRIEND_REQUEST]) {
         getFriendsRequests();
-    } else if (actionType == "friend_request_processed") {
+    } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::FRIEND_REQUEST_PROCESSED]) {
         getFriends();
-        connect(this, MainMenu::friendsPulled, this, MainMenu::getFriendsRequests);
+        connect(this, &MainMenu::friendsPulled, this, &MainMenu::getFriendsRequests);
     } else {
         showMessage("Успешно", QMessageBox::Icon::Information);
     }
@@ -481,7 +483,7 @@ void MainMenu::onFriendlyDuelSocketConnected()
 {
     QJsonObject jsonObj;
     jsonObj["user_id"] = m_userId;
-    jsonObj["action_type"] = "subscribe";
+    jsonObj["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::SUBSCRIBE];
     m_friendlyDuelSocket->sendTextMessage(jsonObjectToQString(jsonObj));
 }
 
@@ -505,12 +507,15 @@ void MainMenu::onFriendlyDuelSocketMessageReceived(QString t_textMessage)
         return;
     }
 
-    if (actionType == "game_invite_sent"){
-        QString gameId = jsonResponse["game_id"];
-        // Открываем окно с игрой и подключаемся к игре
+    if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::GAME_INVITE_SENT]){
+        QString gameId = jsonResponse["game_id"].toString();
+        QString gameInviteId = jsonResponse["game_invite_id"].toString();
+        m_mainWindow = new MainWindow()
+    // Открываем окно с игрой и подключаемся к игре
     } else if (actionType == "incoming_game_invite") {
-        QString gameInviteId = jsonResponse["game_invite_id"];
-
+        QString gameInviteId = jsonResponse["game_invite_id"].toString();
+        GameInviteNotifier widget(this);
+        widget.show();
     }
 }
 

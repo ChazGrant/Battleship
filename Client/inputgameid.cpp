@@ -6,8 +6,8 @@
  *
  *  @details Создаёт объект класса QNetworkAccessManager, идентификатор игры и пользователя
  *
+ *  @param t_userId Идентификатор пользователя
  *  @param *parent Родительский класс
- *  @param userId Идентификатор пользователя
  *
  *  @return InputGameID
 */

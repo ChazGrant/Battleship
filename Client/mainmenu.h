@@ -21,20 +21,23 @@
 // Сокеты
 #include <QtWebSockets/QWebSocket>
 
+#include "ACTIONS_ENUMS.cpp"
+
 #include "additionalfunctions.h"
 #include "mainwindow.h"
 #include "friendadder.h"
 #include "inputgameid.h"
+#include "gameinvitenotifier.h"
 
 
 enum FriendRequestAction {
-    DECLINE_REQUEST,
-    ACCEPT_REQUEST
+    DECLINE_REQUEST_ACTION,
+    ACCEPT_REQUEST_ACTION
 };
 
 enum FriendAction {
-    SEND_FRIENDLY_DUEL_REQUEST,
-    DELETE_FRIEND
+    SEND_FRIENDLY_DUEL_REQUEST_ACTION,
+    DELETE_FRIEND_ACTION
 };
 
 namespace Ui {
@@ -103,7 +106,6 @@ private:
 
     // Сокеты
     QWebSocket *m_friendsUpdateSocket;
-    //! @todo Добавить обработки для сокета по отправке дуэлей
     QWebSocket *m_friendlyDuelSocket;
 
     QUrl m_friendsUpdateUrl;

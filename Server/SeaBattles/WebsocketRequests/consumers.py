@@ -47,7 +47,7 @@ class Generator:
                 Строку, содержащую идентификатор для созданной игры
         """
         game_id = ""
-        async for _ in range(8):
+        for _ in range(8):
             game_id += await sync_to_async(str)(await sync_to_async(randint)(0, MAX_LIMIT))
         return game_id
 
@@ -63,7 +63,9 @@ class Generator:
             Возвращает:
                 Строку, содержащую идентификатор приглашения
         """
-        return md5(str(first_user_id) + str(second_user_id)).hexdigest()
+        return md5(
+            (str(first_user_id) + str(second_user_id)).encode())\
+        .hexdigest()
 
 
 class UserDatabaseAccessor:
@@ -446,7 +448,22 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         @author     ChazGrant
         @version    1.0
     """
+    groups = []
+    listeners: Dict[int, AsyncJsonWebsocketConsumer] = dict()
+    reversed_listeners: Dict[AsyncJsonWebsocketConsumer, int] = dict()
+    def __init__(self):
+        ...
+
+    async def subscribe(self, json_object: dict) -> None:
+        ...
+
     async def connectToGame(self, json_object: dict) -> None:
+        ...
+
+    async def shoot(self, json_object: dict) -> None:
+        ...
+
+    async def disconnect(self, event) -> None:
         ...
 
 
@@ -513,15 +530,15 @@ class FriendlyDuelConsumer(AsyncJsonWebsocketConsumer):
         """
         try:
             from_user_id: int = int(json_object["from_user_id"])
-            to_user_name: int = int(json_object["to_user_name"])
-        except KeyError:
+            to_user_name: str = json_object["to_user_name"]
+        except KeyError:       
             return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
         except ValueError:
             return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
 
-        to_user_id = UserDatabaseAccessor.getUserIdByUsername(to_user_name)
+        to_user_id = await UserDatabaseAccessor.getUserIdByUsername(to_user_name)
 
-        if not UserDatabaseAccessor.userExists(from_user_id) or \
+        if not await UserDatabaseAccessor.userExists(from_user_id) or \
            not to_user_id:
             return await self.send_json(USER_DOES_NOT_EXIST_JSON)
 
@@ -548,7 +565,8 @@ class FriendlyDuelConsumer(AsyncJsonWebsocketConsumer):
 
         return await self.send_json({
             "action_type": "game_invite_sent",
-            "game_id": str(game_id)
+            "game_id": str(game_id),
+            "game_invite_id": game_invite_id
         })
 
     async def connect(self) -> None:
