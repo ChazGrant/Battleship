@@ -4,7 +4,7 @@
 
 const QColor WHITE = QColor("white");
 const QColor GREEN = QColor("darkgreen");
-const QColor YELLOW = QColor("darkyellow");
+const QColor YELLOW = QColor("yellow");
 const QColor RED = QColor("darkred");
 const QColor GRAY = QColor("darkgray");
 
@@ -22,41 +22,47 @@ const int FIELD_COLUMN_COUNT = 10;
  *
  *  @return MainWindow
 */
-MainWindow::MainWindow(const QString t_gameId, int t_userId, QWidget *parent)
+MainWindow::MainWindow(const QString t_gameId, const int t_userId,
+                       const QString t_gameInviteId, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , m_gameId(t_gameId)
     , m_userId(t_userId)
+    , m_gameInviteId(t_gameInviteId)
 {
     this->m_closeEventIsAccepted = false;
-
-    showMessage("Ваше айди: " + QString::number(this->m_userId), QMessageBox::Icon::Information);
 
     ui->setupUi(this);
 
     ui->gameIdLabel->setText("ID игры: " + m_gameId);
     ui->userIdLabel->setText("Ваш ID: " + QString::number(m_userId));
 
-    connect(ui->fireButton, &QPushButton::clicked, this, &MainWindow::shoot);
+    connect(ui->makeTurnButton, &QPushButton::clicked, this, &MainWindow::makeTurn);
 
-    ui->fireButton->hide();
+    // ui->fireButton->hide();
     ui->opponentField->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
 
-    m_timerForUserTurn = new QTimer();
-    m_timerForGameStart = new QTimer();
-
-    m_timerForUserTurn->setInterval(400);
-    m_timerForUserTurn->connect(m_timerForUserTurn, &QTimer::timeout, this, &MainWindow::waitForTurn);
-
-    m_timerForGameStart->setInterval(400);
-    m_timerForGameStart->connect(m_timerForGameStart, &QTimer::timeout, this, &MainWindow::waitForGameStart);
-
+    m_oponnentConnectionTimer = new QTimer();
+    m_userTurnTimer = new QTimer();
     m_manager = new QNetworkAccessManager(this);
+    m_lastHighlightedItem = nullptr;
+    m_lastMarkedItem = nullptr;
+    m_weaponActivated = true;
 
-    this->setTable();
-    this->setOpponentTable();
+    ui->opponentField->setSelectionMode(QAbstractItemView::NoSelection);
+    ui->opponentField->setMouseTracking(true);
 
-    this->getShipsAmountResponse();
+    connect(ui->opponentField, &QTableWidget::itemEntered, this, &MainWindow::highlightOpponentCell);
+    connect(ui->opponentField, &QTableWidget::itemClicked, this, &MainWindow::markOpponentCell);
+    connect(ui->weaponsComboBox, &QComboBox::currentTextChanged, this, &MainWindow::setWeaponsUsesLeftLabel);
+    connect(ui->activateWeaponButton, &QPushButton::clicked, this, [=]() {
+        m_weaponActivated = !m_weaponActivated;
+    });
+
+    createTablesWidgets();
+    fillWeaponsComboBox();
+
+    // this->getShipsAmountResponse();
 }
 
 
@@ -83,7 +89,7 @@ void MainWindow::getUserIdTurn(QNetworkReply *reply)
     if (jsonObj["user_id_turn"].toString() == this->m_userId)
     {
         // Отключаем таймер и событие
-        m_timerForUserTurn->stop();
+        // m_timerForUserTurn->stop();
         QObject::disconnect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getUserIdTurn(QNetworkReply* )));
         // Получаем клетки, по которым попал соперник
         this->getDamagedCells();
@@ -313,6 +319,75 @@ void MainWindow::acceptCloseEvent(QNetworkReply *reply)
     this->close();
 }
 
+void MainWindow::setWeaponsUsesLeftLabel(QString t_currentText)
+{
+    ui->weaponUsesLeftLabel->setText("Осталось применений: " +
+                                     QString::number(m_availableWeapons[t_currentText]));
+}
+
+/*! @brief Выделение ячейки поля оппонента
+ *
+ *  @details Выделяет ячейку, на которое наведена мышь, жёлтым цветом
+ *
+ *  @param *t_item Указатель на ячейку поля
+ *
+ *  @return void
+ *
+ *  @todo Разобраться в алгоритме пометки при использовании оружия
+*/
+void MainWindow::highlightOpponentCell(QTableWidgetItem *t_item)
+{
+    // DEBUG
+//    for (int x = 0; x < FIELD_ROW_COUNT; ++x) {
+//        for (int y = 0; y < FIELD_COLUMN_COUNT; ++y) {
+//            ui->opponentField->itemAt(x, y)->setBackgroundColor(WHITE);
+//        }
+//    }
+    if (m_lastHighlightedItem != nullptr && m_lastHighlightedItem->backgroundColor() != RED) {
+        // m_lastHighlightedItem->setBackgroundColor(WHITE);
+    }
+
+    m_lastHighlightedItem = t_item;
+    // if (item->backgroundColor() != WHITE) return;
+    if (m_weaponActivated) {
+        int xOffset = m_weaponSelection[ui->weaponsComboBox->currentText()]["x"];
+        int yOffset = m_weaponSelection[ui->weaponsComboBox->currentText()]["y"];
+
+
+        int y = t_item->column();
+
+        for (int x = 0; x < 0 + xOffset; ++x) {
+            qDebug() << x;
+            QTableWidgetItem *itemToHighlight = ui->opponentField->itemAt(x, y);
+            if (itemToHighlight != nullptr)
+                itemToHighlight->setBackgroundColor(YELLOW);
+        }
+//        for (; x < x + xOffset; ++x) {
+//            for (; y < y + yOffset; ++y) {
+//                qDebug() << x << y;
+//                QTableWidgetItem *itemToHighlight = ui->opponentField->itemAt(x, y);
+//                if (itemToHighlight != nullptr)
+//                    itemToHighlight->setBackgroundColor(YELLOW);
+//            }
+//        }
+    } else {
+        t_item->setBackgroundColor(YELLOW);
+    }
+}
+
+void MainWindow::markOpponentCell(QTableWidgetItem *t_item)
+{
+    if (m_lastMarkedItem != nullptr) {
+        m_lastMarkedItem->setBackgroundColor(WHITE);
+    }
+
+    m_lastMarkedItem = t_item;
+    t_item->setBackgroundColor(RED);
+
+    m_firePosition["x"] = t_item->row();
+    m_firePosition["y"] = t_item->column();
+}
+
 /*! @brief Обработка сигнала закрытия окна
  *
  *  @details На сервер отсылается запрос для отключения от текущей игры. В параметры передаются
@@ -326,6 +401,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
     // Пока не нашёл альтернативы как это сделать более грамотно,
     // поэтому пока так
+    event->accept();
+    return;
     if (this->m_closeEventIsAccepted)
         return event->accept();
 
@@ -362,8 +439,8 @@ bool MainWindow::getErrorMessage(QJsonObject t_json_obj)
     }
     if (t_json_obj.contains("Critical Error"))
     {
-        m_timerForUserTurn->stop();
-        QObject::disconnect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getUserIdTurn(QNetworkReply* )));
+        // m_timerForUserTurn->stop();
+        QObject::disconnect(m_manager, &QNetworkAccessManager::finished, this, &MainWindow::getUserIdTurn);
 
         showMessage(t_json_obj["Critical Error"].toString(), QMessageBox::Icon::Critical);
         this->close();
@@ -371,6 +448,16 @@ bool MainWindow::getErrorMessage(QJsonObject t_json_obj)
     }
 
     return false;
+}
+
+/*! @brief Создание пол пользователя и оппонента
+ *
+ *  @return void
+*/
+void MainWindow::createTablesWidgets()
+{
+    createUserTable();
+    createOpponentTable();
 }
 
 /*! @brief Получение текущего состояние игры(началась она или нет)
@@ -388,13 +475,11 @@ void MainWindow::getGameState(QNetworkReply* reply)
     if (jsonObj["game_is_started"].toBool())
     {
         // Останавливаем прошлый таймер и отключаем сигнал
-        m_timerForGameStart->stop();
+        // m_timerForGameStart->stop();
         QObject::disconnect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getGameState(QNetworkReply* )));
-        delete m_timerForGameStart;
-        //Запускаем таймер на ожидание хода
-        m_timerForUserTurn->start();
+        // m_timerForUserTurn->start();
 
-        ui->fireButton->show();
+        ui->makeTurnButton->show();
         ui->placeShipButton->hide();
         showMessage("Игра начата, ожидайте свой ход", QMessageBox::Icon::Information);
     }
@@ -460,7 +545,7 @@ void MainWindow::setShipsAmountLabel(QNetworkReply* reply)
         this->setDisabled(true);
         // Ставим таймер на функцию, в которой ожидаем когда игра будет начата
 
-        m_timerForGameStart->start();
+        //  m_timerForGameStart->start();
     }
 }
 
@@ -497,7 +582,7 @@ void MainWindow::getShipsAmountResponse()
  *
  *  @return void
 */
-void MainWindow::setTable()
+void MainWindow::createUserTable()
 {
     ui->yourField->setRowCount(FIELD_ROW_COUNT);
     ui->yourField->setColumnCount(FIELD_COLUMN_COUNT);
@@ -522,14 +607,14 @@ void MainWindow::setTable()
  *
  *  @return void
 */
-void MainWindow::setOpponentTable()
+void MainWindow::createOpponentTable()
 {
     ui->opponentField->setRowCount(FIELD_ROW_COUNT);
     ui->opponentField->setColumnCount(FIELD_COLUMN_COUNT);
     for (int y = 0; y < FIELD_ROW_COUNT; ++y)
         for (int x = 0;x < FIELD_COLUMN_COUNT; ++x) {
             QTableWidgetItem *item = new QTableWidgetItem();
-            item->setText(QString(" "));
+            item->setText(QString::number(x + y));
 
             item->setBackground(WHITE);
             ui->opponentField->setItem(y, x, item);
@@ -538,6 +623,24 @@ void MainWindow::setOpponentTable()
     ui->opponentField->resizeColumnsToContents();
     ui->opponentField->resizeRowsToContents();
     ui->opponentField->setEditTriggers(QAbstractItemView::EditTrigger::NoEditTriggers);
+}
+
+/*! @brief Заполнение comboBox'а оружиями в наличии
+ *
+ *  @return void
+ *
+ *  @todo Брать эту информацию от сервера
+*/
+void MainWindow::fillWeaponsComboBox()
+{
+    QMapIterator<QString, int> iterator(m_availableWeapons);
+    int i = 0;
+    while(iterator.hasNext()) {
+        iterator.next();
+        QString weaponName = iterator.key();
+        ui->weaponsComboBox->addItem(weaponName);
+        ++i;
+    }
 }
 
 //! @brief Деструктор класса
@@ -552,7 +655,7 @@ MainWindow::~MainWindow()
  *
  *  @return void
 */
-void MainWindow::placeShip(QNetworkReply* reply)
+void MainWindow:: placeShip(QNetworkReply* reply)
 {
     const QString replyStr = reply->readAll();
 
@@ -572,7 +675,7 @@ void MainWindow::placeShip(QNetworkReply* reply)
         ui->yourField->setItem(currentCell[1].toInt(), currentCell[0].toInt(), item);
         item->setSelected(false);
     }
-    QObject::disconnect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(placeShip(QNetworkReply* )));
+    QObject::disconnect(m_manager, &QNetworkAccessManager::finished, this, &MainWindow::placeShip);
     this->getShipsAmountResponse();
     this->setDisabled(false);
 }
@@ -654,7 +757,7 @@ void MainWindow::getFireStatus(QNetworkReply *reply)
 
         QObject::disconnect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getFireStatus(QNetworkReply* )));
         // Ожидаем пока оппонент сделает ход
-        m_timerForUserTurn->start();
+        // m_timerForUserTurn->start();
     }
 
     // Закрашиваем либо жёлтым цветом
@@ -723,18 +826,17 @@ void MainWindow::getFireStatus(QNetworkReply *reply)
  *
  *  @return void
 */
-void MainWindow::shoot()
+void MainWindow::makeTurn()
 {
-    if (!ui->opponentField->selectedItems().length())
+    qDebug() << "shoot";
+    if (m_firePosition.size() == 0)
         return showMessage("Клетки не были выбраны", QMessageBox::Icon::Critical);
 
-    QTableWidgetItem* selectedCell = ui->opponentField->selectedItems()[0];
-
+    return showMessage(QString::number(m_firePosition["x"]) + QString::number(m_firePosition["y"]), QMessageBox::Icon::Information);
     this->setDisabled(true);
 
     QUrl url("http://127.0.0.1:8000/games/fire/");
     QNetworkRequest request(url);
-
 
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
 
@@ -742,8 +844,8 @@ void MainWindow::shoot()
     jsonData.addQueryItem("user_id", QString::number(this->m_userId));
     jsonData.addQueryItem("game_id", this->m_gameId);
 
-    jsonData.addQueryItem("x", QString::number(selectedCell->column()));
-    jsonData.addQueryItem("y", QString::number(selectedCell->row()));
+    jsonData.addQueryItem("x", QString::number(m_firePosition["x"]));
+    jsonData.addQueryItem("y", QString::number(m_firePosition["y"]));
 
     QUrl data;
     data.setQuery(jsonData);

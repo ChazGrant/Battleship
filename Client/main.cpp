@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "mainmenu.h"
-#include "loginform.h"
+#include "mainwindow.h"
 
 #include <QApplication>
 
@@ -8,7 +8,7 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    LoginForm form;
+    MainWindow form("410932554967672480492357", 1, "c20ad4d76fe97759aa27a0c99bff6710");
     form.show();
     return a.exec();
 }

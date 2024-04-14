@@ -216,7 +216,7 @@ void MainMenu::on_connectToExistingGame_clicked()
 */
 void MainMenu::openMainWindow(QString t_gameId)
 {
-    m_mainWindow = new MainWindow (nullptr, t_gameId, m_userId);
+    m_mainWindow = new MainWindow(t_gameId, m_userId);
 
     m_mainWindow->show();
     close();
@@ -510,7 +510,7 @@ void MainMenu::onFriendlyDuelSocketMessageReceived(QString t_textMessage)
     if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::GAME_INVITE_SENT]){
         QString gameId = jsonResponse["game_id"].toString();
         QString gameInviteId = jsonResponse["game_invite_id"].toString();
-        m_mainWindow = new MainWindow()
+        // m_mainWindow = new MainWindow()
     // Открываем окно с игрой и подключаемся к игре
     } else if (actionType == "incoming_game_invite") {
         QString gameInviteId = jsonResponse["game_invite_id"].toString();

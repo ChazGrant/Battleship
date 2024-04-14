@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
+    <width>879</width>
     <height>631</height>
    </rect>
   </property>
@@ -18,7 +18,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>320</y>
+      <y>370</y>
       <width>111</width>
       <height>31</height>
      </rect>
@@ -32,7 +32,7 @@
      <rect>
       <x>10</x>
       <y>50</y>
-      <width>341</width>
+      <width>421</width>
       <height>261</height>
      </rect>
     </property>
@@ -53,68 +53,65 @@
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
     </property>
    </widget>
-   <widget class="QGroupBox" name="skillsBox">
+   <widget class="QGroupBox" name="weaponsBox">
     <property name="geometry">
      <rect>
       <x>540</x>
-      <y>350</y>
+      <y>360</y>
       <width>191</width>
       <height>161</height>
      </rect>
     </property>
     <property name="title">
-     <string>Способности</string>
+     <string>Орудия</string>
     </property>
-    <widget class="QPushButton" name="placePlaneButton">
+    <widget class="QComboBox" name="weaponsComboBox">
      <property name="geometry">
       <rect>
        <x>10</x>
        <y>30</y>
        <width>171</width>
-       <height>31</height>
+       <height>22</height>
       </rect>
      </property>
-     <property name="text">
-      <string>Самолёт</string>
-     </property>
     </widget>
-    <widget class="QPushButton" name="launchPlaneButton">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>60</y>
-       <width>171</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Запустить самолёт</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="placeBombButton">
+    <widget class="QPushButton" name="activateWeaponButton">
      <property name="geometry">
       <rect>
        <x>10</x>
        <y>90</y>
        <width>171</width>
-       <height>31</height>
+       <height>21</height>
       </rect>
      </property>
      <property name="text">
-      <string>Бомба</string>
+      <string>Использовать</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="detonateBombButton">
+    <widget class="QPushButton" name="getWeaponInfoButton">
      <property name="geometry">
       <rect>
        <x>10</x>
        <y>120</y>
        <width>171</width>
-       <height>31</height>
+       <height>21</height>
       </rect>
      </property>
      <property name="text">
-      <string>Взорвать</string>
+      <string>Подробно</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="weaponUsesLeftLabel">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>66</y>
+       <width>171</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
      </property>
     </widget>
    </widget>
@@ -136,7 +133,7 @@
      <rect>
       <x>440</x>
       <y>50</y>
-      <width>341</width>
+      <width>421</width>
       <height>261</height>
      </rect>
     </property>
@@ -145,7 +142,7 @@
     <property name="geometry">
      <rect>
       <x>150</x>
-      <y>320</y>
+      <y>370</y>
       <width>141</width>
       <height>31</height>
      </rect>
@@ -154,17 +151,17 @@
      <string>Поставить корабль</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="fireButton">
+   <widget class="QPushButton" name="makeTurnButton">
     <property name="geometry">
      <rect>
       <x>150</x>
-      <y>320</y>
+      <y>410</y>
       <width>141</width>
       <height>31</height>
      </rect>
     </property>
     <property name="text">
-     <string>Стрелять</string>
+     <string>Сделать ход</string>
     </property>
    </widget>
    <widget class="QLabel" name="userIdLabel">
@@ -186,7 +183,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>879</width>
      <height>20</height>
     </rect>
    </property>
