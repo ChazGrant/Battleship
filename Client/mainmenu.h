@@ -108,8 +108,8 @@ private:
     QWebSocket *m_friendsUpdateSocket;
     QWebSocket *m_friendlyDuelSocket;
 
-    QUrl m_friendsUpdateUrl;
-    QUrl m_friendlyDuelUrl;
+    QUrl m_friendsUpdateSocketUrl;
+    QUrl m_friendlyDuelSocketUrl;
 
     void initSockets();
     void initFriendsUpdateSocket();

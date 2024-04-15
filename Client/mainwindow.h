@@ -59,15 +59,15 @@ private slots:
 
     void setWeaponsUsesLeftLabel(QString t_currentText);
     // Слоты сокетов
-//    void onGameSocketConnected();
-//    void onGameSocketDisconnected();
-//    void onGameSocketMessageReceived(QString t_textMessage);
-//    void onGameSocketErrorOccurred(QAbstractSocket::SocketError t_socketError);
+    void onGameSocketConnected();
+    void onGameSocketDisconnected();
+    void onGameSocketMessageReceived(QString t_textMessage);
+    void onGameSocketErrorOccurred(QAbstractSocket::SocketError t_socketError);
 
-//    void onChatSocketConnected();
-//    void onChatSocketDisconnected();
-//    void onChatSocketMessageReceived(QString t_textMessage);
-//    void onChatSocketErrorOccurred(QAbstractSocket::SocketError t_socketError);
+    void onChatSocketConnected();
+    void onChatSocketDisconnected();
+    void onChatSocketMessageReceived(QString t_textMessage);
+    void onChatSocketErrorOccurred(QAbstractSocket::SocketError t_socketError);
 
 private:
     //! Указатель на виджет класса
@@ -89,8 +89,15 @@ private:
     // Сокеты
     //! Сокет для обработки игровых действий
     QWebSocket *m_gameSocket;
+    QUrl m_gameSocketUrl;
     //! Сокет для общения с противником
     QWebSocket *m_ChatSocket;
+    QUrl m_chatSocketUrl;
+    QUrl m_gameSocketUrl;
+
+    void initSockets();
+    void initGameSocket();
+    void initChatSocket();
 
     //! Последняя ячейка, на которую навёл пользователь
     QTableWidgetItem *m_lastHighlightedItem;

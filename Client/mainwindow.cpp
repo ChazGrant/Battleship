@@ -60,11 +60,11 @@ MainWindow::MainWindow(const QString t_gameId, const int t_userId,
     });
 
     createTablesWidgets();
+    initSockets();
     fillWeaponsComboBox();
 
     // this->getShipsAmountResponse();
 }
-
 
 /*! @brief Получение идентификатора пользователя, который должен делать ход
  *
@@ -323,6 +323,90 @@ void MainWindow::setWeaponsUsesLeftLabel(QString t_currentText)
 {
     ui->weaponUsesLeftLabel->setText("Осталось применений: " +
                                      QString::number(m_availableWeapons[t_currentText]));
+}
+
+void MainWindow::onGameSocketConnected()
+{
+
+}
+
+void MainWindow::onGameSocketDisconnected()
+{
+
+}
+
+void MainWindow::onGameSocketMessageReceived(QString t_textMessage)
+{
+
+}
+
+void MainWindow::onGameSocketErrorOccurred(QAbstractSocket::SocketError t_socketError)
+{
+
+}
+
+void MainWindow::onChatSocketConnected()
+{
+
+}
+
+void MainWindow::onChatSocketDisconnected()
+{
+
+}
+
+void MainWindow::onChatSocketMessageReceived(QString t_textMessage)
+{
+
+}
+
+void MainWindow::onChatSocketErrorOccurred(QAbstractSocket::SocketError t_socketError)
+{
+
+}
+
+void MainWindow::initSockets()
+{
+    initGameSocket();
+    initChatSocket();
+}
+
+void MainWindow::initGameSocket()
+{
+    m_gameSocket = new QWebSocket();
+
+    m_gameSocketUrl.setPort(8080);
+    m_gameSocketUrl.setHost("127.0.0.1");
+    m_gameSocketUrl.setPath("/game/");
+    m_gameSocketUrl.setScheme("ws");
+
+    m_gameSocket->open(m_gameSocketUrl);
+
+    connect(m_gameSocket, SIGNAL(connected()), this, SLOT(onGameSocketConnected()));
+    connect(m_gameSocket, SIGNAL(disconnected()), this, SLOT(onGameSocketDisconnected()));
+    connect(m_gameSocket, SIGNAL(error(QAbstractSocket::SocketError)),
+            this, SLOT(onGameSocketErrorOccurred(QAbstractSocket::SocketError)));
+    connect(m_gameSocket, SIGNAL(textMessageReceived(QString)),
+            this, SLOT(onGameSocketMessageReceived(QString)));
+}
+
+void MainWindow::initChatSocket()
+{
+    m_ChatSocket = new QWebSocket();
+
+    m_chatSocketUrl.setPort(8080);
+    m_chatSocketUrl.setHost("127.0.0.1");
+    m_chatSocketUrl.setPath("/game/");
+    m_chatSocketUrl.setScheme("ws");
+
+    m_chatSocket->open(m_chatSocketUrl);
+
+    connect(m_chatSocket, SIGNAL(connected()), this, SLOT(onChatSocketConnected()));
+    connect(m_chatSocket, SIGNAL(disconnected()), this, SLOT(onChatSocketDisconnected()));
+    connect(m_chatSocket, SIGNAL(error(QAbstractSocket::SocketError)),
+            this, SLOT(onChatSocketErrorOccurred(QAbstractSocket::SocketError)));
+    connect(m_chatSocket, SIGNAL(textMessageReceived(QString)),
+            this, SLOT(onChatSocketMessageReceived(QString)));
 }
 
 /*! @brief Выделение ячейки поля оппонента

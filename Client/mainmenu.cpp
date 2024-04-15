@@ -349,12 +349,12 @@ void MainMenu::initFriendsUpdateSocket()
 {
     m_friendsUpdateSocket = new QWebSocket();
 
-    m_friendsUpdateUrl.setPort(8080);
-    m_friendsUpdateUrl.setHost("127.0.0.1");
-    m_friendsUpdateUrl.setPath("/friends_update/");
-    m_friendsUpdateUrl.setScheme("ws");
+    m_friendsUpdateSocketUrl.setPort(8080);
+    m_friendsUpdateSocketUrl.setHost("127.0.0.1");
+    m_friendsUpdateSocketUrl.setPath("/friends_update/");
+    m_friendsUpdateSocketUrl.setScheme("ws");
 
-    m_friendsUpdateSocket->open(m_friendsUpdateUrl);
+    m_friendsUpdateSocket->open(m_friendsUpdateSocketUrl);
 
     connect(m_friendsUpdateSocket, SIGNAL(connected()), this, SLOT(onFriendsUpdateSocketConnected()));
     connect(m_friendsUpdateSocket, SIGNAL(disconnected()), this, SLOT(onFriendsUpdateSocketDisconnected()));
@@ -372,12 +372,12 @@ void MainMenu::initFriendlyDuelSocket()
 {
     m_friendlyDuelSocket = new QWebSocket();
 
-    m_friendlyDuelUrl.setPort(8080);
-    m_friendlyDuelUrl.setHost("127.0.0.1");
-    m_friendlyDuelUrl.setPath("/friendly_duel/");
-    m_friendlyDuelUrl.setScheme("ws");
+    m_friendlyDuelSocketUrl.setPort(8080);
+    m_friendlyDuelSocketUrl.setHost("127.0.0.1");
+    m_friendlyDuelSocketUrl.setPath("/friendly_duel/");
+    m_friendlyDuelSocketUrl.setScheme("ws");
 
-    m_friendlyDuelSocket->open(m_friendlyDuelUrl);
+    m_friendlyDuelSocket->open(m_friendlyDuelSocketUrl);
 
     connect(m_friendlyDuelSocket, SIGNAL(connected()), this, SLOT(onFriendlyDuelSocketConnected()));
     connect(m_friendlyDuelSocket, SIGNAL(disconnected()), this, SLOT(onFriendlyDuelSocketDisconnected()));
