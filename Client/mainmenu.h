@@ -84,6 +84,11 @@ private slots:
     void fillFriendsTab(QNetworkReply *t_reply);
     void fillFriendsRequestsTab(QNetworkReply *t_reply);
 private:
+    //! Точка на экране
+    QPoint m_mouse_point;
+    void mouseMoveEvent(QMouseEvent* event);
+    void mousePressEvent(QMouseEvent *event);
+
     void getFriends();
     void getFriendsRequests();
     void sendFriendRequest(int t_friendId);

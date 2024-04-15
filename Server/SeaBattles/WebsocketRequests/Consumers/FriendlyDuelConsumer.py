@@ -117,7 +117,7 @@ class FriendlyDuelConsumer(AsyncJsonWebsocketConsumer):
         """
         await self.accept()
 
-    async def receive(self, json_object: dict) -> None:
+    async def receive_json(self, json_object: dict) -> None:
         """
             Получает информацию от сокета
 

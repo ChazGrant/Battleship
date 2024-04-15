@@ -52,9 +52,10 @@ MainWindow::MainWindow(const QString t_gameId, const int t_userId,
     ui->opponentField->setSelectionMode(QAbstractItemView::NoSelection);
     ui->opponentField->setMouseTracking(true);
 
-    connect(ui->opponentField, &QTableWidget::itemEntered, this, &MainWindow::highlightOpponentCell);
-    connect(ui->opponentField, &QTableWidget::itemClicked, this, &MainWindow::markOpponentCell);
-    connect(ui->weaponsComboBox, &QComboBox::currentTextChanged, this, &MainWindow::setWeaponsUsesLeftLabel);
+//    connect(ui->opponentField, &QTableWidget::itemEntered, this, &MainWindow::highlightOpponentCell);
+//    connect(ui->opponentField, &QTableWidget::itemClicked, this, &MainWindow::markOpponentCell);
+    connect(ui->weaponsComboBox, &QComboBox::currentTextChanged,
+            this, &MainWindow::setWeaponsUsesLeftLabel);
     connect(ui->activateWeaponButton, &QPushButton::clicked, this, [=]() {
         m_weaponActivated = !m_weaponActivated;
     });
@@ -307,70 +308,134 @@ void MainWindow::checkForWinner()
  *
  *  @return void
  */
-void MainWindow::acceptCloseEvent(QNetworkReply *reply)
+void MainWindow::acceptCloseEvent(QNetworkReply *t_reply)
 {
-    this->m_closeEventIsAccepted = true;
-    const QString replyStr = reply->readAll();
+    m_closeEventIsAccepted = true;
+    const QString replyStr = t_reply->readAll();
 
     QJsonObject jsonObj = QJsonDocument::fromJson(replyStr.toUtf8()).object();
 
-    this->getErrorMessage(jsonObj);
-
-    this->close();
+    getErrorMessage(jsonObj);
+    close();
 }
 
-void MainWindow::setWeaponsUsesLeftLabel(QString t_currentText)
+/*! @brief Вывод на экран сколько применений оружия осталось
+ *
+ *  @param t_currentWeaponText Наименование текущего оружия
+ *
+ *  @return void
+*/
+void MainWindow::setWeaponsUsesLeftLabel(QString t_currentWeaponText)
 {
     ui->weaponUsesLeftLabel->setText("Осталось применений: " +
-                                     QString::number(m_availableWeapons[t_currentText]));
+                                     QString::number(m_availableWeapons[t_currentWeaponText]));
 }
 
+/*! @brief Обработчик подключения сокета к серверу
+ *
+ *  @details Отправляет серверу идентификатор пользователя чтоб подписаться на события
+ *
+ *  @return void
+*/
 void MainWindow::onGameSocketConnected()
 {
+    QJsonObject jsonObj;
+    jsonObj["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::SUBSCRIBE];
+    jsonObj["user_id"] = QString::number(m_userId);
 
+    m_gameSocket->sendTextMessage(jsonObjectToQString(jsonObj));
 }
 
+/*! @brief Обработчик отключения сокета от сервера
+ *
+ *  @return void
+*/
 void MainWindow::onGameSocketDisconnected()
 {
 
 }
 
+/*! @brief Обработчик получения информации с сервера через сокет
+ *
+ *  @param t_textMessage Текст полученного сообщения
+ *
+ *  @return void
+*/
 void MainWindow::onGameSocketMessageReceived(QString t_textMessage)
 {
 
 }
 
+/*! @brief Обработчик ошибки, полученной во время отправки запроса на сервер через сокет
+ *
+ *  @param t_socketError Вид ошибки, полученной при передачи данных
+ *
+ *  @return void
+*/
 void MainWindow::onGameSocketErrorOccurred(QAbstractSocket::SocketError t_socketError)
 {
-
+    if (t_socketError == QAbstractSocket::SocketError::ConnectionRefusedError) {
+        showMessage("Не удалось подключиться к серверу", QMessageBox::Icon::Critical);
+        close();
+    }
 }
 
+/*! @brief Обработчик подключения сокета к серверу
+ *
+ *  @details Отправляет серверу идентификатор пользователя чтоб подписаться на события
+ *
+ *  @return void
+*/
 void MainWindow::onChatSocketConnected()
 {
 
 }
 
+/*! @brief Обработчик отключения сокета от сервера
+ *
+ *  @return void
+*/
 void MainWindow::onChatSocketDisconnected()
 {
 
 }
 
+/*! @brief Обработчик получения информации с сервера через сокет
+ *
+ *  @param t_textMessage Текст полученного сообщения
+ *
+ *  @return void
+*/
 void MainWindow::onChatSocketMessageReceived(QString t_textMessage)
 {
 
 }
 
+/*! @brief Обработчик ошибки, полученной во время отправки запроса на сервер через сокет
+ *
+ *  @param t_socketError Вид ошибки, полученной при передачи данных
+ *
+ *  @return void
+*/
 void MainWindow::onChatSocketErrorOccurred(QAbstractSocket::SocketError t_socketError)
 {
 
 }
 
+/*! @brief Инициалиализация сокетов
+ *
+ *  @return void
+*/
 void MainWindow::initSockets()
 {
     initGameSocket();
     initChatSocket();
 }
 
+/*! @brief Создание сокета для обновления состояний игры и событий к нему
+ *
+ *  @return void
+*/
 void MainWindow::initGameSocket()
 {
     m_gameSocket = new QWebSocket();
@@ -390,9 +455,13 @@ void MainWindow::initGameSocket()
             this, SLOT(onGameSocketMessageReceived(QString)));
 }
 
+/*! @brief Создание сокета для обновления чата и событий к нему
+ *
+ *  @return void
+*/
 void MainWindow::initChatSocket()
 {
-    m_ChatSocket = new QWebSocket();
+    m_chatSocket = new QWebSocket();
 
     m_chatSocketUrl.setPort(8080);
     m_chatSocketUrl.setHost("127.0.0.1");
@@ -459,6 +528,12 @@ void MainWindow::highlightOpponentCell(QTableWidgetItem *t_item)
     }
 }
 
+/*! @brief Пометка ячейки для выстрела
+ *
+ *  @param *t_item Указатель на ячейку поля
+ *
+ *  @return void
+*/
 void MainWindow::markOpponentCell(QTableWidgetItem *t_item)
 {
     if (m_lastMarkedItem != nullptr) {

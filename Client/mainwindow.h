@@ -22,7 +22,7 @@
 
 #include <QtWebSockets/QWebSocket>
 
-#include <string>
+#include "ACTIONS_ENUMS.cpp"
 #include "additionalfunctions.cpp"
 
 class QNetworkReply;
@@ -57,7 +57,7 @@ private slots:
     void getWinner(QNetworkReply* t_reply);
     void acceptCloseEvent(QNetworkReply* t_reply);
 
-    void setWeaponsUsesLeftLabel(QString t_currentText);
+    void setWeaponsUsesLeftLabel(QString t_currentWeaponText);
     // Слоты сокетов
     void onGameSocketConnected();
     void onGameSocketDisconnected();
@@ -89,9 +89,8 @@ private:
     // Сокеты
     //! Сокет для обработки игровых действий
     QWebSocket *m_gameSocket;
-    QUrl m_gameSocketUrl;
     //! Сокет для общения с противником
-    QWebSocket *m_ChatSocket;
+    QWebSocket *m_chatSocket;
     QUrl m_chatSocketUrl;
     QUrl m_gameSocketUrl;
 

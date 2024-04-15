@@ -15,15 +15,39 @@ from WebsocketRequests.DatabaseAccessors.UserDatabaseAccessor import UserDatabas
 
 class FriendDatabaseAccessor:
     @staticmethod
-    async def createFriends(first_user: User, second_user: User) -> bool:
-        await sync_to_async(Friends.objects.create)(first_friend=first_user, second_friend=second_user)
+    async def createFriends(first_user: User, second_user: User) -> Tuple[bool, str]:
+        """
+            Создаёт друзей
+
+            Аргументы:
+                first_user - Первый друг
+                second_user - Второй друг
+
+            Возвращает:
+                Результат, что друзья были созданы и текст ошибки
+        """
+        try:
+            await sync_to_async(Friends.objects.create)(first_friend=first_user, second_friend=second_user)
+            return True, ""
+        except Exception as e:
+            return False, str(e)
 
     @staticmethod
-    async def getFriends(from_user: User, to_user: User) -> BaseManager[Friends]:
-        return await sync_to_async(Friends.objects.filter)((Q(first_friend__user_name=from_user.user_name) &
-                    Q(second_friend__user_name=to_user.user_name)) | 
-                    (Q(first_friend__user_name=to_user.user_name) &
-                    Q(second_friend__user_name=from_user.user_name)))
+    async def getFriends(first_user: User, second_user: User) -> BaseManager[Friends]:
+        """
+            Получает друзей
+
+            Аргументы:
+                first_user - Первый друг
+                second_user - Второй друг
+
+            Возвращает:
+                BaseManager, содержащий в себе объекты друзей
+        """
+        return await sync_to_async(Friends.objects.filter)((Q(first_friend__user_name=first_user.user_name) &
+                    Q(second_friend__user_name=second_user.user_name)) | 
+                    (Q(first_friend__user_name=second_user.user_name) &
+                    Q(second_friend__user_name=first_user.user_name)))
     
     @staticmethod
     async def deleteFriend(user_id: int, friend_username: str) -> Tuple[bool, str]:

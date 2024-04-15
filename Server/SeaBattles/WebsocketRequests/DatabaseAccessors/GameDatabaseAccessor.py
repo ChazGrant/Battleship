@@ -1,7 +1,7 @@
 from os import environ
 from django import setup
 from asgiref.sync import sync_to_async
-from typing import Tuple
+from typing import Tuple, List
 
 environ.setdefault('DJANGO_SETTINGS_MODULE', 'SeaBattles.settings')
 setup()
@@ -13,10 +13,10 @@ from WebsocketRequests.DatabaseAccessors.FieldDatabaseAccessor import FieldDatab
 
 class GameDatabaseAccessor:
     @staticmethod
-    async def createGame(creator_id: int, another_user_id: int) -> Tuple[int, str]:
+    async def createGame(creator_id: int, another_user_id: int) -> Tuple[int, str, str]:
         try:
             await sync_to_async(Field.objects.get)(owner_id=creator_id)
-            return 0, "Игрок уже находится в игре"
+            return 0, "", "Игрок уже находится в игре"
         except Field.DoesNotExist:
             ...
 
@@ -36,3 +36,11 @@ class GameDatabaseAccessor:
             return await FieldDatabaseAccessor.getFieldOwnerId(game)
         except Game.DoesNotExist:
             return 0
+
+    @staticmethod
+    async def switchCurrentTurn(game_id: int) -> int:
+        ...
+
+    @staticmethod
+    async def makeTurn(game_id: int, user_id: int, weapon_type: str, fire_position: List[int]):
+        ...

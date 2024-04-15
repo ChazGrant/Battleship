@@ -52,6 +52,41 @@ MainMenu::~MainMenu()
     delete ui;
 }
 
+/*! @brief Обработка перемещения мыши
+ *
+ *  @details Меняет переменную delta и перемещает окно к её координатам
+ *
+ *  @param *event Указатель на событие поведения мыши
+ *
+ *  @return void
+*/
+void MainMenu::mouseMoveEvent(QMouseEvent* event)
+{
+    const QPointF delta = event->globalPos() - m_mouse_point;
+    move(delta.toPoint());
+
+    event->accept();
+}
+
+/*! @brief Обработка нажатия кнопки мыши
+ *
+ *  @details При нажатии на левую, правую или среднюю кнопку мыши
+ *  меняет приватную переменную m_mouse_point
+ *
+ *  @param *event Указатель на событие поведения мыши
+ *
+ *  @return void
+*/
+void MainMenu::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton ||
+        event->button() == Qt::RightButton ||
+        event->button() == Qt::MiddleButton) {
+        m_mouse_point = event->pos();
+        event->accept();
+    }
+}
+
 /*! @brief Метод для обработки нажатия на кнопку "Подключиться к игре"
  *
  *  @details Делает запрос к адресу по подключению к игре.
@@ -186,10 +221,12 @@ void MainMenu::interactWithFriend(QString t_friendUserName, int t_action)
 void MainMenu::processFriendRequestAction(QString t_friendUserName, int t_action)
 {
     QJsonObject queryParams;
-    queryParams["action_type"] = "process_friend_request";
+    queryParams["action_type"] =
+        OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::PROCESS_FRIEND_REQUEST];
     queryParams["friend_username"] = t_friendUserName;
     queryParams["user_id"] = QString::number(m_userId);
-    queryParams["process_status"] = QString::number(t_action == FriendRequestAction::ACCEPT_REQUEST_ACTION);
+    queryParams["process_status"] =
+        QString::number(t_action == FriendRequestAction::ACCEPT_REQUEST_ACTION);
 
     m_friendsUpdateSocket->sendTextMessage(jsonObjectToQString(queryParams));
 }
@@ -260,7 +297,7 @@ void MainMenu::getFriendsRequests()
 void MainMenu::sendFriendRequest(int t_friendId)
 {
     QJsonObject queryItems;
-    queryItems["action_type"] = "send_friend_request";
+    queryItems["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::SEND_FRIEND_REQUEST];
     queryItems["sender_id"] = QString::number(m_userId);
     queryItems["receiver_id"] = QString::number(t_friendId);
 
@@ -331,7 +368,7 @@ void MainMenu::openFriendAdder()
     connect(m_friendAdderWindow, &FriendAdder::friendAdded, this, &MainMenu::sendFriendRequest);
 }
 
-/*! @brief Инициалиализация сокетов их адресов и сигналов
+/*! @brief Инициалиализация сокетов
  *
  *  @return void
 */
@@ -489,7 +526,8 @@ void MainMenu::onFriendlyDuelSocketConnected()
 
 void MainMenu::onFriendlyDuelSocketDisconnected()
 {
-
+    showMessage("Вы были отключены от сервера", QMessageBox::Icon::Critical);
+    close();
 }
 
 void MainMenu::onFriendlyDuelSocketMessageReceived(QString t_textMessage)

@@ -180,20 +180,16 @@ class FriendsUpdateConsumer(AsyncJsonWebsocketConsumer):
             "action_type": "friend_deleted"
         })
 
-    async def receive(self, text_data: str) -> None:
+    async def receive_json(self, json_object: dict) -> None:
         """
             Получает информацию от сокета
 
-            text_data содержит action_type, отвечающий за тип действия
+            json_object содержит
             action_type - Тип действия
-            
-            Аргументы:
-                text_data - Полученная информация
 
             Возвращает:
                 Текст ошибки или результат об успешной обработке
         """
-        json_object = await self.decode_json(text_data)
         try:
             action_type = json_object["action_type"]
         except KeyError:

@@ -11,7 +11,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'SeaBattles.settings')
 ws_patterns= [
     path('friendly_duel/', FriendlyDuelConsumer.FriendlyDuelConsumer.as_asgi()),
     path('friends_update/', FriendsUpdateConsumer.FriendsUpdateConsumer.as_asgi()),
-    path('games/', GameConsumer.GameConsumer.as_asgi())
+    path('game/', GameConsumer.GameConsumer.as_asgi())
 ]
 
 get_asgi_application()

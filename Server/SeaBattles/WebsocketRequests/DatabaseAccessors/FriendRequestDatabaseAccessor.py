@@ -43,7 +43,9 @@ class FriendRequestDatabaseAccessor:
         
         await sync_to_async(friend_request.delete)()
         if accept:
-            await FriendDatabaseAccessor.createFriends(first_user, second_user)
+            result, error = await FriendDatabaseAccessor.createFriends(first_user, second_user)
+            if not result:
+                return False, error
 
         return True, ""
 
