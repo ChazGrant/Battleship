@@ -1,12 +1,13 @@
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
-from typing import Dict, Coroutine, Callable
+from typing import Dict, List, Callable
 
 from WebsocketRequests.JSON_RESPONSES import (NOT_ENOUGH_ARGUMENTS_JSON, INVALID_ARGUMENTS_TYPE_JSON,
-                            INVALID_ACTION_TYPE_JSON, USER_DOES_NOT_EXIST_JSON)
+                            INVALID_ACTION_TYPE_JSON, USER_DOES_NOT_EXIST_JSON, USER_IS_ALREADY_IN_GAME)
 
+from WebsocketRequests.DatabaseAccessors.ShipDatabaseAccessor import ShipDatabaseAccessor
 from WebsocketRequests.DatabaseAccessors.UserDatabaseAccessor import UserDatabaseAccessor
-from WebsocketRequests.DatabaseAccessors.FriendRequestDatabaseAccessor import FriendRequestDatabaseAccessor
+from WebsocketRequests.DatabaseAccessors.FieldDatabaseAccessor import FieldDatabaseAccessor
 
 
 class GameConsumer(AsyncJsonWebsocketConsumer):
@@ -28,9 +29,48 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             Создаём список доступных действий и присваиваем им соответствующие методы
         """
         self._available_actions: Dict[str, Callable] = {
+            "subscribe": self.subscribe,
             "make_turn": self.makeTurn,
-            "disconnect_from_the_game": self.disconnectFromTheGame
+            "disconnect_from_the_game": self.disconnectFromTheGame,
+            "place_ship": self.placeShip,
+            "create_field": self._createField
         }
+
+    async def placeShip(self, json_object: dict) -> None:
+        """
+            Устанавливает корабль в заданных координатах
+
+            json_object содержит
+            user_id - Идентификатор игрока,
+            game_id - Идентификатор игры,
+            cells - Клетки, в которых нужно поместить корабль
+        """
+        try:
+            user_id = json_object["user_id"]
+            raw_cells = json_object["cells"]
+        except KeyError:
+            return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
+        except ValueError:
+            return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
+        
+        try:
+            cells = [list(map(int, raw_cell)) for raw_cell in raw_cells]
+        except ValueError:
+            return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
+
+        if not await UserDatabaseAccessor.userExists(user_id):
+            return await self.send_json(USER_DOES_NOT_EXIST_JSON)
+
+        result, error = await ShipDatabaseAccessor.createShip(cells, user_id)
+        if not result:
+            return await self.send_json({
+                "error": error
+            })
+
+        return await self.send_json({
+            "action_type": "ship_placed",
+            "ship_parts_pos": cells
+        })
 
     async def makeTurn(self, json_object: dict) -> None:
         """
@@ -110,7 +150,15 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             Возвращает:
                 Текст ошибки или результат об успешной обработке
         """
-        ...
+        try:
+            action_type = json_object["action_type"]
+        except KeyError:
+            return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
+            
+        if action_type in self._available_actions.keys():
+            return await self._available_actions[action_type](json_object)
+        
+        await self.send_json(INVALID_ACTION_TYPE_JSON)
 
     async def connectToGame(self, json_object: dict) -> None:
         """
@@ -121,20 +169,19 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                 идентификатор пользователя, который подключается,
                 идентификатор игры, к которой подключаются
         """
-        ...
-
-    async def shoot(self, json_object: dict) -> None:
-        """
-            Выстреливает по полю оппнента
-
-            Аргументы:
-                json_object - Словарь, содержащий
-                идентификатор пользователя, который стреляет,
-                идентификатор игры, в которой находится пользователь,
-                координаты клеток, по которым стреляет пользователь,
-                какое оружие используется
-        """
-        ...
+        try:
+            user_id = int(json_object["user_id"])
+            game_id = json_object["game_id"]
+        except KeyError:
+            return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
+        except ValueError:
+            return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
+        
+        if not (await UserDatabaseAccessor.userExists(user_id)):
+            return await self.send_json(USER_DOES_NOT_EXIST_JSON)
+        
+        if not (await FieldDatabaseAccessor.getField(user_id)) == None:
+            return await self.send_json(USER_IS_ALREADY_IN_GAME)
 
     async def disconnect(self, event) -> None:
         """

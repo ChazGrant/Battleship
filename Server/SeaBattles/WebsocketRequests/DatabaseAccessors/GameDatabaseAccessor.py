@@ -13,6 +13,10 @@ from WebsocketRequests.DatabaseAccessors.FieldDatabaseAccessor import FieldDatab
 
 class GameDatabaseAccessor:
     @staticmethod
+    async def getGameById(game_id: str) -> Game:
+        return await sync_to_async(Game.objects.get)(game_id=game_id)
+    
+    @staticmethod
     async def createGame(creator_id: int, another_user_id: int) -> Tuple[int, str, str]:
         try:
             await sync_to_async(Field.objects.get)(owner_id=creator_id)

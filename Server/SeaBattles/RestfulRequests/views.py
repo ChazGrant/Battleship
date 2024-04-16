@@ -8,7 +8,7 @@ from django.db.utils import IntegrityError
 import random
 import hashlib
 
-from .models import Game, Field, Ship, ShipPart, MarkedCell, User, FriendRequest, Friends
+from .models import Game, Field, Ship, ShipPart, MarkedCell, User, FriendRequest, Friends, Weapon, WeaponType
 from .serializers import (GameSerializer, FieldSerializer, ShipSerializer, UserSerializer, 
                           FriendRequestSerializer, FriendsSerializer)
 
@@ -21,13 +21,6 @@ SHIP_LENGTHS = {
     2: lambda field: field.two_deck,
     3: lambda field: field.three_deck,
     4: lambda field: field.four_deck
-}
-
-SHIP_LENGTHS_NAMES = {
-    1: "one_deck",
-    2: "two_deck",
-    3: "three_deck",
-    4: "four_deck"
 }
 
 # DEBUG
@@ -96,15 +89,6 @@ def createMarkedCellsAroundShip(ship: Ship, field: Field) -> List[str]:
                     MarkedCell.objects.create(field=field, x_pos=x, y_pos=y)
 
     return marked_cells
-
-def generateGameId() -> str:
-    """
-        Создаёт идентификатор игры
-
-        Возврашает:
-            Строку, содержащую идентификатор для созданной игры
-    """
-    return "".join(str(random.randint(0, MAX_LIMIT)) for i in range(8))
 
 def allShipsHasBeenPlaced(field: Field) -> bool:
     """
@@ -211,69 +195,6 @@ def swapGameUserIdTurn(game: Game) -> None:
     game.user_id_turn = owners_id[not user_id_turn]
     game.save()
 
-def createShip(cells: List[List[int]], field: Field) -> bool:
-    """
-        Создаёт корабль
-
-        Аргументы:
-            cells - Список координат частей корабля
-            field - Поле, на котором создаётся корабль
-
-        Возвращает:
-            True если корабль был создан, иначе False
-    """
-    ship_length = len(cells)
-
-    try:
-        ship = Ship.objects.create(field=field, ship_length=ship_length)
-    except Exception as e:
-        return False
-    
-    for cell in cells:
-        x, y = cell
-        try:
-            ShipPart.objects.create(ship=ship, x_pos=x, y_pos=y)
-        except Exception as e:
-            return False
-
-    ship_length_str = SHIP_LENGTHS_NAMES[ship_length]
-
-    # Это был просто эксперимент, было интересно найти способ передавать в update
-    # поле которое нужно изменить и его новое значение
-    # В итоге передаётся обычный словарь kwargs, в которой указано название поля и его новое значение
-    kwargs = {
-        ship_length_str: F(ship_length_str) - 1
-    }
-    Field.objects.filter(owner_id=field.owner_id).update(**kwargs)
-
-    return True
-
-def hasCollisions(ships: List[Ship], cells: List[List[int]]) -> bool:
-    """
-        Проверяет наличие кораблей в области вокруг указанных клеток
-
-        Аргументы:
-            ships - Список имеющихся кораблей на поле
-            cells - Список координат клеток, где пользователь хочет разместить следующий корабль
-
-        Возвращает:
-            True, если в области вокруг клеток есть корабль, иначе False
-        
-        @TODO Оптимизировать цикл поиска коллизий
-    """
-    # Поиск клеток, заполненных кораблями
-    for ship in ships:
-        ship_parts = ShipPart.objects.filter(ship=ship)
-        for ship_part in ship_parts:
-            for cell in cells:
-                cell_x, cell_y = cell
-
-                if ship_part.x_pos in [cell_x - 1, cell_x + 1, cell_x] \
-                and ship_part.y_pos in [cell_y - 1, cell_y + 1, cell_y]:
-                    return True
-
-    return False
-
 
 """
     ViewSet кораблей
@@ -284,7 +205,7 @@ def hasCollisions(ships: List[Ship], cells: List[List[int]]) -> bool:
     @version    1.0
 """
 class ShipViewSet(ViewSet):
-    @action(detail=False, methods=["post"])
+    @action(detail=False, methods=["get"])
     def get_ships(self, request) -> Response:
         """
             Возвращает все корабли
@@ -299,7 +220,7 @@ class ShipViewSet(ViewSet):
 
         return Response(serialzer.data)
 
-    @action(detail=False, methods=["post"])
+    @action(detail=False, methods=["get"])
     def delete_ships(self, request) -> Response:
         """
             Удаляет все корабли
@@ -309,9 +230,15 @@ class ShipViewSet(ViewSet):
             Возвращает:
                 Результат удаления
         """
+        Field.objects.all().update(
+            one_deck=4,
+            two_deck=3,
+            three_deck=2,
+            four_deck=1
+        )
         Ship.objects.all().delete()
-        Field.objects.all().delete()
-        Game.objects.all().delete()
+        # Field.objects.all().delete()
+        # Game.objects.all().delete()
 
         return Response({
             "deleted": True
@@ -981,9 +908,9 @@ class UserViewSet(ViewSet):
             *DEBUG
         """
         users = User.objects.all()
-        serialzer = UserSerializer(users, many=True)
+        serializer = UserSerializer(users, many=True)
 
-        return Response(serialzer.data)
+        return Response(serializer.data)
 
     @action(detail=False, methods=["get"])
     def delete_users(self, request) -> Response:
@@ -1235,3 +1162,27 @@ class FriendsViewSet(ViewSet):
         return Response({
             "friends": friends_names
         })
+
+
+class WeaponTypeViewSet(ViewSet):
+    @action(detail=False, methods=["get"])
+    def init_weapon_types(self, request):
+        weapon_types = ["1", "2", "3"]
+        for weapon_type in weapon_types:
+            WeaponType.objects.create(
+                weapon_type_name=weapon_type,
+                weapon_x_range=1,
+                weapon_y_range=1,
+                weapon_price=50.0
+            )
+
+class WeaponViewSet(ViewSet):
+    @action(detail=False, methods=["get"])
+    def init_weapons(self, request):
+        users = User.objects.all()
+        for user in users:
+            for weapon_type in WeaponType.objects.all():
+                Weapon.objects.create(
+                    weapon_amount=0,
+                    weapon_type=weapon_type,
+                    weapon_owner=user)

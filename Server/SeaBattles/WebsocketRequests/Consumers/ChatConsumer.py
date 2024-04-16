@@ -10,6 +10,7 @@ from WebsocketRequests.DatabaseAccessors.FriendRequestDatabaseAccessor import Fr
 
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
+    groups = []
     def __init__(self):
         self._available_actions: Dict[str, Callable] = {
             "send_message": self.sendMessage
@@ -22,7 +23,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         ...
 
     async def disconnect(self, code):
-        return await super().disconnect(code)
+        ...
     
     async def receive_json(self, json_object: dict) -> None:
         ...

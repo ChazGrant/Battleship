@@ -12,7 +12,7 @@ enum OUTGOING_ACTIONS_NAMES {
     // FriendlyDuelSocket
     SEND_GAME_INVITE,
     // GameSocket
-    MAKE_TURN, QUIT_GAME,
+    MAKE_TURN, QUIT_GAME, PLACE_SHIP,
     // ChatSocket
     SEND_MESSAGE,
     // Общий
@@ -64,6 +64,7 @@ const QMap<OUTGOING_ACTIONS_NAMES, QString> OUTGOING_ACTIONS = {
     // GameSocket
     {OUTGOING_ACTIONS_NAMES::MAKE_TURN, "make_turn"},
     {OUTGOING_ACTIONS_NAMES::QUIT_GAME, "disconnect_from_the_game"},
+    {OUTGOING_ACTIONS_NAMES::PLACE_SHIP, "place_ship"},
     // ChatSocket
     {OUTGOING_ACTIONS_NAMES::SEND_MESSAGE, "send_message"},
     // Общий

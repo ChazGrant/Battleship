@@ -49,7 +49,6 @@ private slots:
 
     // Обработка ответов с сервера
     void setShipsAmountLabel(QNetworkReply* t_reply);
-    void placeShip(QNetworkReply* t_reply);
     void getGameState(QNetworkReply* t_reply);
     void getUserIdTurn(QNetworkReply* t_reply);
     void fillField(QNetworkReply* t_reply);
@@ -75,6 +74,8 @@ private:
     //! Указатель на обработчик запросов
     QNetworkAccessManager* m_manager;
 
+    void placeShip(QJsonArray t_cells);
+
     // Параметры подключения к игре
     //! Идентификатор игры
     const QString m_gameId;
@@ -97,6 +98,8 @@ private:
     void initSockets();
     void initGameSocket();
     void initChatSocket();
+
+    void __createField();
 
     //! Последняя ячейка, на которую навёл пользователь
     QTableWidgetItem *m_lastHighlightedItem;

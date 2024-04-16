@@ -40,7 +40,7 @@ class Game(models.Model):
     
 
 class Field(models.Model):
-    owner_id = models.CharField(max_length=30)
+    owner_id = models.CharField(max_length=30, unique=True)
 
     one_deck = models.IntegerField(default=4)
     two_deck = models.IntegerField(default=3)
@@ -80,17 +80,16 @@ class ShipPart(models.Model):
         return f"[{self.x_pos}, {self.y_pos}]"
 
 
-class UserWeapons(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-
-
 class WeaponType(models.Model):
     class Types(models.TextChoices):
         AIRPLANE = "Самолёт"
         NUKE_BOMB = "Ядерная бомба"
+        MINE = "Мина"
+        DEFAULT_BOMB = "Бомба"
 
     weapon_type_name = models.CharField(max_length=50, choices=Types.choices)
-    weapon_range = ArrayField(models.IntegerField(), blank=True)
+    weapon_x_range = models.IntegerField()
+    weapon_y_range = models.IntegerField()
     weapon_price = models.FloatField(default=0.0)
 
 
@@ -98,7 +97,7 @@ class Weapon(models.Model):
     weapon_amount = models.IntegerField(default=0)
 
     weapon_type = models.ForeignKey(WeaponType, on_delete=models.CASCADE)
-    user_weapon = models.ForeignKey(UserWeapons, on_delete=models.CASCADE)
+    weapon_owner = models.ForeignKey(User, on_delete=models.CASCADE)
 
 
 class Friends(models.Model):

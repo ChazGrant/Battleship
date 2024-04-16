@@ -363,7 +363,22 @@ void MainWindow::onGameSocketDisconnected()
 */
 void MainWindow::onGameSocketMessageReceived(QString t_textMessage)
 {
+    QJsonObject jsonResponse = QJsonDocument::fromJson(t_textMessage.toUtf8()).object();
+    if (jsonResponse.contains("error")) {
+        return showMessage(jsonResponse["error"].toString(), QMessageBox::Icon::Critical);
+    }
+    if (!jsonResponse.contains("action_type")) {
+        showMessage("Неожиданный ответ от сервера", QMessageBox::Icon::Critical);
+        close();
+        return;
+    }
 
+    QString actionType = jsonResponse["action_type"].toString();
+    if (actionType == "ship_placed") {
+        QJsonArray placedCells = jsonResponse["ship_parts_pos"].toArray();
+        placeShip(placedCells);
+
+    }
 }
 
 /*! @brief Обработчик ошибки, полученной во время отправки запроса на сервер через сокет
@@ -429,7 +444,7 @@ void MainWindow::onChatSocketErrorOccurred(QAbstractSocket::SocketError t_socket
 void MainWindow::initSockets()
 {
     initGameSocket();
-    initChatSocket();
+    // initChatSocket();
 }
 
 /*! @brief Создание сокета для обновления состояний игры и событий к нему
@@ -465,7 +480,7 @@ void MainWindow::initChatSocket()
 
     m_chatSocketUrl.setPort(8080);
     m_chatSocketUrl.setHost("127.0.0.1");
-    m_chatSocketUrl.setPath("/game/");
+    m_chatSocketUrl.setPath("/chat/");
     m_chatSocketUrl.setScheme("ws");
 
     m_chatSocket->open(m_chatSocketUrl);
@@ -476,6 +491,16 @@ void MainWindow::initChatSocket()
             this, SLOT(onChatSocketErrorOccurred(QAbstractSocket::SocketError)));
     connect(m_chatSocket, SIGNAL(textMessageReceived(QString)),
             this, SLOT(onChatSocketMessageReceived(QString)));
+}
+
+void MainWindow::__createField()
+{
+    QJsonObject jsonObj;
+    jsonObj["action_type"] = "create_field";
+    jsonObj["user_id"] = QString::number(m_userId);
+    jsonObj["game_id"] = m_gameId;
+
+    m_gameSocket->sendTextMessage(jsonObjectToQString(jsonObj));
 }
 
 /*! @brief Выделение ячейки поля оппонента
@@ -814,28 +839,20 @@ MainWindow::~MainWindow()
  *
  *  @return void
 */
-void MainWindow:: placeShip(QNetworkReply* reply)
+void MainWindow:: placeShip(QJsonArray t_cells)
 {
-    const QString replyStr = reply->readAll();
-
-    QJsonObject jsonObj = QJsonDocument::fromJson(replyStr.toUtf8()).object();
-
-    // Могут возникнуть ошибки, такие как коллизии, корабль слишком длинный, широкий, или корабли закончились
-    if (getErrorMessage(jsonObj))
-        return;
-
-    QJsonArray cells = jsonObj["cells"].toArray();
-
-    for (int i = 0; i < cells.size(); ++i)
+    qDebug() << t_cells;
+    for (int i = 0; i < t_cells.size(); ++i)
     {
-        QJsonArray currentCell = cells[i].toArray();
+        QJsonArray currentCell = t_cells[i].toArray();
         QTableWidgetItem* item = new QTableWidgetItem();
         item->setBackground(GREEN);
         ui->yourField->setItem(currentCell[1].toInt(), currentCell[0].toInt(), item);
         item->setSelected(false);
     }
-    QObject::disconnect(m_manager, &QNetworkAccessManager::finished, this, &MainWindow::placeShip);
-    this->getShipsAmountResponse();
+
+    //! @todo Обновить количество оставшихся кораблей
+
     this->setDisabled(false);
 }
 
@@ -850,34 +867,33 @@ void MainWindow:: placeShip(QNetworkReply* reply)
 */
 void MainWindow::on_placeShipButton_clicked()
 {
-    if (!(ui->yourField->selectedItems().length()))
+    if (ui->yourField->selectedItems().isEmpty())
         return showMessage("Ячейки не выбраны", QMessageBox::Icon::Critical);
 
-    this->setDisabled(true);
+    // this->setDisabled(true);
 
-    QUrl url("http://127.0.0.1:8000/fields/place_ship/");
-    QNetworkRequest request(url);
+    QJsonArray cells;
+    QList<QTableWidgetItem*> selectedItems = ui->yourField->selectedItems();
+    QListIterator<QTableWidgetItem*> itemsIterator(selectedItems);
 
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-
-    QListIterator<QTableWidgetItem *> iter(ui->yourField->selectedItems());
-
-    QString values = "";
-    while (iter.hasNext())
+    while (itemsIterator.hasNext())
     {
-        QTableWidgetItem* currentItem = iter.next();
+        QTableWidgetItem* currentItem = itemsIterator.next();
+        QJsonArray xyCells;
+        xyCells.append(QString::number(currentItem->column()));
+        xyCells.append(QString::number(currentItem->row()));
 
-        QString value = QString::number(currentItem->column()) + "," + QString::number(currentItem->row());
-        values += value;
-        values += " ";
+        cells.append(xyCells);
     }
-    QByteArray json = "{ \"cells\":\"" + values.toUtf8() + \
-            "\", \"owner_id\":\"" + QString::number(this->m_userId).toUtf8() + \
-            "\", \"game_id\":\"" +  this->m_gameId.toUtf8() + "\" }";
 
+    QJsonObject jsonObj;
+    jsonObj["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::PLACE_SHIP];
+    jsonObj["user_id"] = QString::number(m_userId);
+    jsonObj["cells"] = cells;
 
-    QObject::connect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(placeShip(QNetworkReply* )));
-    m_manager->post(request, json);
+    qDebug() << jsonObj;
+
+    m_gameSocket->sendTextMessage(jsonObjectToQString(jsonObj));
 }
 
 /*! @brief Получение статус куда попал пользователь

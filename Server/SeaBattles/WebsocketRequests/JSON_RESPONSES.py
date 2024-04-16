@@ -16,3 +16,6 @@ INVALID_JSON_FORMATS = {
 USER_IS_OFFLINE_JSON = {
     "error": "Данного пользователя нет в сети"
 }
+USER_IS_ALREADY_IN_GAME = {
+    "error": "Пользователь уже в игре"
+}
