@@ -10,7 +10,7 @@ import hashlib
 
 from .models import Game, Field, Ship, ShipPart, MarkedCell, User, FriendRequest, Friends, Weapon, WeaponType
 from .serializers import (GameSerializer, FieldSerializer, ShipSerializer, UserSerializer, 
-                          FriendRequestSerializer, FriendsSerializer)
+                          FriendRequestSerializer, FriendsSerializer, WeaponTypeSerializer)
 
 from typing import List
 
@@ -1167,14 +1167,24 @@ class FriendsViewSet(ViewSet):
 class WeaponTypeViewSet(ViewSet):
     @action(detail=False, methods=["get"])
     def init_weapon_types(self, request):
-        weapon_types = ["1", "2", "3"]
-        for weapon_type in weapon_types:
-            WeaponType.objects.create(
-                weapon_type_name=weapon_type,
+        for type in WeaponType.Types:
+            weapon_type = WeaponType(
+                weapon_type_name=type,
                 weapon_x_range=1,
                 weapon_y_range=1,
                 weapon_price=50.0
             )
+            print(type)
+            weapon_type.full_clean()
+
+        return Response({"inited": True})
+
+    @action(detail=False, methods=["get"])
+    def get_weapon_types(self, request):
+        weapon_types = WeaponType.objects.all()
+
+        serializer = WeaponTypeSerializer(weapon_types, many=True)
+        return Response(serializer.data)
 
 class WeaponViewSet(ViewSet):
     @action(detail=False, methods=["get"])

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Game, Field, Ship, User, FriendRequest, Friends
+from .models import Game, Field, Ship, User, FriendRequest, Friends, WeaponType
 
 
 class GameSerializer(serializers.ModelSerializer):
@@ -39,3 +39,9 @@ class FriendsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Friends
         fields = ('first_friend_id', 'second_friend_id')
+
+
+class WeaponTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WeaponType
+        fields = ('weapon_type_name', 'weapon_x_range', 'weapon_y_range', 'weapon_price')

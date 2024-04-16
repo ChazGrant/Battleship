@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MinLengthValidator
 
 
@@ -34,9 +33,6 @@ class Game(models.Model):
     class Meta:
         verbose_name = "Game"
         verbose_name_plural = "Games"
-
-    def __str__(self):
-        pass
     
 
 class Field(models.Model):
@@ -87,7 +83,7 @@ class WeaponType(models.Model):
         MINE = "Мина"
         DEFAULT_BOMB = "Бомба"
 
-    weapon_type_name = models.CharField(max_length=50, choices=Types.choices)
+    weapon_type_name = models.CharField(max_length=50, choices=Types.choices, unique=True)
     weapon_x_range = models.IntegerField()
     weapon_y_range = models.IntegerField()
     weapon_price = models.FloatField(default=0.0)
