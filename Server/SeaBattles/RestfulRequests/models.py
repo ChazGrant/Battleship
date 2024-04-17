@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.validators import MinLengthValidator
+from django.core.validators import MinLengthValidator, validate_email
 
 
 """
@@ -11,7 +11,7 @@ class User(models.Model):
     user_name = models.CharField(max_length=20, validators=[MinLengthValidator(4)], unique=True)
     user_password = models.CharField(max_length=25, validators=[MinLengthValidator(8)])
     user_id = models.CharField(max_length=30, unique=True)
-    user_email = models.CharField(max_length=40, validators=[MinLengthValidator(5)], unique=True)
+    user_email = models.CharField(max_length=40, validators=[MinLengthValidator(5), validate_email], unique=True)
 
     class Meta:
         verbose_name = "User"
@@ -22,13 +22,13 @@ class User(models.Model):
 
 
 class Game(models.Model):
-    game_id = models.CharField(max_length=30)
+    game_id = models.CharField(max_length=30, unique=True)
     user_id_turn = models.CharField(max_length=30)
     game_is_over = models.BooleanField(default=False)
     has_winner = models.BooleanField(default=False)
 
     is_friendly = models.BooleanField(default=False)
-    game_invite_id = models.CharField(max_length=30, default="")
+    game_invite_id = models.CharField(max_length=30, default="", unique=True)
 
     class Meta:
         verbose_name = "Game"
