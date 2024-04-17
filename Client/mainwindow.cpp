@@ -64,6 +64,8 @@ MainWindow::MainWindow(const QString t_gameId, const int t_userId,
     initSockets();
     fillWeaponsComboBox();
 
+    connectToGame();
+
     // this->getShipsAmountResponse();
 }
 
@@ -377,7 +379,8 @@ void MainWindow::onGameSocketMessageReceived(QString t_textMessage)
     if (actionType == "ship_placed") {
         QJsonArray placedCells = jsonResponse["ship_parts_pos"].toArray();
         placeShip(placedCells);
-
+    } else if (actionType == "subscribed") {
+        qDebug() << "subs";
     }
 }
 
@@ -493,15 +496,26 @@ void MainWindow::initChatSocket()
             this, SLOT(onChatSocketMessageReceived(QString)));
 }
 
-void MainWindow::__createField()
+void MainWindow::connectToGame()
 {
     QJsonObject jsonObj;
-    jsonObj["action_type"] = "create_field";
+    jsonObj["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::CONNECT_TO_GAME];
     jsonObj["user_id"] = QString::number(m_userId);
     jsonObj["game_id"] = m_gameId;
+    jsonObj["game_invite_id"] = m_gameInviteId;
 
     m_gameSocket->sendTextMessage(jsonObjectToQString(jsonObj));
 }
+
+//void MainWindow::__createField()
+//{
+//    QJsonObject jsonObj;
+//    jsonObj["action_type"] = "create_field";
+//    jsonObj["user_id"] = QString::number(m_userId);
+//    jsonObj["game_id"] = m_gameId;
+
+//    m_gameSocket->sendTextMessage(jsonObjectToQString(jsonObj));
+//}
 
 /*! @brief Выделение ячейки поля оппонента
  *

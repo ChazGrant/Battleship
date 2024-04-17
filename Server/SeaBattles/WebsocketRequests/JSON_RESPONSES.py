@@ -19,3 +19,6 @@ USER_IS_OFFLINE_JSON = {
 USER_IS_ALREADY_IN_GAME = {
     "error": "Пользователь уже в игре"
 }
+GAME_DOES_NOT_EXIST = {
+    "error": "Данной игры не существует"
+}

@@ -99,7 +99,7 @@ private:
     void initGameSocket();
     void initChatSocket();
 
-    void __createField();
+    void connectToGame();
 
     //! Последняя ячейка, на которую навёл пользователь
     QTableWidgetItem *m_lastHighlightedItem;

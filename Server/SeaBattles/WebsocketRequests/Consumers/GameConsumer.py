@@ -3,11 +3,13 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from typing import Dict, List, Callable
 
 from WebsocketRequests.JSON_RESPONSES import (NOT_ENOUGH_ARGUMENTS_JSON, INVALID_ARGUMENTS_TYPE_JSON,
-                            INVALID_ACTION_TYPE_JSON, USER_DOES_NOT_EXIST_JSON, USER_IS_ALREADY_IN_GAME)
+                            INVALID_ACTION_TYPE_JSON, USER_DOES_NOT_EXIST_JSON, USER_IS_ALREADY_IN_GAME,
+                            GAME_DOES_NOT_EXIST)
 
 from WebsocketRequests.DatabaseAccessors.ShipDatabaseAccessor import ShipDatabaseAccessor
 from WebsocketRequests.DatabaseAccessors.UserDatabaseAccessor import UserDatabaseAccessor
 from WebsocketRequests.DatabaseAccessors.FieldDatabaseAccessor import FieldDatabaseAccessor
+from WebsocketRequests.DatabaseAccessors.GameDatabaseAccessor import GameDatabaseAccessor
 
 
 class GameConsumer(AsyncJsonWebsocketConsumer):
@@ -33,7 +35,8 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             "make_turn": self.makeTurn,
             "disconnect_from_the_game": self.disconnectFromTheGame,
             "place_ship": self.placeShip,
-            "create_field": self._createField
+            "connect_to_game": self.connectToGame
+            # "create_field": self._createField
         }
 
     async def placeShip(self, json_object: dict) -> None:
@@ -136,12 +139,19 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             user_id = json_object["user_id"]
         except KeyError:
             return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
+        
+        self.listeners[user_id] = self
+        self.reversed_listeners[self] = user_id
+
+        return await self.send_json({
+            "action_type": "subscribed"
+        })
 
     async def receive_json(self, json_object: dict) -> None:
         """
             Получает информацию от сокета
 
-            text_data содержит action_type, отвечающий за тип действия
+            json_object содержит action_type, отвечающий за тип действия
             action_type - Тип действия
             
             Аргументы:
@@ -167,11 +177,14 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             Аргументы:
                 json_object - Словарь, содержащий
                 идентификатор пользователя, который подключается,
-                идентификатор игры, к которой подключаются
+                идентификатор игры, к которой подключаются,
+                идентификатор приглашения в игру
         """
+        print(json_object)
         try:
             user_id = int(json_object["user_id"])
             game_id = json_object["game_id"]
+            game_invite_id = json_object["game_invite_id"]
         except KeyError:
             return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
         except ValueError:
@@ -182,6 +195,20 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         
         if not (await FieldDatabaseAccessor.getField(user_id)) == None:
             return await self.send_json(USER_IS_ALREADY_IN_GAME)
+
+        game = await GameDatabaseAccessor.getGame(game_id, game_invite_id)
+        if not game:
+            return await self.send_json(GAME_DOES_NOT_EXIST)
+        
+        # result, error = await FieldDatabaseAccessor.createField(user_id, game)
+        # if not result:
+        #     return await self.send_json({
+        #         "error": error
+        #     })
+        
+        return await self.send_json({
+            "action_type": "connected_to_game"
+        })
 
     async def disconnect(self, event) -> None:
         """
