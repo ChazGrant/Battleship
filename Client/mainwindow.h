@@ -102,9 +102,9 @@ private:
     void connectToGame();
 
     //! Последняя ячейка, на которую навёл пользователь
-    QTableWidgetItem *m_lastHighlightedItem;
+    QTableWidgetItem *m_lastHighlightedItem = nullptr;
     //! Последняя ячейка, на которую нажал пользователь
-    QTableWidgetItem *m_lastMarkedItem;
+    QTableWidgetItem *m_lastMarkedItem = nullptr;
     //! Координаты ячейки, по которой нужно стрелять
     QMap<QString, int> m_firePosition;
     void highlightOpponentCell(QTableWidgetItem *t_item);
@@ -159,7 +159,7 @@ private:
       return result;
     }();
 
-    bool m_weaponActivated;
+    bool m_weaponActivated = true;
 
     void makeTurn();
 

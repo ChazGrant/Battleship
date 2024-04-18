@@ -1,6 +1,7 @@
 from os import environ
 from django import setup
 from django.db.models import F
+from django.core.exceptions import ValidationError
 from asgiref.sync import sync_to_async
 
 from typing import Tuple, Union
@@ -10,6 +11,7 @@ setup()
 
 from RestfulRequests.models import Field, Game
 
+from WebsocketRequests.DatabaseAccessors.UserDatabaseAccessor import UserDatabaseAccessor
 
 class FieldDatabaseAccessor:
     @staticmethod
@@ -24,11 +26,16 @@ class FieldDatabaseAccessor:
         return field.__dict__[ship_length_str] > 0
 
     @staticmethod
-    async def createField(user_id: str, game: Game) -> Tuple[bool, str]:
+    async def createField(user_id: int, game: Game) -> Tuple[bool, str]:
         try:
-            await sync_to_async(Field.objects.create)(owner_id=user_id, game=game)
-        except Exception as e:
-            return False, 
+            user = await UserDatabaseAccessor.getUserById(user_id)
+            await sync_to_async(Field.objects.create)(owner=user, game=game)
+            print("Field created")
+            return True, ""
+        except Exception:
+            raise
+        except ValidationError:
+            return False, "Вы уже находитесь в игре"
 
     @staticmethod
     async def decreaseShipsAmount(field: Field, ship_length_str: str):

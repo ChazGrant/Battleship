@@ -56,16 +56,13 @@ signals:
     void friendsPulled();
 
 private slots:
-    void on_createNewGameButton_clicked();
-
     void showFriendRequestsContextMenu(const QPoint &t_point);
     void showFriendsContextMenu(const QPoint &t_point);
 
     void interactWithFriend(QString t_friendUserName, int t_action);
     void processFriendRequestAction(QString t_friendUserName, int t_action);
 
-    void on_connectToExistingGame_clicked();
-    void openMainWindow(QString t_gameId);
+    void openMainWindow(QString t_gameId, QString t_gameInviteId = "");
 
     void updateFriendsTab(int t_tabIndex);
 
@@ -75,12 +72,11 @@ private slots:
     void onFriendsUpdateSocketMessageReceived(QString t_textMessage);
     void onFriendsUpdateSocketErrorOccurred(QAbstractSocket::SocketError t_socketError);
 
-    void onFriendlyDuelSocketConnected();
-    void onFriendlyDuelSocketDisconnected();
-    void onFriendlyDuelSocketMessageReceived(QString t_textMessage);
-    void onFriendlyDuelSocketErrorOccurred(QAbstractSocket::SocketError t_socketError);
+    void onGameCreatorSocketConnected();
+    void onGameCreatorSocketDisconnected();
+    void onGameCreatorSocketMessageReceived(QString t_textMessage);
+    void onGameCreatorSocketErrorOccurred(QAbstractSocket::SocketError t_socketError);
 
-    void connectToCreatedGame(QNetworkReply* t_reply);
     void fillFriendsTab(QNetworkReply *t_reply);
     void fillFriendsRequestsTab(QNetworkReply *t_reply);
 private:
@@ -96,6 +92,9 @@ private:
     void deleteFriend(int t_userId, QString t_friendUserName);
     void openFriendAdder();
 
+    void createGame();
+    void connectToCreatedGame(QString t_gameId, QString t_gameInviteId);
+
     //! Указатель на виджет класса
     Ui::MainMenu *ui;
     //! Указатель на обработчик запросов
@@ -106,20 +105,21 @@ private:
     FriendAdder *m_friendAdderWindow;
     //! Указатель на класс InputGameID
     InputGameID *m_inputGameIdWindow;
+    //! Указатель на класс GameInviteNotifier
+    GameInviteNotifier *m_gameInviteNotifier;
     //! Идентификатор пользователя
     int m_userId;
 
     // Сокеты
     QWebSocket *m_friendsUpdateSocket;
-    QWebSocket *m_friendlyDuelSocket;
+    QWebSocket *m_gameCreatorSocket;
 
     QUrl m_friendsUpdateSocketUrl;
-    QUrl m_friendlyDuelSocketUrl;
+    QUrl m_gameCreatorSocketUrl;
 
     void initSockets();
     void initFriendsUpdateSocket();
-    void initFriendlyDuelSocket();
-    void sendSocketMessage();
+    void initGameCreatorSocket();
 
     //! Подписи для меню обработки запросов в друзья
     QStringList friendRequestsActionsText;

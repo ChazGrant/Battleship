@@ -27,6 +27,7 @@ MainMenu::MainMenu(int t_userId, QWidget *parent) :
     ui->tabWidget->setStyleSheet("QTabWidget::pane { border: 0; }");
 
     connect(ui->addFriendButton, &QPushButton::clicked, this, &MainMenu::openFriendAdder);
+    connect(ui->createNewGameButton, &QPushButton::clicked, this, &MainMenu::createGame);
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(updateFriendsTab(int)));
     connect(ui->exitButton, &QPushButton::clicked, this, &MainMenu::close);
     connect(ui->friendRequestsListWidget, SIGNAL(customContextMenuRequested(QPoint)),
@@ -43,7 +44,7 @@ MainMenu::MainMenu(int t_userId, QWidget *parent) :
     initSockets();
     setActionsLists();
 
-    this->updateFriendsTab(ui->tabWidget->currentIndex());
+    updateFriendsTab(ui->tabWidget->currentIndex());
 }
 
 //! @brief Деструктор класса
@@ -87,23 +88,6 @@ void MainMenu::mousePressEvent(QMouseEvent *event)
     }
 }
 
-/*! @brief Метод для обработки нажатия на кнопку "Подключиться к игре"
- *
- *  @details Делает запрос к адресу по подключению к игре.
- *  В параметры передаёт идентификатор пользователя
- *  после ответа от сервера передаёт управление методу connectToCreatedGame
- *
- *  @return void
-*/
-void MainMenu::on_createNewGameButton_clicked()
-{
-    QMap<QString, QString> queryItems;
-    queryItems["user_id"] = QString::number(m_userId);
-
-    QObject::connect(m_manager, SIGNAL(finished(QNetworkReply*)), SLOT(connectToCreatedGame(QNetworkReply*)));
-    sendServerRequest("http://127.0.0.1:8000/games/create_game/", queryItems, m_manager);
-}
-
 /*! @brief Подключение к указанной игре
  *
  *  @details Получает идентификатор игры из ответа сервера, выдаёт ошибку
@@ -113,24 +97,9 @@ void MainMenu::on_createNewGameButton_clicked()
  *
  *  @return void
 */
-void MainMenu::connectToCreatedGame(QNetworkReply *t_reply)
+void MainMenu::connectToCreatedGame(QString t_gameId, QString t_gameInviteId)
 {
-    // Конвертируем строку в json object
-    QJsonObject jsonResponse = QJsonDocument::fromJson(QString(t_reply->readAll()).toUtf8()).object();
-
-    // Если ответ содержит id игры, значит она создана и ошибок нет
-    if (jsonResponse.contains("game_id")) {
-        QString gameId = jsonResponse["game_id"].toString();
-        QMessageBox msgBox;
-        msgBox.setText("ID вашей игры:\n" + gameId);
-        msgBox.exec();
-        this->openMainWindow(gameId);
-    } else if (jsonResponse.contains("Error")) {
-        QString error = jsonResponse["Error"].toString();
-        QMessageBox msgBox;
-        msgBox.setText("Возникли ошибки:\n" + error);
-        msgBox.exec();
-    }
+    qDebug() << t_gameId << t_gameInviteId;
 }
 
 /*! @brief Вывод контекстного меню на виджет
@@ -237,13 +206,13 @@ void MainMenu::processFriendRequestAction(QString t_friendUserName, int t_action
  *
  *  @return void
 */
-void MainMenu::on_connectToExistingGame_clicked()
-{
-    m_inputGameIdWindow = new InputGameID(this->m_userId);
-    m_inputGameIdWindow->show();
+//void MainMenu::on_connectToExistingGame_clicked()
+//{
+//    m_inputGameIdWindow = new InputGameID(this->m_userId);
+//    m_inputGameIdWindow->show();
 
-    QObject::connect(m_inputGameIdWindow, &InputGameID::connectionAccepted, this, &MainMenu::openMainWindow);
-}
+//    QObject::connect(m_inputGameIdWindow, &InputGameID::connectionAccepted, this, &MainMenu::openMainWindow);
+//}
 
 /*! @brief Открытие окна с игрой
  *
@@ -251,10 +220,9 @@ void MainMenu::on_connectToExistingGame_clicked()
  *
  *  @return void
 */
-void MainMenu::openMainWindow(QString t_gameId)
+void MainMenu::openMainWindow(QString t_gameId, QString t_gameInviteId)
 {
-    m_mainWindow = new MainWindow(t_gameId, m_userId);
-
+    m_mainWindow = new MainWindow(t_gameId, m_userId, t_gameInviteId);
     m_mainWindow->show();
     close();
 }
@@ -313,11 +281,11 @@ void MainMenu::sendFriendRequest(int t_friendId)
 void MainMenu::sendFriendlyDuelRequest(QString t_friendUsername)
 {
     QJsonObject jsonObj;
-    jsonObj["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::SEND_GAME_INVITE];
-    jsonObj["from_user_id"] = QString::number(m_userId);
+    jsonObj["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::CREATE_GAME];
+    jsonObj["user_id"] = QString::number(m_userId);
     jsonObj["to_user_name"] = t_friendUsername;
 
-    m_friendlyDuelSocket->sendTextMessage(jsonObjectToQString(jsonObj));
+    m_gameCreatorSocket->sendTextMessage(jsonObjectToQString(jsonObj));
 }
 
 /*! @brief Удаление друга
@@ -368,6 +336,14 @@ void MainMenu::openFriendAdder()
     connect(m_friendAdderWindow, &FriendAdder::friendAdded, this, &MainMenu::sendFriendRequest);
 }
 
+void MainMenu::createGame()
+{
+    QJsonObject jsonObj;
+    jsonObj["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::CREATE_GAME];
+    jsonObj["user_id"] = QString::number(m_userId);
+    m_gameCreatorSocket->sendTextMessage(jsonObjectToQString(jsonObj));
+}
+
 /*! @brief Инициалиализация сокетов
  *
  *  @return void
@@ -375,7 +351,7 @@ void MainMenu::openFriendAdder()
 void MainMenu::initSockets()
 {
     initFriendsUpdateSocket();
-    initFriendlyDuelSocket();
+    initGameCreatorSocket();
 }
 
 /*! @brief Создание сокета для обновления друзей и событий к нему
@@ -405,23 +381,23 @@ void MainMenu::initFriendsUpdateSocket()
  *
  *  @return void
 */
-void MainMenu::initFriendlyDuelSocket()
+void MainMenu::initGameCreatorSocket()
 {
-    m_friendlyDuelSocket = new QWebSocket();
+    m_gameCreatorSocket = new QWebSocket();
 
-    m_friendlyDuelSocketUrl.setPort(8080);
-    m_friendlyDuelSocketUrl.setHost("127.0.0.1");
-    m_friendlyDuelSocketUrl.setPath("/friendly_duel/");
-    m_friendlyDuelSocketUrl.setScheme("ws");
+    m_gameCreatorSocketUrl.setPort(8080);
+    m_gameCreatorSocketUrl.setHost("127.0.0.1");
+    m_gameCreatorSocketUrl.setPath("/game_creator/");
+    m_gameCreatorSocketUrl.setScheme("ws");
 
-    m_friendlyDuelSocket->open(m_friendlyDuelSocketUrl);
+    m_gameCreatorSocket->open(m_gameCreatorSocketUrl);
 
-    connect(m_friendlyDuelSocket, SIGNAL(connected()), this, SLOT(onFriendlyDuelSocketConnected()));
-    connect(m_friendlyDuelSocket, SIGNAL(disconnected()), this, SLOT(onFriendlyDuelSocketDisconnected()));
-    connect(m_friendlyDuelSocket, SIGNAL(error(QAbstractSocket::SocketError)),
-            this, SLOT(onFriendlyDuelSocketErrorOccurred(QAbstractSocket::SocketError)));
-    connect(m_friendlyDuelSocket, SIGNAL(textMessageReceived(QString)),
-            this, SLOT(onFriendlyDuelSocketMessageReceived(QString)));
+    connect(m_gameCreatorSocket, SIGNAL(connected()), this, SLOT(onGameCreatorSocketConnected()));
+    connect(m_gameCreatorSocket, SIGNAL(disconnected()), this, SLOT(onGameCreatorSocketDisconnected()));
+    connect(m_gameCreatorSocket, SIGNAL(error(QAbstractSocket::SocketError)),
+            this, SLOT(onGameCreatorSocketErrorOccurred(QAbstractSocket::SocketError)));
+    connect(m_gameCreatorSocket, SIGNAL(textMessageReceived(QString)),
+            this, SLOT(onGameCreatorSocketMessageReceived(QString)));
 }
 
 /*! @brief Обрабатывание события при изменение активной вкладки
@@ -516,21 +492,21 @@ void MainMenu::onFriendsUpdateSocketErrorOccurred(QAbstractSocket::SocketError t
  *
  *  @return void
 */
-void MainMenu::onFriendlyDuelSocketConnected()
+void MainMenu::onGameCreatorSocketConnected()
 {
     QJsonObject jsonObj;
     jsonObj["user_id"] = m_userId;
     jsonObj["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::SUBSCRIBE];
-    m_friendlyDuelSocket->sendTextMessage(jsonObjectToQString(jsonObj));
+    m_gameCreatorSocket->sendTextMessage(jsonObjectToQString(jsonObj));
 }
 
-void MainMenu::onFriendlyDuelSocketDisconnected()
+void MainMenu::onGameCreatorSocketDisconnected()
 {
     showMessage("Вы были отключены от сервера", QMessageBox::Icon::Critical);
     close();
 }
 
-void MainMenu::onFriendlyDuelSocketMessageReceived(QString t_textMessage)
+void MainMenu::onGameCreatorSocketMessageReceived(QString t_textMessage)
 {
     QJsonObject jsonResponse = QJsonDocument::fromJson(t_textMessage.toUtf8()).object();
     if (jsonResponse.contains("error")) {
@@ -545,19 +521,25 @@ void MainMenu::onFriendlyDuelSocketMessageReceived(QString t_textMessage)
         return;
     }
 
-    if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::GAME_INVITE_SENT]){
+    if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::GAME_CREATED]){
         QString gameId = jsonResponse["game_id"].toString();
         QString gameInviteId = jsonResponse["game_invite_id"].toString();
-        // m_mainWindow = new MainWindow()
+        m_mainWindow = new MainWindow(gameId, m_userId, gameInviteId);
+        m_mainWindow->show();
+        close();
     // Открываем окно с игрой и подключаемся к игре
-    } else if (actionType == "incoming_game_invite") {
+    } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::INCOMIG_GAME_INVITE]) {
+        QString gameId = jsonResponse["game_id"].toString();
         QString gameInviteId = jsonResponse["game_invite_id"].toString();
-        GameInviteNotifier widget(this);
-        widget.show();
+        m_gameInviteNotifier = new GameInviteNotifier();
+        m_gameInviteNotifier->show();
+        connect(m_gameInviteNotifier, &GameInviteNotifier::gameInviteAccepted, this, [=]() {
+            openMainWindow(gameId, gameInviteId);
+        });
     }
 }
 
-void MainMenu::onFriendlyDuelSocketErrorOccurred(QAbstractSocket::SocketError t_socketError)
+void MainMenu::onGameCreatorSocketErrorOccurred(QAbstractSocket::SocketError t_socketError)
 {
 
 }

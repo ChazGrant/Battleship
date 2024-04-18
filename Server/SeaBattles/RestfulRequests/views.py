@@ -1,11 +1,12 @@
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from django.db.models import F, Q
+from django.db.models import Q
 
 from django.db.utils import IntegrityError
+from django.core.exceptions import ValidationError
 
-import random
+import json
 import hashlib
 
 from .models import Game, Field, Ship, ShipPart, MarkedCell, User, FriendRequest, Friends, Weapon, WeaponType
@@ -21,6 +22,12 @@ SHIP_LENGTHS = {
     2: lambda field: field.two_deck,
     3: lambda field: field.three_deck,
     4: lambda field: field.four_deck
+}
+
+TRASNSLATED_COLUMN_NAMES = {
+    "user_name": "Имя пользователя",
+    "user_password": "Пароль",
+    "user_email": "Электронная почта"
 }
 
 # DEBUG
@@ -1006,10 +1013,13 @@ class UserViewSet(ViewSet):
 
         try:
             hashed_password = self.hashPassword(email, user_name, password)
-            created_user = User.objects.create(user_name=user_name, 
-                                user_password=hashed_password, 
+            created_user = User(user_name=user_name, 
+                                user_password=password, 
                                 user_email=email,
                                 user_id=last_user_id + 1)
+            created_user.full_clean()
+            created_user.user_password = hashed_password
+            created_user.save()
         except IntegrityError as e:
             if "user_name" in e.args[0]:
                 error = "Данное имя пользователя занято"
@@ -1018,6 +1028,17 @@ class UserViewSet(ViewSet):
             return Response({
                 "registration_successful": False,
                 "error": error
+            })
+        except ValidationError as e:
+            str_error = str(e).replace("'", "\"")
+            error: dict = json.loads(str(str_error))
+            error_message = "Неверно введены следующие поля:\n" + "\n".join([
+                TRASNSLATED_COLUMN_NAMES[column_name] for column_name in error.keys()]
+            )
+
+            return Response({
+                "registration_successful": False,
+                "error": error_message
             })
 
         return Response({

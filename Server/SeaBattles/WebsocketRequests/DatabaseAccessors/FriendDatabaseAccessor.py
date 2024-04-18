@@ -12,6 +12,8 @@ setup()
 from RestfulRequests.models import Friends, User
 from WebsocketRequests.DatabaseAccessors.UserDatabaseAccessor import UserDatabaseAccessor
 
+from WebsocketRequests.JSON_RESPONSES import USER_DOES_NOT_EXIST_JSON
+
 
 class FriendDatabaseAccessor:
     @staticmethod
@@ -61,9 +63,9 @@ class FriendDatabaseAccessor:
             Возвращает:
                 Результат запроса и текст ошибки
         """
-        user, error = await UserDatabaseAccessor.getUserById(user_id)
+        user = await UserDatabaseAccessor.getUserById(user_id)
         if user == None:
-            return False, error
+            return False, USER_DOES_NOT_EXIST_JSON["error"]
         
         await sync_to_async((await sync_to_async(Friends.objects.filter)(
                 (Q(first_friend__user_name=friend_username) & Q(second_friend__user_name=user.user_name)) | 

@@ -21,6 +21,20 @@ class UserDatabaseAccessor:
             return 0
 
     @staticmethod
+    async def getUserById(user_id: int) -> User:
+        try:
+            return await sync_to_async(User.objects.get)(user_id=user_id)
+        except User.DoesNotExist:
+            return None
+
+    @staticmethod
+    async def getUserByUsername(user_name: str) -> User:
+        try:
+            return await sync_to_async(User.objects.get)(user_name=user_name)
+        except User.DoesNotExist:
+            return None
+
+    @staticmethod
     async def userExists(user_id: int) -> bool:
         try:
             await sync_to_async(User.objects.get)(user_id=user_id)
@@ -28,12 +42,6 @@ class UserDatabaseAccessor:
         except User.DoesNotExist:
             return False
 
-    @staticmethod
-    async def getUserById(user_id: int) -> Tuple[User, str]:
-        try:
-            return await sync_to_async(User.objects.get)(user_id=user_id), ""
-        except User.DoesNotExist:
-            return None, USER_DOES_NOT_EXIST_JSON["error"]
 
     @staticmethod
     async def userExists(user_id: int) -> bool:

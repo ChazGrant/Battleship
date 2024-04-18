@@ -36,7 +36,6 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             "disconnect_from_the_game": self.disconnectFromTheGame,
             "place_ship": self.placeShip,
             "connect_to_game": self.connectToGame
-            # "create_field": self._createField
         }
 
     async def placeShip(self, json_object: dict) -> None:
@@ -180,7 +179,10 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                 идентификатор игры, к которой подключаются,
                 идентификатор приглашения в игру
         """
-        print(json_object)
+        print("CONNECTED TO GAME")
+        return await self.send_json({
+            "error": "Пошёл на хуй"
+        })
         try:
             user_id = int(json_object["user_id"])
             game_id = json_object["game_id"]
@@ -200,11 +202,12 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         if not game:
             return await self.send_json(GAME_DOES_NOT_EXIST)
         
-        # result, error = await FieldDatabaseAccessor.createField(user_id, game)
-        # if not result:
-        #     return await self.send_json({
-        #         "error": error
-        #     })
+        print(json_object)
+        result, error = await FieldDatabaseAccessor.createField(user_id, game)
+        if not result:
+            return await self.send_json({
+                "error": error
+            })
         
         return await self.send_json({
             "action_type": "connected_to_game"

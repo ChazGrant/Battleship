@@ -7,6 +7,7 @@ from WebsocketRequests.JSON_RESPONSES import (NOT_ENOUGH_ARGUMENTS_JSON, INVALID
 
 from WebsocketRequests.DatabaseAccessors.UserDatabaseAccessor import UserDatabaseAccessor
 from WebsocketRequests.DatabaseAccessors.FriendRequestDatabaseAccessor import FriendRequestDatabaseAccessor
+from WebsocketRequests.DatabaseAccessors.FriendDatabaseAccessor import FriendDatabaseAccessor
 
 
 class FriendsUpdateConsumer(AsyncJsonWebsocketConsumer):
@@ -161,7 +162,7 @@ class FriendsUpdateConsumer(AsyncJsonWebsocketConsumer):
         except ValueError:
             return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
         
-        status, error = await FriendRequestDatabaseAccessor.deleteFriend(user_id, friend_username)
+        status, error = await FriendDatabaseAccessor.deleteFriend(user_id, friend_username)
         if not status:
             return await self.send_json({
                 "error": error

@@ -61,13 +61,13 @@ class FriendRequestDatabaseAccessor:
             Возвращает:
                 Результат запроса и ошибку
         """
-        from_user, error = await UserDatabaseAccessor.getUserById(sender_id)
-        to_user, error = await UserDatabaseAccessor.getUserById(receiver_id)
+        from_user = await UserDatabaseAccessor.getUserById(sender_id)
+        to_user = await UserDatabaseAccessor.getUserById(receiver_id)
 
         if from_user == None or to_user == None:
-            return False, error
+            return False, USER_DOES_NOT_EXIST_JSON["error"]
         
-        friends = FriendDatabaseAccessor.getFriends()
+        friends = await FriendDatabaseAccessor.getFriends(from_user, to_user)
         if await sync_to_async(len)(friends):
             return False, "Вы уже друзья с данным пользователем"
 

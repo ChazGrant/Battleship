@@ -45,8 +45,6 @@ private:
     //! Указатель на обработчик запросов
     QNetworkAccessManager *m_manager;
 
-    void sendSocketRequest();
-
     void mouseMoveEvent(QMouseEvent *event);
     void mousePressEvent(QMouseEvent* event);
 

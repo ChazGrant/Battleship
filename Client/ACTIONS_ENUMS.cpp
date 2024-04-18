@@ -9,8 +9,8 @@
 enum OUTGOING_ACTIONS_NAMES {
     // FriendsUpdateSocket
     DELETE_FRIEND, SEND_FRIEND_REQUEST, PROCESS_FRIEND_REQUEST,
-    // FriendlyDuelSocket
-    SEND_GAME_INVITE,
+    // GameCreatorSocket
+    SEND_GAME_INVITE, CREATE_GAME,
     // GameSocket
     MAKE_TURN, QUIT_GAME, PLACE_SHIP, CONNECT_TO_GAME,
     // ChatSocket
@@ -21,8 +21,8 @@ enum OUTGOING_ACTIONS_NAMES {
 
 //! @brief enum всех действий, которые исходят от сервера
 enum INCOMING_ACTIONS_NAMES {
-    // FriendlyDuelSocket
-    GAME_INVITE_SENT, INCOMIG_GAME_INVITE,
+    // GameCreatorSocket
+    INCOMIG_GAME_INVITE, GAME_CREATED,
     // FriendsUpdateSocket
     DELETED_BY_FRIEND, FRIEND_DELETED, NEW_FRIEND_REQUEST, FRIEND_REQUEST_PROCESSED,
     // GameSocket
@@ -35,9 +35,9 @@ enum INCOMING_ACTIONS_NAMES {
 
 //! @brief QMap действий и строк, которые приходят с сервера
 const QMap<INCOMING_ACTIONS_NAMES, QString> INCOMING_ACTIONS = {
-    // FriendlyDuelSocket
-    {INCOMING_ACTIONS_NAMES::GAME_INVITE_SENT, "game_invite_sent"},
+    // GameCreatorSocket
     {INCOMING_ACTIONS_NAMES::INCOMIG_GAME_INVITE, "incoming_game_invite"},
+    {INCOMING_ACTIONS_NAMES::GAME_CREATED, "game_created"},
     // FriendsUpdateSocket
     {INCOMING_ACTIONS_NAMES::DELETED_BY_FRIEND, "deleted_by_friend"},
     {INCOMING_ACTIONS_NAMES::FRIEND_DELETED, "friend_deleted"},
@@ -55,8 +55,9 @@ const QMap<INCOMING_ACTIONS_NAMES, QString> INCOMING_ACTIONS = {
 
 //! @brief QMap действий и строк, которые отправляются на сервер
 const QMap<OUTGOING_ACTIONS_NAMES, QString> OUTGOING_ACTIONS = {
-    // FriendlyDuelSocket
+    // GameCreatorSocket
     {OUTGOING_ACTIONS_NAMES::SEND_GAME_INVITE, "send_game_invite"},
+    {OUTGOING_ACTIONS_NAMES::CREATE_GAME, "create_game"},
     // FriendsUpdateSocket
     {OUTGOING_ACTIONS_NAMES::PROCESS_FRIEND_REQUEST, "process_friend_request"},
     {OUTGOING_ACTIONS_NAMES::DELETE_FRIEND, "delete_friend"},

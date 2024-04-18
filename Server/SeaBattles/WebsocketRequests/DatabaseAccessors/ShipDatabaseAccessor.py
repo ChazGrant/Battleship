@@ -91,7 +91,7 @@ class ShipDatabaseAccessor:
             except Exception:
                 await sync_to_async((await sync_to_async(ShipPart.objects.filter)(ship=ship)).delete)()
                 await sync_to_async(ship.delete)()
-                return False, "Неизвестная ошибка при создании части корабля"
+                return False, "Невозможно создать часть корабля"
 
         FieldDatabaseAccessor.decreaseShipsAmount(field, ship_length_str)
 

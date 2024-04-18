@@ -3,13 +3,15 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from typing import Dict, Callable
 
 from WebsocketRequests.JSON_RESPONSES import (NOT_ENOUGH_ARGUMENTS_JSON, INVALID_ARGUMENTS_TYPE_JSON,
-                            INVALID_ACTION_TYPE_JSON, USER_DOES_NOT_EXIST_JSON, USER_IS_OFFLINE_JSON)
+                            INVALID_ACTION_TYPE_JSON, USER_DOES_NOT_EXIST_JSON, USER_IS_OFFLINE_JSON,
+                            USER_IS_ALREADY_IN_GAME)
 
 from WebsocketRequests.DatabaseAccessors.UserDatabaseAccessor import UserDatabaseAccessor
 from WebsocketRequests.DatabaseAccessors.GameDatabaseAccessor import GameDatabaseAccessor
+from WebsocketRequests.DatabaseAccessors.FieldDatabaseAccessor import FieldDatabaseAccessor
 
 
-class FriendlyDuelConsumer(AsyncJsonWebsocketConsumer):
+class GameCreatorConsumer(AsyncJsonWebsocketConsumer):
     """
         Обработчик websocket запросов обработки игры
 
@@ -29,7 +31,7 @@ class FriendlyDuelConsumer(AsyncJsonWebsocketConsumer):
         """
         self._available_actions: Dict[str, Callable] = {
             "subscribe": self.subscribe,
-            "send_game_invite": self.sendGameInvite
+            "create_game": self.createGame
         }
 
     async def subscribe(self, json_object: dict) -> None:
@@ -59,56 +61,58 @@ class FriendlyDuelConsumer(AsyncJsonWebsocketConsumer):
             "action_type": "subscribed"
         })
 
-    async def sendGameInvite(self, json_object: dict) -> None:
+    async def createGame(self, json_object: dict) -> None:
         """
-            Отправляет приглашение в игру пользователю
+            Создаёт игру
 
             Аргументы:
-                json_object - Словарь, содержащий идентификатор пользователя, который отправил запрос
-                и идентификатор пользователя которому был отправлен запрос
+                json_object - Словарь, содержащий идентификатор пользователя, который создаёт игру
 
             Возвращает:
-                Ответ сокету, содержащий текст ошибки или информацию, что запрос был отправлен
+                Ответ сокету, в котором содержится идентификатор игры для подключения
         """
         try:
-            from_user_id: int = int(json_object["from_user_id"])
-            to_user_name: str = json_object["to_user_name"]
+            user_id = int(json_object["user_id"])
+            to_user_id = 0
         except KeyError:       
             return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
         except ValueError:
             return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
-
-        to_user_id = await UserDatabaseAccessor.getUserIdByUsername(to_user_name)
-
-        if not await UserDatabaseAccessor.userExists(from_user_id) or \
-           not to_user_id:
-            return await self.send_json(USER_DOES_NOT_EXIST_JSON)
-
-        if not (to_user_id in self.listeners.keys()):
-            return await self.send_json(USER_IS_OFFLINE_JSON)
         
-        game_id, game_invite_id, error = await GameDatabaseAccessor.createGame(
-            creator_id=from_user_id,
-            another_user_id=to_user_id
-        )
-        if not game_id:
+        user = await UserDatabaseAccessor.getUserById(user_id)
+        if user == None:
+            return await self.send_json(USER_DOES_NOT_EXIST_JSON)
+        
+        if "to_user_name" in json_object.keys():
+            to_user_name = json_object["to_user_name"]
+            to_user_id = await UserDatabaseAccessor.getUserIdByUsername(to_user_name)
+            if to_user_id == 0:
+                return await self.send_json(USER_DOES_NOT_EXIST_JSON)
+
+        if to_user_id not in self.listeners.keys():
+            return await self.send_json(USER_IS_OFFLINE_JSON)
+
+        if await FieldDatabaseAccessor.getField(user_id) or \
+            await FieldDatabaseAccessor.getField(to_user_id):
+            return await self.send_json(USER_IS_ALREADY_IN_GAME)
+        
+        game_id, game_invite_id, error  = await GameDatabaseAccessor.createGame(user_id, to_user_id)
+        if not (game_id):
             return await self.send_json({
                 "error": error
             })
-
-        if not(to_user_id in self.listeners.keys()):
-            return await self.send_json(USER_IS_OFFLINE_JSON)
-
-        await self.listeners[to_user_id].send_json({
-            "action_type": "incoming_game_invite",
-            "game_invite_id": game_invite_id,
-            "game_id": str(game_id)
-        })
+        
+        if to_user_id:
+            self.listeners[to_user_id].send_json({
+                "action_type": "incoming_game_invite",
+                "game_id": game_id,
+                "game_invite_id": game_invite_id
+            })
 
         return await self.send_json({
-            "action_type": "game_invite_sent",
-            "game_id": str(game_id),
-            "game_invite_id": game_invite_id
+            "action_type": "game_created",
+            "game_invite_id": game_invite_id,
+            "game_id": game_id
         })
 
     async def connect(self) -> None:
@@ -133,7 +137,7 @@ class FriendlyDuelConsumer(AsyncJsonWebsocketConsumer):
 
             Возвращает:
                 Текст ошибки или результат об успешной обработке
-        """       
+        """
         try:
             action_type = json_object["action_type"]
         except KeyError:

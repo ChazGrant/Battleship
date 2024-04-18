@@ -1,7 +1,8 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
 
-from RestfulRequests.models import User, Field, Game
+from RestfulRequests.models import User, Field, Game, ShipPart, FriendRequest
 
 
 # Create your tests here.
@@ -149,21 +150,78 @@ class UserModelTest(TestCase):
 
 
 class FieldModelTest(TestCase):
-    def testOnUniqueOwnerId(self):
+    def testOnUniqueOwner(self):
         game = Game.objects.create(
             game_id="12951925u9125asf",
             user_id_turn=1
         )
+
+        user = User.objects.create(
+            user_id=1,
+            user_name="username",
+            user_password="password",
+            user_email="bot@bot.ru"
+        )
+
         Field.objects.create(
-            owner_id=1,
+            owner=user,
             game=game
         )
 
         new_field = Field(
-            owner_id=1,
+            owner=user,
             game=game
         )
 
         self.assertRaises(ValidationError, new_field.full_clean)
-        new_field.owner_id = 2
+        new_user = User.objects.create(
+            user_id=2,
+            user_name="username2",
+            user_password="password2",
+            user_email="bot2@bot.ru"
+        )
+        new_field.owner = new_user
         self.assertEqual(new_field.full_clean(), None)
+
+    def testOnEmptyOwner(self):
+        game = Game.objects.create(
+            game_id="12951925u9125asf",
+            user_id_turn=1
+        )
+
+        with self.assertRaises(IntegrityError):
+            Field.objects.create(
+                game=game
+            )
+
+
+class ShipModelTest(TestCase):
+    def testCreation(self):
+        with self.assertRaises(ValueError):
+            ShipPart(ship=5, x_pos=2, y_pos=3)
+        
+        with self.assertRaises(ValueError):
+            ShipPart(ship=5, x_pos=2, y_pos="f")
+
+        with self.assertRaises(ValueError):
+            ShipPart(ship=5, x_pos="f", y_pos=3)
+
+
+class FriendRequestTest(TestCase):
+    def testSameUsers(self):
+        user = User.objects.create(
+            user_name="username",
+            user_password="user_password",
+            user_id=1
+        )
+
+        friend_request = FriendRequest(
+            from_user=user,
+            to_user=user
+        )
+        
+        self.assertRaises(ValidationError, friend_request.full_clean)
+
+    def testInvalidType(self):
+        with self.assertRaises(ValueError):
+            FriendRequest.objects.create(from_user="")

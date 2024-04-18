@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinLengthValidator, validate_email
+from django.core.exceptions import ValidationError
 
 
 """
@@ -28,7 +29,7 @@ class Game(models.Model):
     has_winner = models.BooleanField(default=False)
 
     is_friendly = models.BooleanField(default=False)
-    game_invite_id = models.CharField(max_length=30, default="", unique=True)
+    game_invite_id = models.CharField(max_length=30, default="")
 
     class Meta:
         verbose_name = "Game"
@@ -36,13 +37,12 @@ class Game(models.Model):
     
 
 class Field(models.Model):
-    owner_id = models.CharField(max_length=30, unique=True)
-
     one_deck = models.IntegerField(default=4)
     two_deck = models.IntegerField(default=3)
     three_deck = models.IntegerField(default=2)
     four_deck = models.IntegerField(default=1)
 
+    owner = models.OneToOneField(User, on_delete=models.CASCADE, unique=True)
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
 
 
@@ -104,3 +104,9 @@ class Friends(models.Model):
 class FriendRequest(models.Model):
     from_user = models.ForeignKey(User, related_name='from_user', on_delete=models.CASCADE)
     to_user = models.ForeignKey(User, related_name='to_user', on_delete=models.CASCADE)
+
+    def full_clean(self):
+        if self.from_user == self.to_user:
+            raise ValidationError({
+                "title": "from_user cannot be equal to to_user"
+            })

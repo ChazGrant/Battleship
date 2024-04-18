@@ -22,18 +22,22 @@ class GameDatabaseAccessor:
             return None
     
     @staticmethod
-    async def createGame(creator_id: int, another_user_id: int) -> Tuple[int, str, str]:
-        try:
-            await sync_to_async(Field.objects.get)(owner_id=creator_id)
-            return 0, "", "Игрок уже находится в игре"
-        except Field.DoesNotExist:
-            ...
+    async def createGame(creator_id: int, another_user_id:int=0) -> Tuple[str, str, str]:
+        field = await FieldDatabaseAccessor.getField(creator_id)
+        if field:
+            return "", "", "Игрок уже находится в игре"
+
+        is_friendly = False
+        game_invite_id = ""
+        if another_user_id:
+            is_friendly = True
+            game_invite_id = await Generator.generateGameInviteId(creator_id, another_user_id)
 
         created_game = await sync_to_async(Game.objects.create)(
             game_id=await Generator.generateGameId(),
             user_id_turn=creator_id,
-            is_friendly=True,
-            game_invite_id=await Generator.generateGameInviteId(creator_id, another_user_id)
+            is_friendly=is_friendly,
+            game_invite_id=game_invite_id
         )
 
         return created_game.game_id, created_game.game_invite_id, ""
