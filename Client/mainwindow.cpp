@@ -132,8 +132,6 @@ void MainWindow::waitForTurn()
 void MainWindow::fillField(QNetworkReply *reply)
 {
     const QString replyStr = reply->readAll();
-    qDebug() << "GET FILL FIELD";
-    qDebug() << replyStr;
 
     QJsonObject jsonObj = QJsonDocument::fromJson(replyStr.toUtf8()).object();
 
@@ -150,7 +148,6 @@ void MainWindow::fillField(QNetworkReply *reply)
 
     // Закрашиваем повреждённые клетки
     QJsonArray marked_cells = jsonObj["marked_cells"].toArray();
-    qDebug() << marked_cells;
     if (!marked_cells.isEmpty()) {
         for (int i = 0; i < marked_cells.size(); ++i) {
             QStringList currentCell = marked_cells[i].toString().split(" ");
@@ -166,7 +163,6 @@ void MainWindow::fillField(QNetworkReply *reply)
 
     // Закрашиваем мёртвые корабли
     QJsonArray deadParts = jsonObj["dead_parts"].toArray();
-    qDebug() << deadParts;
     if (!deadParts.isEmpty()) {
         for (int i = 0; i < deadParts.size(); ++i) {
             QStringList currentCell = deadParts[i].toString().split(" ");
@@ -182,7 +178,6 @@ void MainWindow::fillField(QNetworkReply *reply)
 
     // Закрашиваем повреждённые корабли
     QJsonArray damagedParts = jsonObj["damaged_parts"].toArray();
-    qDebug() << damagedParts;
     if (!damagedParts.isEmpty()) {
         for (int i = 0; i < damagedParts.size(); ++i) {
             QStringList currentCell = damagedParts[i].toString().split(" ");
@@ -241,15 +236,10 @@ void MainWindow::getDamagedCells()
 void MainWindow::getWinner(QNetworkReply *reply)
 {
     const QString replyStr = reply->readAll();
-    qDebug() << "GET GAME OVER STATE";
-    qDebug() << replyStr;
 
     QJsonObject jsonObject = QJsonDocument::fromJson(replyStr.toUtf8()).object();
 
     if (jsonObject["game_is_over"].toBool()) {
-        qDebug() << "WINNER OF THE GAME";
-        qDebug() << "YOUR ID " << this->m_userId;
-        qDebug() << "WINNER ID " << jsonObject["winner"].toString();
 
         if (jsonObject["winner"].toString() == this->m_userId) {
             showMessage("Игра закончена и победу одержали Вы", QMessageBox::Icon::Information);
@@ -338,7 +328,8 @@ void MainWindow::onGameSocketConnected()
 */
 void MainWindow::onGameSocketDisconnected()
 {
-
+    showMessage("Вы были отключены от сервера", QMessageBox::Icon::Critical);
+    close();
 }
 
 /*! @brief Обработчик получения информации с сервера через сокет
@@ -360,11 +351,14 @@ void MainWindow::onGameSocketMessageReceived(QString t_textMessage)
     }
 
     QString actionType = jsonResponse["action_type"].toString();
-    if (actionType == "ship_placed") {
+    if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::SHIP_PLACED]) {
         QJsonArray placedCells = jsonResponse["ship_parts_pos"].toArray();
         placeShip(placedCells);
-    } else if (actionType == "subscribed") {
+        setShipsAmountLabel(jsonResponse);
+    } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::SUBSCRIBED]) {
         connectToGame();
+    } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::CONNECTED_TO_GAME]) {
+        setShipsAmountLabel(jsonResponse);
     }
 }
 
@@ -389,15 +383,6 @@ void MainWindow::onGameSocketErrorOccurred(QAbstractSocket::SocketError t_socket
  *  @return void
 */
 void MainWindow::onChatSocketConnected()
-{
-
-}
-
-/*! @brief Обработчик отключения сокета от сервера
- *
- *  @return void
-*/
-void MainWindow::onChatSocketDisconnected()
 {
 
 }
@@ -473,7 +458,6 @@ void MainWindow::initChatSocket()
     m_chatSocket->open(m_chatSocketUrl);
 
     connect(m_chatSocket, SIGNAL(connected()), this, SLOT(onChatSocketConnected()));
-    connect(m_chatSocket, SIGNAL(disconnected()), this, SLOT(onChatSocketDisconnected()));
     connect(m_chatSocket, SIGNAL(error(QAbstractSocket::SocketError)),
             this, SLOT(onChatSocketErrorOccurred(QAbstractSocket::SocketError)));
     connect(m_chatSocket, SIGNAL(textMessageReceived(QString)),
@@ -487,8 +471,6 @@ void MainWindow::connectToGame()
     jsonObj["user_id"] = QString::number(m_userId);
     jsonObj["game_id"] = m_gameId;
     jsonObj["game_invite_id"] = m_gameInviteId;
-
-    qDebug() << "connectToGame called" << jsonObj;
 
     m_gameSocket->sendTextMessage(jsonObjectToQString(jsonObj));
 }
@@ -535,14 +517,12 @@ void MainWindow::highlightOpponentCell(QTableWidgetItem *t_item)
         int y = t_item->column();
 
         for (int x = 0; x < 0 + xOffset; ++x) {
-            qDebug() << x;
             QTableWidgetItem *itemToHighlight = ui->opponentField->itemAt(x, y);
             if (itemToHighlight != nullptr)
                 itemToHighlight->setBackgroundColor(YELLOW);
         }
 //        for (; x < x + xOffset; ++x) {
 //            for (; y < y + yOffset; ++y) {
-//                qDebug() << x << y;
 //                QTableWidgetItem *itemToHighlight = ui->opponentField->itemAt(x, y);
 //                if (itemToHighlight != nullptr)
 //                    itemToHighlight->setBackgroundColor(YELLOW);
@@ -591,7 +571,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
         return event->accept();
     }
 
-    qDebug() << "closeEvent called";
     QUrl url("http://127.0.0.1:8000/games/disconnect/");
     QNetworkRequest request( url );
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
@@ -692,43 +671,23 @@ void MainWindow::waitForGameStart()
     m_manager->post(request, queryUrl.toEncoded().remove(0, 1));
 }
 
-/*! @brief Вывод на экран пользователя количество оставших кораблей
+/*! @brief Вывод на экран пользователя количество оставшихся кораблей
  *
- *  @param *reply Указатель на ответ от сервера
+ *  @param t_jsonResponse Json, содержащий количество оставшихся кораблей
  *
  *  @return void
 */
-void MainWindow::setShipsAmountLabel(QNetworkReply* reply)
+void MainWindow::setShipsAmountLabel(QJsonObject t_jsonResponse)
 {
-    const QString replyStr = reply->readAll();
-    QJsonObject jsonObj = QJsonDocument::fromJson(replyStr.toUtf8()).object();
+    qDebug() << t_jsonResponse;
+    QString totalShipsLeft = "Осталось кораблей:\n";
+    totalShipsLeft += "1: " + QString::number(t_jsonResponse["one_deck_left"].toInt()) + "\n";
+    totalShipsLeft += "2: " + QString::number(t_jsonResponse["two_deck_left"].toInt()) + "\n";
+    totalShipsLeft += "3: " + QString::number(t_jsonResponse["three_deck_left"].toInt()) + "\n";
+    totalShipsLeft += "4: " + QString::number(t_jsonResponse["four_deck_left"].toInt()) + "\n";
 
-    if (this->getErrorMessage(jsonObj)) {
-        return;
-    }
-
-    qDebug() << jsonObj["four_deck"].toInt();
-    int fourDeckLeft = jsonObj["four_deck"].toInt();
-    int threeDeckLeft = jsonObj["three_deck"].toInt();
-    int twoDeckLeft = jsonObj["two_deck"].toInt();
-    int oneDeckLeft = jsonObj["one_deck"].toInt();
-
-    QString shipsAmountStr = "";
-    shipsAmountStr = "4: " + QString::number(fourDeckLeft) + "\n" +\
-                     "3: " + QString::number(threeDeckLeft) + "\n" +\
-                     "2: " + QString::number(twoDeckLeft) + "\n" +\
-                     "1: " + QString::number(oneDeckLeft);
-
-    ui->shipsAmountLabel->setText(shipsAmountStr);
-    QObject::disconnect(m_manager, SIGNAL( finished( QNetworkReply* )), this, SLOT(setShipsAmountLabel(QNetworkReply* )));
-
-    if ((fourDeckLeft + threeDeckLeft + twoDeckLeft + oneDeckLeft) == 0 ) {
-        showMessage("Корабли закончились, ожидаем соперника", QMessageBox::Icon::Information);
-        this->setDisabled(true);
-        // Ставим таймер на функцию, в которой ожидаем когда игра будет начата
-
-        //  m_timerForGameStart->start();
-    }
+    ui->shipsAmountLabel->setText(totalShipsLeft);
+    this->setDisabled(false);
 }
 
 /*! @brief Получение количества оставшихся кораблей
@@ -839,9 +798,8 @@ MainWindow::~MainWindow()
  *
  *  @return void
 */
-void MainWindow:: placeShip(QJsonArray t_cells)
+void MainWindow::placeShip(QJsonArray t_cells)
 {
-    qDebug() << t_cells;
     for (int i = 0; i < t_cells.size(); ++i) {
         QJsonArray currentCell = t_cells[i].toArray();
         QTableWidgetItem* item = new QTableWidgetItem();
@@ -849,8 +807,6 @@ void MainWindow:: placeShip(QJsonArray t_cells)
         ui->yourField->setItem(currentCell[1].toInt(), currentCell[0].toInt(), item);
         item->setSelected(false);
     }
-
-    //! @todo Обновить количество оставшихся кораблей
 
     this->setDisabled(false);
 }
@@ -890,8 +846,6 @@ void MainWindow::on_placeShipButton_clicked()
     jsonObj["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::PLACE_SHIP];
     jsonObj["user_id"] = QString::number(m_userId);
     jsonObj["cells"] = cells;
-
-    qDebug() << jsonObj;
 
     m_gameSocket->sendTextMessage(jsonObjectToQString(jsonObj));
 }
@@ -1003,7 +957,6 @@ void MainWindow::getFireStatus(QNetworkReply *reply)
 */
 void MainWindow::makeTurn()
 {
-    qDebug() << "shoot";
     if (m_firePosition.size() == 0)
         return showMessage("Клетки не были выбраны", QMessageBox::Icon::Critical);
 

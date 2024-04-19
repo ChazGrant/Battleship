@@ -6,10 +6,7 @@ from django import setup
 environ.setdefault('DJANGO_SETTINGS_MODULE', 'SeaBattles.settings')
 setup()
 
-from typing import Tuple
-
 from RestfulRequests.models import User
-from WebsocketRequests.JSON_RESPONSES import USER_DOES_NOT_EXIST_JSON
 
 
 class UserDatabaseAccessor:

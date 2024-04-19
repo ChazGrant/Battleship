@@ -68,7 +68,6 @@ private slots:
 
     // Слоты сокетов
     void onFriendsUpdateSocketConnected();
-    void onFriendsUpdateSocketDisconnected();
     void onFriendsUpdateSocketMessageReceived(QString t_textMessage);
     void onFriendsUpdateSocketErrorOccurred(QAbstractSocket::SocketError t_socketError);
 
@@ -108,7 +107,7 @@ private:
     //! Указатель на класс GameInviteNotifier
     GameInviteNotifier *m_gameInviteNotifier;
     //! Идентификатор пользователя
-    int m_userId;
+    const int m_userId;
 
     // Сокеты
     QWebSocket *m_friendsUpdateSocket;

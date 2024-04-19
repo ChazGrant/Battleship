@@ -10,9 +10,10 @@ class GameSerializer(serializers.ModelSerializer):
 
 
 class FieldSerializer(serializers.ModelSerializer):
+    _owner_id = serializers.IntegerField(source='owner.user_id')
     class Meta:
         model = Field
-        fields = ('owner_id', 'four_deck', 'three_deck', 'two_deck', 'one_deck', 'game_id')
+        fields = ('owner', '_owner_id', 'four_deck', 'three_deck', 'two_deck', 'one_deck', 'game_id')
 
 
 class ShipSerializer(serializers.ModelSerializer):

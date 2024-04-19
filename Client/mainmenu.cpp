@@ -330,10 +330,15 @@ void MainMenu::setActionsLists()
 */
 void MainMenu::openFriendAdder()
 {
+    setDisabled(true);
     m_friendAdderWindow = new FriendAdder();
     m_friendAdderWindow->show();
 
     connect(m_friendAdderWindow, &FriendAdder::friendAdded, this, &MainMenu::sendFriendRequest);
+    connect(m_friendAdderWindow, &FriendAdder::destroyed, this, [=] {
+        setDisabled(false);
+        disconnect(m_friendAdderWindow, &FriendAdder::friendAdded, this, &MainMenu::sendFriendRequest);
+    });
 }
 
 void MainMenu::createGame()
@@ -370,7 +375,6 @@ void MainMenu::initFriendsUpdateSocket()
     m_friendsUpdateSocket->open(m_friendsUpdateSocketUrl);
 
     connect(m_friendsUpdateSocket, SIGNAL(connected()), this, SLOT(onFriendsUpdateSocketConnected()));
-    connect(m_friendsUpdateSocket, SIGNAL(disconnected()), this, SLOT(onFriendsUpdateSocketDisconnected()));
     connect(m_friendsUpdateSocket, SIGNAL(error(QAbstractSocket::SocketError)),
             this, SLOT(onFriendsUpdateSocketErrorOccurred(QAbstractSocket::SocketError)));
     connect(m_friendsUpdateSocket, SIGNAL(textMessageReceived(QString)),
@@ -429,15 +433,6 @@ void MainMenu::onFriendsUpdateSocketConnected()
     m_friendsUpdateSocket->sendTextMessage(jsonObjectToQString(jsonObj));
 }
 
-/*! @brief Обработчик отключения сокета от сервера
- *
- *  @return void
-*/
-void MainMenu::onFriendsUpdateSocketDisconnected()
-{
-
-}
-
 /*! @brief Обработчик получения информации с сервера через сокет
  *
  *  @param t_textMessage Текст полученного сообщения
@@ -482,6 +477,7 @@ void MainMenu::onFriendsUpdateSocketMessageReceived(QString t_textMessage)
 */
 void MainMenu::onFriendsUpdateSocketErrorOccurred(QAbstractSocket::SocketError t_socketError)
 {
+    qDebug() << t_socketError;
     showMessage("Возникла ошибка при подключении к серверу", QMessageBox::Icon::Critical);
     close();
 }

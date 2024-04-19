@@ -83,13 +83,15 @@ class GameCreatorConsumer(AsyncJsonWebsocketConsumer):
         if user == None:
             return await self.send_json(USER_DOES_NOT_EXIST_JSON)
         
+        print(json_object)
+
         if "to_user_name" in json_object.keys():
             to_user_name = json_object["to_user_name"]
             to_user_id = await UserDatabaseAccessor.getUserIdByUsername(to_user_name)
             if to_user_id == 0:
                 return await self.send_json(USER_DOES_NOT_EXIST_JSON)
 
-        if to_user_id not in self.listeners.keys():
+        if to_user_id and to_user_id not in self.listeners.keys():
             return await self.send_json(USER_IS_OFFLINE_JSON)
 
         if await FieldDatabaseAccessor.getField(user_id) or \

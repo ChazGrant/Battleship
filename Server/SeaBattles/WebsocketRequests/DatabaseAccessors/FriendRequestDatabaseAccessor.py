@@ -13,6 +13,8 @@ from WebsocketRequests.DatabaseAccessors.UserDatabaseAccessor import UserDatabas
 from WebsocketRequests.DatabaseAccessors.FriendDatabaseAccessor import FriendDatabaseAccessor
 from WebsocketRequests.JSON_RESPONSES import USER_DOES_NOT_EXIST_JSON
 
+from json import loads
+
 
 class FriendRequestDatabaseAccessor:
     @staticmethod
@@ -66,7 +68,7 @@ class FriendRequestDatabaseAccessor:
 
         if from_user == None or to_user == None:
             return False, USER_DOES_NOT_EXIST_JSON["error"]
-        
+
         friends = await FriendDatabaseAccessor.getFriends(from_user, to_user)
         if await sync_to_async(len)(friends):
             return False, "Вы уже друзья с данным пользователем"
@@ -83,5 +85,13 @@ class FriendRequestDatabaseAccessor:
                 else:
                     return True, ""
             except FriendRequest.DoesNotExist:
-                await sync_to_async(FriendRequest.objects.create)(from_user=from_user, to_user=to_user)
+                try:
+                    friend_request = await sync_to_async(FriendRequest)(from_user=from_user, to_user=to_user)
+                    friend_request.full_clean()
+                    friend_request.save()
+                except Exception as e:
+                    error_message = str(e).replace("'", "\"")
+                    error_json = loads(error_message)
+                    return False, error_json["title"][0]
+                
                 return True, ""

@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QMessageBox>
 
+#include <QMouseEvent>
+
 #include "additionalfunctions.h"
 
 namespace Ui {
@@ -25,6 +27,11 @@ signals:
 private:
     //! @brief Указатель на интерфейс класса
     Ui::FriendAdder *ui;
+
+    //! Точка на экране
+    QPoint m_mouse_point;
+    void mouseMoveEvent(QMouseEvent* event);
+    void mousePressEvent(QMouseEvent *event);
 
     void addFriend();
 };

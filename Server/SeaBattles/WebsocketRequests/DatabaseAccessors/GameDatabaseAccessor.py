@@ -1,17 +1,25 @@
 from os import environ
-from django import setup
-from asgiref.sync import sync_to_async
 from typing import Tuple, List
+from asgiref.sync import sync_to_async
+from json import loads
+
+from django import setup
+from django.core.exceptions import ValidationError
 
 environ.setdefault('DJANGO_SETTINGS_MODULE', 'SeaBattles.settings')
 setup()
 
-from RestfulRequests.models import Field, Game
+from RestfulRequests.models import Game
 from WebsocketRequests.Generator import Generator
 from WebsocketRequests.DatabaseAccessors.FieldDatabaseAccessor import FieldDatabaseAccessor
 
 
 class GameDatabaseAccessor:
+    # *DEBUG
+    @staticmethod
+    async def deleteGames():
+       await sync_to_async((await sync_to_async(Game.objects.all)()).delete)()
+
     @staticmethod
     async def getGame(game_id: str, game_invite_id:str="") -> Game:
         try:
@@ -33,12 +41,18 @@ class GameDatabaseAccessor:
             is_friendly = True
             game_invite_id = await Generator.generateGameInviteId(creator_id, another_user_id)
 
-        created_game = await sync_to_async(Game.objects.create)(
-            game_id=await Generator.generateGameId(),
-            user_id_turn=creator_id,
-            is_friendly=is_friendly,
-            game_invite_id=game_invite_id
-        )
+        try:
+            created_game = await sync_to_async(Game.objects.create)(
+                game_id=await Generator.generateGameId(),
+                user_id_turn=creator_id,
+                is_friendly=is_friendly,
+                game_invite_id=game_invite_id
+            )
+        except ValidationError as val_error:
+            error_message = str(val_error).replace("'", "\"")
+            error_json = loads(error_message)
+            
+            return False, error_json["title"][0]
 
         return created_game.game_id, created_game.game_invite_id, ""
 

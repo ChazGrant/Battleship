@@ -261,6 +261,11 @@ class ShipViewSet(ViewSet):
     @version    1.0
 """
 class FieldViewSet(ViewSet):
+    @action(detail=False, methods=["get"])
+    def delete_fields(self, requests) -> Response:
+        Field.objects.all().delete()
+        return Response({"status": "deleted"})
+    
     # 5)
     @action(detail=False, methods=["post"])
     def get_damaged_cells(self, request) -> Response:

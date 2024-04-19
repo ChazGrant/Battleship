@@ -1,9 +1,11 @@
 from os import environ
-from django import setup
 from asgiref.sync import sync_to_async
-from django.db.models.manager import BaseManager
-
 from typing import List, Tuple
+from json import loads
+
+from django import setup
+from django.db.models.manager import BaseManager
+from django.core.exceptions import ValidationError
 
 environ.setdefault('DJANGO_SETTINGS_MODULE', 'SeaBattles.settings')
 setup()
@@ -66,7 +68,10 @@ class ShipDatabaseAccessor:
                 Результат создания и текст ошибки
         """
         ship_length = len(cells)
-        ship_length_str = SHIP_LENGTHS_NAMES[ship_length]
+        try:
+            ship_length_str = SHIP_LENGTHS_NAMES[ship_length]
+        except KeyError:
+            return False, "Данного корабля не существует"
         
         field = await FieldDatabaseAccessor.getField(user_id)
         if field == None:
@@ -80,19 +85,33 @@ class ShipDatabaseAccessor:
             return False, "Обнаружена коллизия с другими кораблями"
 
         try:
-            ship = await sync_to_async(Ship.objects.create)(field=field, ship_length=ship_length)
-        except Exception:
-            return False, "Неизвестная ошибка при создании корабля"
+            ship = await sync_to_async(Ship)(field=field, ship_length=ship_length)
+            await sync_to_async(ship.full_clean)()
+            await sync_to_async(ship.save)()
+        except ValidationError as val_error:
+            error_message = str(val_error).replace("'", "\"")
+            error_json = loads(error_message)
+            
+            return False, error_json["title"][0]
         
         for cell in cells:
             x, y = cell
             try:
-                await sync_to_async(ShipPart.objects.create)(ship=ship, x_pos=x, y_pos=y)
-            except Exception:
-                await sync_to_async((await sync_to_async(ShipPart.objects.filter)(ship=ship)).delete)()
+                ship_part = await sync_to_async(ShipPart)(ship=ship, x_pos=x, y_pos=y)
+                await sync_to_async(ship_part.full_clean)()
+                await sync_to_async(ship_part.save)()
+            except ValidationError as val_error:
+                error_message = str(val_error).replace("'", "\"")
+                error_json = loads(error_message)
+
                 await sync_to_async(ship.delete)()
+                
+                return False, "Невозможно создать часть корабля:\n" + error_json["title"][0]
+            except Exception:
+                await sync_to_async(ship.delete)()
+                raise
                 return False, "Невозможно создать часть корабля"
 
-        FieldDatabaseAccessor.decreaseShipsAmount(field, ship_length_str)
+        await FieldDatabaseAccessor.decreaseShipsAmount(field, ship_length_str)
 
         return True, ""

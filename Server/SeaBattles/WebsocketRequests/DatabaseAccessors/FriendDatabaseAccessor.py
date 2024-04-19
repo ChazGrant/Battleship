@@ -1,10 +1,12 @@
 from os import environ
 from asgiref.sync import sync_to_async
 from typing import Tuple
+from json import loads
 
 from django import setup
 from django.db.models.manager import BaseManager
 from django.db.models import Q
+from django.core.exceptions import ValidationError
 
 environ.setdefault('DJANGO_SETTINGS_MODULE', 'SeaBattles.settings')
 setup()
@@ -29,8 +31,16 @@ class FriendDatabaseAccessor:
                 Результат, что друзья были созданы и текст ошибки
         """
         try:
-            await sync_to_async(Friends.objects.create)(first_friend=first_user, second_friend=second_user)
+            friends = await sync_to_async(Friends)(first_friend=first_user, second_friend=second_user)
+            friends.full_clean()
+            friends.save()
+
             return True, ""
+        except ValidationError as val_error:
+            error_message = str(val_error).replace("'", "\"")
+            error_json = loads(error_message)
+            
+            return False, error_json["title"][0]
         except Exception as e:
             return False, str(e)
 

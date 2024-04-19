@@ -11,7 +11,7 @@ from django.core.exceptions import ValidationError
 class User(models.Model):
     user_name = models.CharField(max_length=20, validators=[MinLengthValidator(4)], unique=True)
     user_password = models.CharField(max_length=25, validators=[MinLengthValidator(8)])
-    user_id = models.CharField(max_length=30, unique=True)
+    user_id = models.IntegerField(unique=True)
     user_email = models.CharField(max_length=40, validators=[MinLengthValidator(5), validate_email], unique=True)
 
     class Meta:
@@ -100,6 +100,11 @@ class Friends(models.Model):
     first_friend = models.ForeignKey(User, related_name='first_friend', on_delete=models.CASCADE)
     second_friend = models.ForeignKey(User, related_name='second_friend', on_delete=models.CASCADE)
 
+    def full_clean(self):
+        if self.first_friend == self.second_friend:
+            raise ValidationError({
+                "title": "Вы не можете добавить самого себя в друзья"
+            })
 
 class FriendRequest(models.Model):
     from_user = models.ForeignKey(User, related_name='from_user', on_delete=models.CASCADE)
@@ -108,5 +113,5 @@ class FriendRequest(models.Model):
     def full_clean(self):
         if self.from_user == self.to_user:
             raise ValidationError({
-                "title": "from_user cannot be equal to to_user"
+                "title": "Вы не можете добавить самого себя в друзья"
             })

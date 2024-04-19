@@ -69,10 +69,25 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                 "error": error
             })
 
-        return await self.send_json({
+        (one_deck, two_deck, three_deck, four_deck), error = await FieldDatabaseAccessor.getShipsLeft(user_id)
+        if error:
+            return await self.send_json({
+                "error": error
+            })
+        
+        await self.send_json({
             "action_type": "ship_placed",
-            "ship_parts_pos": cells
+            "ship_parts_pos": cells,
+            "one_deck_left": one_deck,
+            "two_deck_left": two_deck,
+            "three_deck_left": three_deck,
+            "four_deck_left": four_deck
         })
+
+        if (one_deck + two_deck + three_deck + four_deck) == 0:
+            return await self.send_json({
+                "action_type": "all_ships_are_placed"
+            })
 
     async def makeTurn(self, json_object: dict) -> None:
         """
@@ -179,10 +194,6 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                 идентификатор игры, к которой подключаются,
                 идентификатор приглашения в игру
         """
-        print("CONNECTED TO GAME")
-        return await self.send_json({
-            "error": "Пошёл на хуй"
-        })
         try:
             user_id = int(json_object["user_id"])
             game_id = json_object["game_id"]
@@ -191,30 +202,33 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
         except ValueError:
             return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
-        
+
         if not (await UserDatabaseAccessor.userExists(user_id)):
             return await self.send_json(USER_DOES_NOT_EXIST_JSON)
-        
+
         if not (await FieldDatabaseAccessor.getField(user_id)) == None:
             return await self.send_json(USER_IS_ALREADY_IN_GAME)
 
         game = await GameDatabaseAccessor.getGame(game_id, game_invite_id)
         if not game:
             return await self.send_json(GAME_DOES_NOT_EXIST)
-        
-        print(json_object)
-        result, error = await FieldDatabaseAccessor.createField(user_id, game)
-        if not result:
+
+        field, error = await FieldDatabaseAccessor.createField(user_id, game)
+        if not field:
             return await self.send_json({
                 "error": error
             })
         
         return await self.send_json({
-            "action_type": "connected_to_game"
+            "action_type": "connected_to_game",
+            "one_deck_left": field.one_deck,
+            "two_deck_left": field.two_deck,
+            "three_deck_left": field.three_deck,
+            "four_deck_left": field.four_deck
         })
 
     async def disconnect(self, event) -> None:
         """
             Отключает сокет от сервера
         """
-        ...
+        await GameDatabaseAccessor.deleteGames()

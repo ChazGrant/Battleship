@@ -48,7 +48,6 @@ private slots:
     void on_placeShipButton_clicked();
 
     // Обработка ответов с сервера
-    void setShipsAmountLabel(QNetworkReply* t_reply);
     void getGameState(QNetworkReply* t_reply);
     void getUserIdTurn(QNetworkReply* t_reply);
     void fillField(QNetworkReply* t_reply);
@@ -64,7 +63,6 @@ private slots:
     void onGameSocketErrorOccurred(QAbstractSocket::SocketError t_socketError);
 
     void onChatSocketConnected();
-    void onChatSocketDisconnected();
     void onChatSocketMessageReceived(QString t_textMessage);
     void onChatSocketErrorOccurred(QAbstractSocket::SocketError t_socketError);
 
@@ -74,6 +72,7 @@ private:
     //! Указатель на обработчик запросов
     QNetworkAccessManager* m_manager;
 
+    void setShipsAmountLabel(QJsonObject t_jsonResponse);
     void placeShip(QJsonArray t_cells);
 
     // Параметры подключения к игре
@@ -92,7 +91,9 @@ private:
     QWebSocket *m_gameSocket;
     //! Сокет для общения с противником
     QWebSocket *m_chatSocket;
+    //! Адрес для обработки чата
     QUrl m_chatSocketUrl;
+    //! Адрес для обработки игры
     QUrl m_gameSocketUrl;
 
     void initSockets();
