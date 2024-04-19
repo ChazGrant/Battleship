@@ -1,9 +1,11 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
+from django.db.models import F
 
 from RestfulRequests.models import User, Field, Game, ShipPart, FriendRequest
 
+from asgiref.sync import sync_to_async
 
 # Create your tests here.
 class UserModelTest(TestCase):
@@ -194,7 +196,6 @@ class FieldModelTest(TestCase):
                 game=game
             )
 
-
 class ShipModelTest(TestCase):
     def testCreation(self):
         with self.assertRaises(ValueError):
@@ -205,6 +206,55 @@ class ShipModelTest(TestCase):
 
         with self.assertRaises(ValueError):
             ShipPart(ship=5, x_pos="f", y_pos=3)
+
+    def coordinatesInOnePlace(self, ship_parts_coordinates):
+        x_one_place = all(map(lambda x: x == ship_parts_coordinates[0][0], 
+                        [x[0] for x in ship_parts_coordinates]))
+        y_one_place = all(map(lambda y: y == ship_parts_coordinates[0][1], 
+                        [y[1] for y in ship_parts_coordinates]))
+        
+        return x_one_place, y_one_place
+
+    def testShipPartsSequence(self):
+        def isSequence(x_equal, y_equal, ship_parts_coordinates):            
+            is_sequence = True
+            start_num = ship_parts_coordinates[0][y_equal]
+            for idx, coords in enumerate(ship_parts_coordinates):
+                if not (start_num + idx == coords[x_equal]):
+                    is_sequence = False
+                    break
+
+            return is_sequence
+        
+        ship_parts_coordinates = [
+            [1, 1],
+            [1, 2]
+        ]
+
+        x_in_one_place, y_in_one_place = self.coordinatesInOnePlace(ship_parts_coordinates)
+        is_sequence = isSequence(x_in_one_place, y_in_one_place, ship_parts_coordinates)
+        self.assertEqual(is_sequence, True)
+
+        ship_parts_coordinates = [[coords[1], coords[0]] for coords in ship_parts_coordinates]
+
+        x_in_one_place, y_in_one_place = self.coordinatesInOnePlace(ship_parts_coordinates)
+        is_sequence = isSequence(x_in_one_place, y_in_one_place, ship_parts_coordinates)
+        self.assertEqual(is_sequence, True)
+
+    def testShipPartsCoordinateInOnePlace(self):
+        ship_parts_coordinates = [
+            [1, 1],
+            [1, 2]
+        ]
+
+        if len(ship_parts_coordinates) == 1:
+            return
+        
+        x_in_one_place, y_in_one_place = self.coordinatesInOnePlace(ship_parts_coordinates)
+        self.assertEqual(x_in_one_place + y_in_one_place, 1)
+        ship_parts_coordinates = [[coords[1], coords[0]] for coords in ship_parts_coordinates]
+        x_in_one_place, y_in_one_place = self.coordinatesInOnePlace(ship_parts_coordinates)
+        self.assertEqual(x_in_one_place + y_in_one_place, 1)
 
 
 class FriendRequestTest(TestCase):
