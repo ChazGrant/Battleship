@@ -43,7 +43,7 @@ class Field(models.Model):
     four_deck = models.IntegerField(default=1)
 
     owner = models.OneToOneField(User, on_delete=models.CASCADE, unique=True)
-    game = models.ForeignKey(Game, on_delete=models.CASCADE)
+    game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name="fieldChild")
 
 
 # Повреждённая клетка поля, которая не является часть корабля

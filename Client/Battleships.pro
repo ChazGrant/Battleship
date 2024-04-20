@@ -23,7 +23,6 @@ SOURCES += \
     additionalfunctions.cpp \
     friendadder.cpp \
     gameinvitenotifier.cpp \
-    inputgameid.cpp \
     loginform.cpp \
     main.cpp \
     mainmenu.cpp \
@@ -33,7 +32,6 @@ HEADERS += \
     additionalfunctions.h \
     friendadder.h \
     gameinvitenotifier.h \
-    inputgameid.h \
     loginform.h \
     mainmenu.h \
     mainwindow.h
@@ -41,7 +39,6 @@ HEADERS += \
 FORMS += \
     friendadder.ui \
     gameinvitenotifier.ui \
-    inputgameid.ui \
     loginform.ui \
     mainmenu.ui \
     mainwindow.ui

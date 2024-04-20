@@ -4,7 +4,7 @@ from typing import Dict, Callable
 
 from WebsocketRequests.JSON_RESPONSES import (NOT_ENOUGH_ARGUMENTS_JSON, INVALID_ARGUMENTS_TYPE_JSON,
                             INVALID_ACTION_TYPE_JSON, USER_DOES_NOT_EXIST_JSON, USER_IS_OFFLINE_JSON,
-                            USER_IS_ALREADY_IN_GAME)
+                            USER_IS_ALREADY_IN_GAME, NO_AVAILABLE_GAMES)
 
 from WebsocketRequests.DatabaseAccessors.UserDatabaseAccessor import UserDatabaseAccessor
 from WebsocketRequests.DatabaseAccessors.GameDatabaseAccessor import GameDatabaseAccessor
@@ -31,7 +31,8 @@ class GameCreatorConsumer(AsyncJsonWebsocketConsumer):
         """
         self._available_actions: Dict[str, Callable] = {
             "subscribe": self.subscribe,
-            "create_game": self.createGame
+            "create_game": self.createGame,
+            "find_game": self.findGame
         }
 
     async def subscribe(self, json_object: dict) -> None:
@@ -82,8 +83,6 @@ class GameCreatorConsumer(AsyncJsonWebsocketConsumer):
         user = await UserDatabaseAccessor.getUserById(user_id)
         if user == None:
             return await self.send_json(USER_DOES_NOT_EXIST_JSON)
-        
-        print(json_object)
 
         if "to_user_name" in json_object.keys():
             to_user_name = json_object["to_user_name"]
@@ -114,6 +113,16 @@ class GameCreatorConsumer(AsyncJsonWebsocketConsumer):
         return await self.send_json({
             "action_type": "game_created",
             "game_invite_id": game_invite_id,
+            "game_id": game_id
+        })
+
+    async def findGame(self, *args) -> None:
+        game_id = await GameDatabaseAccessor.getRandomWaitingGameId()
+        if game_id == None:
+            return await self.send_json(NO_AVAILABLE_GAMES)
+        
+        return await self.send_json({
+            "action_type": "game_found",
             "game_id": game_id
         })
 

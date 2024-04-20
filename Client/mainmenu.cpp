@@ -22,18 +22,21 @@ MainMenu::MainMenu(int t_userId, QWidget *parent) :
 
     this->setWindowFlags(Qt::FramelessWindowHint);
 
-    ui->userID->setText("Ваш ID: " + QString::number(t_userId));
+    ui->userIDLabel->setText("Ваш ID: " + QString::number(t_userId));
 
     ui->tabWidget->setStyleSheet("QTabWidget::pane { border: 0; }");
 
-    connect(ui->addFriendButton, &QPushButton::clicked, this, &MainMenu::openFriendAdder);
     connect(ui->createNewGameButton, &QPushButton::clicked, this, &MainMenu::createGame);
+    connect(ui->findGameButton, &QPushButton::clicked, this, &MainMenu::connectToRandomGame);
+
+    connect(ui->addFriendButton, &QPushButton::clicked, this, &MainMenu::openFriendAdder);
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(updateFriendsTab(int)));
-    connect(ui->exitButton, &QPushButton::clicked, this, &MainMenu::close);
     connect(ui->friendRequestsListWidget, SIGNAL(customContextMenuRequested(QPoint)),
             this, SLOT(showFriendRequestsContextMenu(QPoint)));
     connect(ui->friendsListWidget, SIGNAL(customContextMenuRequested(QPoint)),
             this, SLOT(showFriendsContextMenu(QPoint)));
+
+    connect(ui->exitButton, &QPushButton::clicked, this, &MainMenu::close);
 
     ui->friendRequestsListWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->friendsListWidget->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -86,20 +89,6 @@ void MainMenu::mousePressEvent(QMouseEvent *event)
         m_mouse_point = event->pos();
         event->accept();
     }
-}
-
-/*! @brief Подключение к указанной игре
- *
- *  @details Получает идентификатор игры из ответа сервера, выдаёт ошибку
- *  или открывает окно с игрой, передавая айди игры
- *
- *  @param *t_reply Указатель  на ответ от сервера
- *
- *  @return void
-*/
-void MainMenu::connectToCreatedGame(QString t_gameId, QString t_gameInviteId)
-{
-    qDebug() << t_gameId << t_gameInviteId;
 }
 
 /*! @brief Вывод контекстного меню на виджет
@@ -199,20 +188,6 @@ void MainMenu::processFriendRequestAction(QString t_friendUserName, int t_action
 
     m_friendsUpdateSocket->sendTextMessage(jsonObjectToQString(queryParams));
 }
-
-/*! @brief Обработчик нажатия кнопки "Подключиться"
- *
- *  @details Открывает окно для ввода идентификатора игры
- *
- *  @return void
-*/
-//void MainMenu::on_connectToExistingGame_clicked()
-//{
-//    m_inputGameIdWindow = new InputGameID(this->m_userId);
-//    m_inputGameIdWindow->show();
-
-//    QObject::connect(m_inputGameIdWindow, &InputGameID::connectionAccepted, this, &MainMenu::openMainWindow);
-//}
 
 /*! @brief Открытие окна с игрой
  *
@@ -346,6 +321,13 @@ void MainMenu::createGame()
     QJsonObject jsonObj;
     jsonObj["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::CREATE_GAME];
     jsonObj["user_id"] = QString::number(m_userId);
+    m_gameCreatorSocket->sendTextMessage(jsonObjectToQString(jsonObj));
+}
+
+void MainMenu::connectToRandomGame()
+{
+    QJsonObject jsonObj;
+    jsonObj["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::FIND_GAME];
     m_gameCreatorSocket->sendTextMessage(jsonObjectToQString(jsonObj));
 }
 
@@ -532,6 +514,9 @@ void MainMenu::onGameCreatorSocketMessageReceived(QString t_textMessage)
         connect(m_gameInviteNotifier, &GameInviteNotifier::gameInviteAccepted, this, [=]() {
             openMainWindow(gameId, gameInviteId);
         });
+    } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::GAME_FOUND]) {
+        qDebug() << jsonResponse;
+        showMessage(jsonResponse["game_id"].toString(), QMessageBox::Icon::Information);
     }
 }
 

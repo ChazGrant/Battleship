@@ -1,9 +1,14 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
-from django.db.models import F
 
 from RestfulRequests.models import User, Field, Game, ShipPart, FriendRequest
+
+from typing import List
+import random
+import asyncstdlib as a
+
+from WebsocketRequests.DatabaseAccessors.FieldDatabaseAccessor import FieldDatabaseAccessor
 
 from asgiref.sync import sync_to_async
 
@@ -196,6 +201,7 @@ class FieldModelTest(TestCase):
                 game=game
             )
 
+
 class ShipModelTest(TestCase):
     def testCreation(self):
         with self.assertRaises(ValueError):
@@ -217,18 +223,18 @@ class ShipModelTest(TestCase):
 
     def testShipPartsSequence(self):
         def isSequence(x_equal, y_equal, ship_parts_coordinates):            
-            is_sequence = True
-            start_num = ship_parts_coordinates[0][y_equal]
+            start_num = ship_parts_coordinates[0][not y_equal]
             for idx, coords in enumerate(ship_parts_coordinates):
-                if not (start_num + idx == coords[x_equal]):
-                    is_sequence = False
-                    break
+                if not (start_num + idx == coords[x_equal]) and \
+                   not (start_num - idx == coords[x_equal]):
+                    return False
 
-            return is_sequence
+            return True
         
         ship_parts_coordinates = [
-            [1, 1],
-            [1, 2]
+            [1, 10],
+            [1, 9],
+            [1, 8]
         ]
 
         x_in_one_place, y_in_one_place = self.coordinatesInOnePlace(ship_parts_coordinates)
@@ -275,3 +281,43 @@ class FriendRequestTest(TestCase):
     def testInvalidType(self):
         with self.assertRaises(ValueError):
             FriendRequest.objects.create(from_user="")
+
+
+class GameTest(TestCase):
+    async def testDummy(self):
+        from asgiref.sync import sync_to_async
+
+        game = await sync_to_async(Game.objects.create)(
+            game_id="12951925u9125asf",
+            user_id_turn=1
+        )
+
+        user = await sync_to_async(User.objects.create)(
+            user_id=1,
+            user_name="username",
+            user_password="password",
+            user_email="bot@bot.ru"
+        )
+
+        await sync_to_async(Field.objects.create)(
+            owner=user,
+            game=game
+        )
+
+        game_ids = await FieldDatabaseAccessor.getFieldsParents()
+        waiting_games_id = list()
+
+        viewed_games = list()
+        async for idx, game_id in a.enumerate(game_ids):
+            _game_id = game_id[0]
+            if _game_id not in game_ids[:idx] + game_ids[idx + 1:] \
+                and _game_id not in viewed_games:
+                waiting_games_id.append(
+                    (await sync_to_async(Game.objects.get)(id=_game_id)).game_id
+                )
+            viewed_games.append(
+                (await sync_to_async(Game.objects.get)(id=_game_id)).game_id
+            )
+
+        self.assertEqual(len(waiting_games_id), 1)
+

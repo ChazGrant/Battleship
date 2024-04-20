@@ -1,7 +1,9 @@
 from os import environ
-from typing import Tuple, List
+from typing import Tuple, List, Union
 from asgiref.sync import sync_to_async
+import asyncstdlib as a
 from json import loads
+from random import choice
 
 from django import setup
 from django.core.exceptions import ValidationError
@@ -19,6 +21,24 @@ class GameDatabaseAccessor:
     @staticmethod
     async def deleteGames():
        await sync_to_async((await sync_to_async(Game.objects.all)()).delete)()
+
+    @staticmethod
+    async def getRandomWaitingGameId() -> Union[str, None]:
+        game_ids = await FieldDatabaseAccessor.getFieldsParents()
+        waiting_games_id = list()
+
+        viewed_games = list()
+        async for idx, unique_game_id in a.enumerate(game_ids):
+            game_id = (await sync_to_async(Game.objects.get)(id=unique_game_id[0])).game_id
+            if game_id not in game_ids[:idx] + game_ids[idx + 1:] \
+                and game_id not in viewed_games:
+                waiting_games_id.append(game_id)
+            viewed_games.append(game_id)
+
+        if len(waiting_games_id) == 0:
+            return None
+
+        return choice(waiting_games_id)
 
     @staticmethod
     async def getGame(game_id: str, game_invite_id:str="") -> Game:

@@ -359,6 +359,9 @@ void MainWindow::onGameSocketMessageReceived(QString t_textMessage)
         connectToGame();
     } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::CONNECTED_TO_GAME]) {
         setShipsAmountLabel(jsonResponse);
+    } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::ALL_SHIPS_PLACED]) {
+        showMessage("Все корабли были установлены, ожидаем оппонента", QMessageBox::Information);
+        setDisabled(true);
     }
 }
 

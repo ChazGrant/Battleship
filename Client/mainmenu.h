@@ -26,7 +26,6 @@
 #include "additionalfunctions.h"
 #include "mainwindow.h"
 #include "friendadder.h"
-#include "inputgameid.h"
 #include "gameinvitenotifier.h"
 
 
@@ -92,7 +91,8 @@ private:
     void openFriendAdder();
 
     void createGame();
-    void connectToCreatedGame(QString t_gameId, QString t_gameInviteId);
+    void inputExistingGameId();
+    void connectToRandomGame();
 
     //! Указатель на виджет класса
     Ui::MainMenu *ui;
@@ -102,8 +102,6 @@ private:
     MainWindow *m_mainWindow;
     //! Указатель на класс FriendAdder
     FriendAdder *m_friendAdderWindow;
-    //! Указатель на класс InputGameID
-    InputGameID *m_inputGameIdWindow;
     //! Указатель на класс GameInviteNotifier
     GameInviteNotifier *m_gameInviteNotifier;
     //! Идентификатор пользователя

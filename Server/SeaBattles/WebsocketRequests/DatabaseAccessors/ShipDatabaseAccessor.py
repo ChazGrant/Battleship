@@ -14,12 +14,42 @@ from RestfulRequests.models import Field, Ship, ShipPart
 
 from WebsocketRequests.DatabaseAccessors.FieldDatabaseAccessor import FieldDatabaseAccessor
 
+
+MAX_ROW_SHIP_PART_PLACEMENT = 9
+MAX_COLUMN_SHIP_PART_PLACEMENT = 9
+
 SHIP_LENGTHS_NAMES = {
     1: "one_deck",
     2: "two_deck",
     3: "three_deck",
     4: "four_deck"
 }
+
+
+def coordinatesInOnePlace(ship_parts_coordinates: List[List[int]]) -> Tuple[bool]:
+    x_one_place = all(map(lambda x: x == ship_parts_coordinates[0][0], 
+                    [x[0] for x in ship_parts_coordinates]))
+    y_one_place = all(map(lambda y: y == ship_parts_coordinates[0][1], 
+                    [y[1] for y in ship_parts_coordinates]))
+    
+    return x_one_place, y_one_place
+
+def isOutOfField(cells: List[List[int]]) -> bool:
+    for x, y in cells:
+        if x > MAX_ROW_SHIP_PART_PLACEMENT or y > MAX_COLUMN_SHIP_PART_PLACEMENT or \
+        x < 0 or y < 0:
+            return True
+        
+    return False
+
+def isSequence(x_equal, y_equal, ship_parts_coordinates):            
+    start_num = ship_parts_coordinates[0][not y_equal]
+    for idx, coords in enumerate(ship_parts_coordinates):
+        if not (start_num + idx == coords[x_equal]) and \
+            not (start_num - idx == coords[x_equal]):
+            return False
+
+    return True
 
 
 class ShipDatabaseAccessor:
@@ -68,11 +98,24 @@ class ShipDatabaseAccessor:
                 Результат создания и текст ошибки
         """
         ship_length = len(cells)
+
         try:
             ship_length_str = SHIP_LENGTHS_NAMES[ship_length]
         except KeyError:
             return False, "Данного корабля не существует"
         
+        # Проверка на валидность размещения кораблей
+        if not ship_length == 1:
+            x_equal, y_equal = coordinatesInOnePlace(cells)
+            if not (x_equal + y_equal == 1):
+                return False, "NOT coordinatesInOnePlace"
+            is_sequence = isSequence(x_equal, y_equal, cells)
+            if not is_sequence:
+                return False, "NOT is_sequence"
+
+        if isOutOfField(cells):
+            return False, "Невозможно разместить корабль за пределами поля"
+
         field = await FieldDatabaseAccessor.getField(user_id)
         if field == None:
             return False, "Данный игрок не имеет поля"
@@ -109,7 +152,6 @@ class ShipDatabaseAccessor:
                 return False, "Невозможно создать часть корабля:\n" + error_json["title"][0]
             except Exception:
                 await sync_to_async(ship.delete)()
-                raise
                 return False, "Невозможно создать часть корабля"
 
         await FieldDatabaseAccessor.decreaseShipsAmount(field, ship_length_str)

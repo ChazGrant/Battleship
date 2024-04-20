@@ -1,11 +1,11 @@
 from os import environ
 from json import loads
 from asgiref.sync import sync_to_async
-from typing import Tuple, Union
+from typing import Tuple, Union, List
 
 from django import setup
-from django.db.models import F
 from django.core.exceptions import ValidationError
+from django.db.models import Count
 
 environ.setdefault('DJANGO_SETTINGS_MODULE', 'SeaBattles.settings')
 setup()
@@ -23,6 +23,12 @@ class FieldDatabaseAccessor:
         except Field.DoesNotExist:
             return 0, "Данного поля не существует"
         
+    @staticmethod
+    async def getFieldsParents() -> List[Tuple[int]]:
+        return await sync_to_async((await sync_to_async(Field.objects.annotate)(
+            article_count=Count('game_id')
+        )).values_list)("game_id")
+
     @staticmethod
     async def getShipsLeft(user_id: int) -> Tuple[Tuple[int], str]:
         try:

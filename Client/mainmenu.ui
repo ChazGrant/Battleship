@@ -29,7 +29,7 @@
     <property name="frameShadow">
      <enum>QFrame::Raised</enum>
     </property>
-    <widget class="QLabel" name="userID">
+    <widget class="QLabel" name="userIDLabel">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -68,7 +68,7 @@
       <string>Создать клан</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="showClans">
+    <widget class="QPushButton" name="showClansButton">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -107,7 +107,7 @@
       <string notr="true">background: transparent</string>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="friendsTab">
       <attribute name="title">
@@ -140,7 +140,7 @@
       </widget>
      </widget>
     </widget>
-    <widget class="QPushButton" name="connectToExistingGame">
+    <widget class="QPushButton" name="findGameButton">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -150,7 +150,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>Присоединиться</string>
+      <string>Найти игру</string>
      </property>
     </widget>
     <widget class="QToolButton" name="exitButton">
@@ -187,7 +187,7 @@
      <x>0</x>
      <y>0</y>
      <width>521</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
   </widget>

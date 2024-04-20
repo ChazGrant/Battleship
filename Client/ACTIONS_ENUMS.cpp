@@ -10,7 +10,7 @@ enum OUTGOING_ACTIONS_NAMES {
     // FriendsUpdateSocket
     DELETE_FRIEND, SEND_FRIEND_REQUEST, PROCESS_FRIEND_REQUEST,
     // GameCreatorSocket
-    SEND_GAME_INVITE, CREATE_GAME,
+    SEND_GAME_INVITE, CREATE_GAME, FIND_GAME,
     // GameSocket
     MAKE_TURN, QUIT_GAME, PLACE_SHIP, CONNECT_TO_GAME,
     // ChatSocket
@@ -22,7 +22,7 @@ enum OUTGOING_ACTIONS_NAMES {
 //! @brief enum всех действий, которые исходят от сервера
 enum INCOMING_ACTIONS_NAMES {
     // GameCreatorSocket
-    INCOMIG_GAME_INVITE, GAME_CREATED,
+    INCOMIG_GAME_INVITE, GAME_CREATED, GAME_FOUND,
     // FriendsUpdateSocket
     DELETED_BY_FRIEND, FRIEND_DELETED, NEW_FRIEND_REQUEST, FRIEND_REQUEST_PROCESSED,
     // GameSocket
@@ -38,6 +38,7 @@ const QMap<INCOMING_ACTIONS_NAMES, QString> INCOMING_ACTIONS = {
     // GameCreatorSocket
     {INCOMING_ACTIONS_NAMES::INCOMIG_GAME_INVITE, "incoming_game_invite"},
     {INCOMING_ACTIONS_NAMES::GAME_CREATED, "game_created"},
+    {INCOMING_ACTIONS_NAMES::GAME_FOUND, "game_found"},
     // FriendsUpdateSocket
     {INCOMING_ACTIONS_NAMES::DELETED_BY_FRIEND, "deleted_by_friend"},
     {INCOMING_ACTIONS_NAMES::FRIEND_DELETED, "friend_deleted"},
@@ -61,6 +62,7 @@ const QMap<OUTGOING_ACTIONS_NAMES, QString> OUTGOING_ACTIONS = {
     // GameCreatorSocket
     {OUTGOING_ACTIONS_NAMES::SEND_GAME_INVITE, "send_game_invite"},
     {OUTGOING_ACTIONS_NAMES::CREATE_GAME, "create_game"},
+    {OUTGOING_ACTIONS_NAMES::FIND_GAME, "find_game"},
     // FriendsUpdateSocket
     {OUTGOING_ACTIONS_NAMES::PROCESS_FRIEND_REQUEST, "process_friend_request"},
     {OUTGOING_ACTIONS_NAMES::DELETE_FRIEND, "delete_friend"},

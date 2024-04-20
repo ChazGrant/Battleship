@@ -22,3 +22,6 @@ USER_IS_ALREADY_IN_GAME = {
 GAME_DOES_NOT_EXIST = {
     "error": "Данной игры не существует"
 }
+NO_AVAILABLE_GAMES = {
+    "error": "На данный момент для Вас нет доступных игр"
+}
