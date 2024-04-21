@@ -95,7 +95,9 @@ class GameCreatorConsumer(AsyncJsonWebsocketConsumer):
 
         if await FieldDatabaseAccessor.getField(user_id) or \
             await FieldDatabaseAccessor.getField(to_user_id):
-            return await self.send_json(USER_IS_ALREADY_IN_GAME)
+            # *DEBUG
+            await GameDatabaseAccessor.deleteGames()
+            # return await self.send_json(USER_IS_ALREADY_IN_GAME)
         
         game_id, game_invite_id, error  = await GameDatabaseAccessor.createGame(user_id, to_user_id)
         if not (game_id):

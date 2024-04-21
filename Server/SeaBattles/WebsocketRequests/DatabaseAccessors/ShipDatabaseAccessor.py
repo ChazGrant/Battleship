@@ -3,6 +3,8 @@ from asgiref.sync import sync_to_async
 from typing import List, Tuple
 from json import loads
 
+import random
+
 from django import setup
 from django.db.models.manager import BaseManager
 from django.core.exceptions import ValidationError
@@ -80,6 +82,49 @@ class ShipDatabaseAccessor:
 
         return False
 
+    @staticmethod
+    async def generateShip(user_id: int, ship_length: int) -> List[int]:      
+        async def generateCoordinates(ship_length: int):
+            cells = []
+            orientation = random.choice(['horizontal', 'vertical'])
+
+            if orientation == 'horizontal':
+                x = random.randint(0, 9 - ship_length)
+                y = random.randint(0, 9 - 1)
+                for i in range(ship_length):
+                    cells.append([x + i, y])
+            else:
+                x = random.randint(0, 9 - 1)
+                y = random.randint(0, 9 - ship_length)
+                for i in range(ship_length):
+                    cells.append([x, y + i])
+                
+            return cells
+
+        field = await FieldDatabaseAccessor.getField(user_id)
+        ships = await sync_to_async(Ship.objects.filter)(field=field)
+
+        MAX_ITERATIONS = 30
+        i = 0
+        while True:
+            if i > MAX_ITERATIONS:
+                return None
+            i += 1
+            cells = await generateCoordinates(ship_length)
+            if not await ShipDatabaseAccessor.hasCollisions(ships, cells):
+                await FieldDatabaseAccessor.decreaseShipsAmount(field, SHIP_LENGTHS_NAMES[ship_length])
+                for cell in cells:
+                    ship = await sync_to_async(Ship.objects.create)(
+                        ship_length=ship_length,
+                        field=field
+                    )
+                    await sync_to_async(ShipPart.objects.create)(
+                        x_pos=cell[0],
+                        y_pos=cell[1],
+                        ship=ship
+                    )
+                return cells
+                
     @staticmethod
     async def getShips(field: Field):
         return await sync_to_async(Ship.objects.filter)(field=field)

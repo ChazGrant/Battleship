@@ -1,4 +1,5 @@
 from asgiref.sync import sync_to_async
+from typing import Union
 
 from os import environ
 from django import setup
@@ -18,7 +19,7 @@ class UserDatabaseAccessor:
             return 0
 
     @staticmethod
-    async def getUserById(user_id: int) -> User:
+    async def getUserById(user_id: int) -> Union[User, None]:
         try:
             return await sync_to_async(User.objects.get)(user_id=user_id)
         except User.DoesNotExist:

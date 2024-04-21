@@ -49,233 +49,23 @@ MainWindow::MainWindow(const QString t_gameId, const int t_userId,
     ui->opponentField->setSelectionMode(QAbstractItemView::NoSelection);
     ui->opponentField->setMouseTracking(true);
 
-//    connect(ui->opponentField, &QTableWidget::itemEntered, this, &MainWindow::highlightOpponentCell);
-//    connect(ui->opponentField, &QTableWidget::itemClicked, this, &MainWindow::markOpponentCell);
+    connect(ui->opponentField, &QTableWidget::itemEntered, this, &MainWindow::highlightOpponentCell);
+    connect(ui->opponentField, &QTableWidget::itemClicked, this, &MainWindow::markOpponentCell);
     connect(ui->weaponsComboBox, &QComboBox::currentTextChanged,
             this, &MainWindow::setWeaponsUsesLeftLabel);
     connect(ui->activateWeaponButton, &QPushButton::clicked, this, [=]() {
         m_weaponActivated = !m_weaponActivated;
     });
+    connect(ui->autoPlaceShipsButton, &QPushButton::clicked, this, &MainWindow::autoPlaceShips);
+
+    m_gameStarted = false;
 
     createTablesWidgets();
     initSockets();
-    fillWeaponsComboBox();
 
     setEnabled(false);
 
     // this->getShipsAmountResponse();
-}
-
-/*! @brief Получение идентификатора пользователя, который должен делать ход
- *
- *  @details Сейчас ход текущего пользователя, то останавливается таймер ожидания хода
- *  и получаются повреждённые клетки
- *
- *  @param *reply Указатель на ответ от сервера
- *
- *  @return void
-*/
-void MainWindow::getUserIdTurn(QNetworkReply *reply)
-{
-    const QString replyStr = reply->readAll();
-
-    QJsonObject jsonObj = QJsonDocument::fromJson(replyStr.toUtf8()).object();
-
-    if (this->getErrorMessage(jsonObj)) {
-        return;
-    }
-
-    if (jsonObj["user_id_turn"].toString() == this->m_userId) {
-        // Отключаем таймер и событие
-        // m_timerForUserTurn->stop();
-        QObject::disconnect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getUserIdTurn(QNetworkReply* )));
-        // Получаем клетки, по которым попал соперник
-        this->getDamagedCells();
-    }
-}
-
-/*! @brief Ожидание хода текущего пользователя
- *
- *  @details Отправляется запрос на сервер, в параметры передаётся идентификатор игры
- *
- *  @return void
-*/
-void MainWindow::waitForTurn()
-{
-    QUrl url("http://127.0.0.1:8000/games/get_user_id_turn/");
-    QNetworkRequest request( url );
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-
-    QUrlQuery query;
-
-    query.addQueryItem("game_id", this->m_gameId);
-
-    QUrl queryUrl;
-    queryUrl.setQuery(query);
-
-    QObject::connect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getUserIdTurn(QNetworkReply* )));
-
-    m_manager->post(request, queryUrl.toEncoded().remove(0, 1));
-}
-
-/*! @brief Заполнение поля
- *
- *  @details С json object'а получаем повреждённые части кораблей и мёртвые корабли
- *  и закрашиваем их на поле
- *
- *  @param *reply Указатель на ответ от сервера
- *
- *  @return void
- *
- *  @todo Решить проблему из-за которой иногда может прийти ответ от getUserIdTurn
-*/
-void MainWindow::fillField(QNetworkReply *reply)
-{
-    const QString replyStr = reply->readAll();
-
-    QJsonObject jsonObj = QJsonDocument::fromJson(replyStr.toUtf8()).object();
-
-    /*
-     * Костыль, т.к. непонятно почему иногда принимает нужный ответ, а иногда ответ от getUserIdTurn
-    */
-
-    // Если ответ пришёл от нужного url, то заполняем данные
-    // Иначе послыаем ещё один запрос
-    if (jsonObj.contains("user_id_turn")) {
-        QObject::disconnect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(fillField(QNetworkReply* )));
-        return this->getDamagedCells();
-    }
-
-    // Закрашиваем повреждённые клетки
-    QJsonArray marked_cells = jsonObj["marked_cells"].toArray();
-    if (!marked_cells.isEmpty()) {
-        for (int i = 0; i < marked_cells.size(); ++i) {
-            QStringList currentCell = marked_cells[i].toString().split(" ");
-
-            int x = currentCell[0].toInt();
-            int y = currentCell[1].toInt();
-
-            QTableWidgetItem *item = new QTableWidgetItem("");
-            item->setBackground(GRAY);
-            ui->yourField->setItem(y, x, item);
-        }
-    }
-
-    // Закрашиваем мёртвые корабли
-    QJsonArray deadParts = jsonObj["dead_parts"].toArray();
-    if (!deadParts.isEmpty()) {
-        for (int i = 0; i < deadParts.size(); ++i) {
-            QStringList currentCell = deadParts[i].toString().split(" ");
-
-            int x = currentCell[0].toInt();
-            int y = currentCell[1].toInt();
-
-            QTableWidgetItem *item = new QTableWidgetItem("");
-            item->setBackground(RED);
-            ui->yourField->setItem(y, x, item);
-        }
-    }
-
-    // Закрашиваем повреждённые корабли
-    QJsonArray damagedParts = jsonObj["damaged_parts"].toArray();
-    if (!damagedParts.isEmpty()) {
-        for (int i = 0; i < damagedParts.size(); ++i) {
-            QStringList currentCell = damagedParts[i].toString().split(" ");
-
-            int x = currentCell[0].toInt();
-            int y = currentCell[1].toInt();
-
-            QTableWidgetItem *item = new QTableWidgetItem("");
-            item->setBackground(YELLOW);
-            ui->yourField->setItem(y, x, item);
-        }
-    }
-
-    // Отписываемся от события
-    QObject::disconnect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(fillField(QNetworkReply* )));
-
-    // Проверяем, игра окончена или нет
-    this->checkForWinner();
-    // "Включаем интерфейс"
-    this->setDisabled(false);
-}
-
-/*! @brief Получение всех клеток, по которым противник стрелял
- *
- *  @details Отправляется запрос на сервер. В параметрах передаётся идентификатор текущего пользователя
- *
- *  @return void
-*/
-void MainWindow::getDamagedCells()
-{
-    QUrl url("http://127.0.0.1:8000/fields/get_damaged_cells/");
-    QNetworkRequest request( url );
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-
-    QUrlQuery query;
-
-    query.addQueryItem("user_id", QString::number(this->m_userId));
-
-    QUrl queryUrl;
-    queryUrl.setQuery(query);
-
-    QObject::connect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(fillField(QNetworkReply* )));
-
-    m_manager->post(request, queryUrl.toEncoded().remove(0, 1));
-}
-
-/*! @brief Получение победителя игры
- *
- *  @details Если json object содержит параметр с победителем, то он выводится на экран и
- *  игра завершается
- *
- *  @param *reply Указатель на ответ от сервера
- *
- *  @return void
-*/
-void MainWindow::getWinner(QNetworkReply *reply)
-{
-    const QString replyStr = reply->readAll();
-
-    QJsonObject jsonObject = QJsonDocument::fromJson(replyStr.toUtf8()).object();
-
-    if (jsonObject["game_is_over"].toBool()) {
-
-        if (jsonObject["winner"].toString() == this->m_userId) {
-            showMessage("Игра закончена и победу одержали Вы", QMessageBox::Icon::Information);
-        } else {
-            showMessage("Игра закончена и Вы проиграли", QMessageBox::Icon::Information);
-        }
-        this->close();
-    }
-
-    QObject::disconnect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getWinner(QNetworkReply* )));
-}
-
-/*! @brief Проверка победителя
- *
- *  @details На сервер отправляется запрос для получения победителя игры. В параметры
- *  передаются идентификатор игры и пользователя
- *
- *  @return void
-*/
-void MainWindow::checkForWinner()
-{
-    QUrl url("http://127.0.0.1:8000/games/game_is_over/");
-    QNetworkRequest request( url );
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-
-    QUrlQuery query;
-
-    query.addQueryItem("game_id", this->m_gameId);
-    query.addQueryItem("user_id", QString::number(this->m_userId));
-
-    QUrl queryUrl;
-    queryUrl.setQuery(query);
-
-    QObject::connect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getWinner(QNetworkReply* )));
-
-    m_manager->post(request, queryUrl.toEncoded().remove(0, 1));
 }
 
 /*! @brief Закрытие главного окна
@@ -319,7 +109,7 @@ void MainWindow::onGameSocketConnected()
     jsonObj["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::SUBSCRIBE];
     jsonObj["user_id"] = QString::number(m_userId);
 
-    m_gameSocket->sendTextMessage(jsonObjectToQString(jsonObj));
+    m_gameSocket->sendTextMessage(convertJsonObjectToString(jsonObj));
 }
 
 /*! @brief Обработчик отключения сокета от сервера
@@ -350,6 +140,7 @@ void MainWindow::onGameSocketMessageReceived(QString t_textMessage)
         return;
     }
 
+
     QString actionType = jsonResponse["action_type"].toString();
     if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::SHIP_PLACED]) {
         QJsonArray placedCells = jsonResponse["ship_parts_pos"].toArray();
@@ -360,8 +151,19 @@ void MainWindow::onGameSocketMessageReceived(QString t_textMessage)
     } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::CONNECTED_TO_GAME]) {
         setShipsAmountLabel(jsonResponse);
     } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::ALL_SHIPS_PLACED]) {
+        if (!m_gameStarted) setDisabled(true);
         showMessage("Все корабли были установлены, ожидаем оппонента", QMessageBox::Information);
-        setDisabled(true);
+    } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::GAME_STARTED]) {
+        int userIdTurn = jsonResponse["user_id_turn"].toString().toInt();
+        showMessage("Сейчас ход игрока "+ QString::number(userIdTurn), QMessageBox::Information);
+
+        m_gameStarted = true;
+
+        if (userIdTurn == m_userId) {
+            setDisabled(false);
+        }
+    } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::AVAILABLE_WEAPONS]) {
+        fillWeaponsComboBox(jsonResponse);
     }
 }
 
@@ -475,7 +277,7 @@ void MainWindow::connectToGame()
     jsonObj["game_id"] = m_gameId;
     jsonObj["game_invite_id"] = m_gameInviteId;
 
-    m_gameSocket->sendTextMessage(jsonObjectToQString(jsonObj));
+    m_gameSocket->sendTextMessage(convertJsonObjectToString(jsonObj));
 }
 
 //void MainWindow::__createField()
@@ -501,29 +303,29 @@ void MainWindow::connectToGame()
 void MainWindow::highlightOpponentCell(QTableWidgetItem *t_item)
 {
     // DEBUG
-//    for (int x = 0; x < FIELD_ROW_COUNT; ++x) {
-//        for (int y = 0; y < FIELD_COLUMN_COUNT; ++y) {
-//            ui->opponentField->itemAt(x, y)->setBackgroundColor(WHITE);
-//        }
-//    }
+    for (int x = 0; x < FIELD_ROW_COUNT; ++x) {
+        for (int y = 0; y < FIELD_COLUMN_COUNT; ++y) {
+            ui->opponentField->itemAt(x, y)->setBackgroundColor(WHITE);
+        }
+    }
     if (m_lastHighlightedItem != nullptr && m_lastHighlightedItem->backgroundColor() != RED) {
-        // m_lastHighlightedItem->setBackgroundColor(WHITE);
+         m_lastHighlightedItem->setBackgroundColor(WHITE);
     }
 
     m_lastHighlightedItem = t_item;
-    // if (item->backgroundColor() != WHITE) return;
-    if (m_weaponActivated) {
-        int xOffset = m_weaponSelection[ui->weaponsComboBox->currentText()]["x"];
-        int yOffset = m_weaponSelection[ui->weaponsComboBox->currentText()]["y"];
+    if (t_item->backgroundColor() != WHITE) return;
+//    if (m_weaponActivated) {
+//        int xOffset = m_weaponSelection[ui->weaponsComboBox->currentText()]["x"];
+//        int yOffset = m_weaponSelection[ui->weaponsComboBox->currentText()]["y"];
 
 
-        int y = t_item->column();
+//        int y = t_item->column();
 
-        for (int x = 0; x < 0 + xOffset; ++x) {
-            QTableWidgetItem *itemToHighlight = ui->opponentField->itemAt(x, y);
-            if (itemToHighlight != nullptr)
-                itemToHighlight->setBackgroundColor(YELLOW);
-        }
+//        for (int x = 0; x < 0 + xOffset; ++x) {
+//            QTableWidgetItem *itemToHighlight = ui->opponentField->itemAt(x, y);
+//            if (itemToHighlight != nullptr)
+//                itemToHighlight->setBackgroundColor(YELLOW);
+//        }
 //        for (; x < x + xOffset; ++x) {
 //            for (; y < y + yOffset; ++y) {
 //                QTableWidgetItem *itemToHighlight = ui->opponentField->itemAt(x, y);
@@ -531,9 +333,8 @@ void MainWindow::highlightOpponentCell(QTableWidgetItem *t_item)
 //                    itemToHighlight->setBackgroundColor(YELLOW);
 //            }
 //        }
-    } else {
-        t_item->setBackgroundColor(YELLOW);
-    }
+
+    t_item->setBackgroundColor(YELLOW);
 }
 
 /*! @brief Пометка ячейки для выстрела
@@ -551,8 +352,7 @@ void MainWindow::markOpponentCell(QTableWidgetItem *t_item)
     m_lastMarkedItem = t_item;
     t_item->setBackgroundColor(RED);
 
-    m_firePosition["x"] = t_item->row();
-    m_firePosition["y"] = t_item->column();
+    m_firePosition = { t_item->row(), t_item->column() };
 }
 
 /*! @brief Обработка сигнала закрытия окна
@@ -605,8 +405,6 @@ bool MainWindow::getErrorMessage(QJsonObject t_json_obj)
     }
     if (t_json_obj.contains("Critical Error")) {
         // m_timerForUserTurn->stop();
-        QObject::disconnect(m_manager, &QNetworkAccessManager::finished, this, &MainWindow::getUserIdTurn);
-
         showMessage(t_json_obj["Critical Error"].toString(), QMessageBox::Icon::Critical);
         this->close();
         return true;
@@ -625,55 +423,6 @@ void MainWindow::createTablesWidgets()
     createOpponentTable();
 }
 
-/*! @brief Получение текущего состояние игры(началась она или нет)
- *
- *  @param *reply Указатель на ответ от сервера
- *
- *  @return void
-*/
-void MainWindow::getGameState(QNetworkReply* reply)
-{
-    const QString replyStr = reply->readAll();
-
-    QJsonObject jsonObj = QJsonDocument::fromJson(replyStr.toUtf8()).object();
-
-    if (jsonObj["game_is_started"].toBool()) {
-        // Останавливаем прошлый таймер и отключаем сигнал
-        // m_timerForGameStart->stop();
-        QObject::disconnect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getGameState(QNetworkReply* )));
-        // m_timerForUserTurn->start();
-
-        ui->makeTurnButton->show();
-        ui->placeShipButton->hide();
-        showMessage("Игра начата, ожидайте свой ход", QMessageBox::Icon::Information);
-    }
-
-}
-
-/*! @brief Ожидание начала играы
- *
- *  @details Отсылается на сервер по истечению времени таймера
- *
- *  @return void
-*/
-void MainWindow::waitForGameStart()
-{
-    QUrl url("http://127.0.0.1:8000/games/game_is_started/");
-    QNetworkRequest request( url );
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-
-    QUrlQuery query;
-
-    query.addQueryItem("game_id", this->m_gameId);
-
-    QUrl queryUrl;
-    queryUrl.setQuery(query);
-
-    QObject::connect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getGameState(QNetworkReply* )));
-
-    m_manager->post(request, queryUrl.toEncoded().remove(0, 1));
-}
-
 /*! @brief Вывод на экран пользователя количество оставшихся кораблей
  *
  *  @param t_jsonResponse Json, содержащий количество оставшихся кораблей
@@ -682,7 +431,6 @@ void MainWindow::waitForGameStart()
 */
 void MainWindow::setShipsAmountLabel(QJsonObject t_jsonResponse)
 {
-    qDebug() << t_jsonResponse;
     QString totalShipsLeft = "Осталось кораблей:\n";
     totalShipsLeft += "1: " + QString::number(t_jsonResponse["one_deck_left"].toInt()) + "\n";
     totalShipsLeft += "2: " + QString::number(t_jsonResponse["two_deck_left"].toInt()) + "\n";
@@ -691,32 +439,8 @@ void MainWindow::setShipsAmountLabel(QJsonObject t_jsonResponse)
 
     ui->shipsAmountLabel->setText(totalShipsLeft);
     this->setDisabled(false);
-}
 
-/*! @brief Получение количества оставшихся кораблей
- *
- *  @details Делает запрос на сервер чтобы получить количество каждого типа кораблей, оставшегося
- *  для расстановки на поле. В параметры передаётся идентификатор пользователя(владельца поля)
- *
- *  @return void
-*/
-void MainWindow::getShipsAmountResponse()
-{
-    QUrl url("http://127.0.0.1:8000/fields/get_field/");
-    QNetworkRequest request( url );
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-
-    QUrlQuery query;
-
-    query.addQueryItem("owner_id", QString::number(this->m_userId));
-
-    QUrl queryUrl;
-    queryUrl.setQuery(query);
-
-    QObject::connect(m_manager, SIGNAL( finished( QNetworkReply* ) ),
-                     this, SLOT(setShipsAmountLabel(QNetworkReply* )));
-
-    m_manager->post(request, queryUrl.toEncoded().remove(0, 1));
+    getAvailableWeapons();
 }
 
 /*! @brief Создание пустого поля пользователя
@@ -771,22 +495,39 @@ void MainWindow::createOpponentTable()
     ui->opponentField->setEditTriggers(QAbstractItemView::EditTrigger::NoEditTriggers);
 }
 
+void MainWindow::getAvailableWeapons()
+{
+    QJsonObject jsonObj;
+    jsonObj["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::GET_WEAPONS];
+    jsonObj["user_id"] = QString::number(m_userId);
+
+    m_gameSocket->sendTextMessage(convertJsonObjectToString(jsonObj));
+}
+
 /*! @brief Заполнение comboBox'а оружиями в наличии
  *
  *  @return void
  *
  *  @todo Брать эту информацию от сервера
 */
-void MainWindow::fillWeaponsComboBox()
+void MainWindow::fillWeaponsComboBox(QJsonObject jsonObj)
 {
-    QMapIterator<QString, int> iterator(m_availableWeapons);
-    int i = 0;
-    while(iterator.hasNext()) {
-        iterator.next();
-        QString weaponName = iterator.key();
+    QJsonObject availableWeapons = jsonObj["available_weapons"].toObject();
+    qDebug() << availableWeapons;
+    foreach(const QString& weaponName, availableWeapons.keys()) {
+        m_availableWeapons[weaponName] = availableWeapons[weaponName].toInt();
         ui->weaponsComboBox->addItem(weaponName);
-        ++i;
     }
+}
+
+void MainWindow::autoPlaceShips()
+{
+    QJsonObject jsonObj;
+    jsonObj["action_type"] = "generate_field";
+    jsonObj["user_id"] = QString::number(m_userId);
+    jsonObj["game_id"] = m_gameId;
+
+    m_gameSocket->sendTextMessage(convertJsonObjectToString(jsonObj));
 }
 
 //! @brief Деструктор класса
@@ -848,104 +589,10 @@ void MainWindow::on_placeShipButton_clicked()
     QJsonObject jsonObj;
     jsonObj["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::PLACE_SHIP];
     jsonObj["user_id"] = QString::number(m_userId);
+    jsonObj["game_id"] = m_gameId;
     jsonObj["cells"] = cells;
 
-    m_gameSocket->sendTextMessage(jsonObjectToQString(jsonObj));
-}
-
-/*! @brief Получение статус куда попал пользователь
- *
- *  @details Получает клетки, по которым промахнулись
- *  Получаем клетки, по которым попали
- *  Получаем корабли, которые убили
- *  Если убили, то проверяем на конец хода
- *
- *  @param *reply Указатель на ответ от сервера
- *
- *  @return void
-*/
-void MainWindow::getFireStatus(QNetworkReply *reply)
-{
-    ui->opponentField->clearSelection();
-    const QString replyStr = reply->readAll();
-
-    QJsonObject jsonObj = QJsonDocument::fromJson(replyStr.toUtf8()).object();
-
-    if (getErrorMessage(jsonObj))
-        return this->setDisabled(false);
-
-    // Не попали, закрашиваем серым
-    if (jsonObj.contains("missed"))
-    {
-        QStringList missedCell = jsonObj["missed_cell"].toString().split(" ");
-
-        int x = missedCell[0].toInt();
-        int y = missedCell[1].toInt();
-
-        QTableWidgetItem* item = new QTableWidgetItem("");
-        item->setBackground(GRAY);
-
-        ui->opponentField->setItem(y, x, item);
-
-        QObject::disconnect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getFireStatus(QNetworkReply* )));
-        // Ожидаем пока оппонент сделает ход
-        // m_timerForUserTurn->start();
-    }
-
-    // Закрашиваем либо жёлтым цветом
-    else if (jsonObj.contains("ship_is_damaged"))
-    {
-        QStringList damagedPart = jsonObj["damaged_part"].toString().split(" ");
-
-        int x = damagedPart[0].toInt();
-        int y = damagedPart[1].toInt();
-
-        QTableWidgetItem* item = new QTableWidgetItem("");
-        item->setBackground(YELLOW);
-        ui->opponentField->setItem(y, x, item);
-        this->setDisabled(false);
-    }
-
-    // Либо весь корабль красным
-    else if (jsonObj.contains("ship_is_killed"))
-    {
-        QJsonArray deadParts = jsonObj["dead_parts"].toArray();
-        QJsonArray missedCells = jsonObj["missed_cells"].toArray();
-
-        /* Сначала закрашиваем серым цветом, потому
-         * что они почему-то перекрывают красные клетки */
-        for (int i = 0; i < missedCells.size(); ++i)
-        {
-            QStringList currentCell = missedCells[i].toString().split(" ");
-
-            int x = currentCell[0].toInt();
-            int y = currentCell[1].toInt();
-
-            QTableWidgetItem* item = new QTableWidgetItem("");
-            item->setBackground(GRAY);
-            ui->opponentField->setItem(y, x, item);
-        }
-
-        /* Затем закрашиваем мёртвые части корабля */
-        for (int i = 0; i < deadParts.size(); ++i)
-        {
-            QStringList currentPart = deadParts[i].toString().split(" ");
-
-            int x = currentPart[0].toInt();
-            int y = currentPart[1].toInt();
-
-            QTableWidgetItem* item = new QTableWidgetItem("");
-            item->setBackground(RED);
-            ui->opponentField->setItem(y, x, item);
-        }
-
-        this->setDisabled(false);
-
-        // Отписываемся от события, т.к. иначе в checkForWinner будет передаваться информация о кораблях
-        QObject::disconnect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getFireStatus(QNetworkReply* )));
-        // Проверяем является ли этот корабль последним, т.е. закончена ли игра
-        this->checkForWinner();
-    }
+    m_gameSocket->sendTextMessage(convertJsonObjectToString(jsonObj));
 }
 
 /*! @brief Выстрел по клетке
@@ -963,24 +610,14 @@ void MainWindow::makeTurn()
     if (m_firePosition.size() == 0)
         return showMessage("Клетки не были выбраны", QMessageBox::Icon::Critical);
 
-    return showMessage(QString::number(m_firePosition["x"]) + QString::number(m_firePosition["y"]), QMessageBox::Icon::Information);
-    this->setDisabled(true);
+    QJsonObject jsonObj;
+    jsonObj["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::MAKE_TURN];
+    jsonObj["user_id"] = QString::number(m_userId);
+    jsonObj["game_id"] = m_gameId;
+    jsonObj["weapon_type"] = ui->weaponsComboBox->currentText();
+    jsonObj["shoot_position"] = m_firePosition;
 
-    QUrl url("http://127.0.0.1:8000/games/fire/");
-    QNetworkRequest request(url);
 
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    m_gameSocket->sendTextMessage(convertJsonObjectToString(jsonObj));
 
-    QUrlQuery jsonData;
-    jsonData.addQueryItem("user_id", QString::number(this->m_userId));
-    jsonData.addQueryItem("game_id", this->m_gameId);
-
-    jsonData.addQueryItem("x", QString::number(m_firePosition["x"]));
-    jsonData.addQueryItem("y", QString::number(m_firePosition["y"]));
-
-    QUrl data;
-    data.setQuery(jsonData);
-
-    QObject::connect(m_manager, SIGNAL( finished( QNetworkReply* ) ), this, SLOT(getFireStatus(QNetworkReply* )));
-    m_manager->post(request, data.toEncoded().remove(0, 1));
 }

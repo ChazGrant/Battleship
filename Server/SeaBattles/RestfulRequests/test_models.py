@@ -2,13 +2,17 @@ from django.test import TestCase
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 
-from RestfulRequests.models import User, Field, Game, ShipPart, FriendRequest
+from asgiref.sync import sync_to_async
+
+from RestfulRequests.models import User, Field, Game, ShipPart, FriendRequest, WeaponType, Weapon
 
 from typing import List
 import random
 import asyncstdlib as a
 
 from WebsocketRequests.DatabaseAccessors.FieldDatabaseAccessor import FieldDatabaseAccessor
+from WebsocketRequests.DatabaseAccessors.UserDatabaseAccessor import UserDatabaseAccessor
+from WebsocketRequests.DatabaseAccessors.WeaponDatabaseAccessor import WeaponDatabaseAccessor
 
 from asgiref.sync import sync_to_async
 
@@ -157,6 +161,43 @@ class UserModelTest(TestCase):
 
 
 class FieldModelTest(TestCase):
+    async def testDummy(self):
+        return
+        game = await sync_to_async(Game.objects.create)(
+            game_id="12951925u9125asf",
+            user_id_turn=1
+        )
+
+        user = await sync_to_async(User.objects.create)(
+            user_id=1,
+            user_name="username",
+            user_password="password",
+            user_email="bot@bot.ru"
+        )
+
+        user2 = await sync_to_async(User.objects.create)(
+            user_id=2,
+            user_name="username2",
+            user_password="password2",
+            user_email="bot2@bot.ru"
+        )
+
+        await sync_to_async(Field.objects.create)(
+            owner=user,
+            game=game
+        )
+        await sync_to_async(Field.objects.create)(
+            owner=user2,
+            game=game
+        )
+
+        player = await UserDatabaseAccessor.getUserById(user.user_id)
+        found_fields = (await sync_to_async(
+                        (await sync_to_async(Field.objects.filter)(game=game))
+                                   .exclude)(owner=player))
+        owner_field = (await sync_to_async(found_fields.first)())
+        owner: User = await sync_to_async(getattr)(owner_field, "owner")
+    
     def testOnUniqueOwner(self):
         game = Game.objects.create(
             game_id="12951925u9125asf",
@@ -285,8 +326,6 @@ class FriendRequestTest(TestCase):
 
 class GameTest(TestCase):
     async def testDummy(self):
-        from asgiref.sync import sync_to_async
-
         game = await sync_to_async(Game.objects.create)(
             game_id="12951925u9125asf",
             user_id_turn=1
@@ -320,4 +359,45 @@ class GameTest(TestCase):
             )
 
         self.assertEqual(len(waiting_games_id), 1)
+
+
+class WeaponsTest(TestCase):
+    async def testAccessing(self):
+        for weapon_type_name in WeaponType.Types:
+            print(weapon_type_name)
+        weapon_types = await sync_to_async(WeaponType.objects.all)()
+        async for weapon_type in weapon_types:
+            print(weapon_type.weapon_type_name)
+
+    async def testCreating(self):
+        def initWeaponTypes():
+            for type in WeaponType.Types:
+                weapon_type = WeaponType(
+                    weapon_type_name=type,
+                    weapon_x_range=1,
+                    weapon_y_range=1,
+                    weapon_price=50.0
+                )
+                weapon_type.full_clean()
+                weapon_type.save()
+
+        await sync_to_async(initWeaponTypes)()
+
+        created_user = await sync_to_async(User.objects.create)(
+            user_name="bott",
+            user_password="password",
+            user_email="bott@bot.bot",
+            user_id=1
+        )
+        single_shoot = await sync_to_async(WeaponType.objects.get)(weapon_type_name=WeaponType.Types.SINGLE_SHOOT)
+        await sync_to_async(Weapon.objects.create)(
+            weapon_owner=created_user,
+            weapon_type=single_shoot,
+            is_infinite=True,
+            weapon_amount=999
+        )
+
+        weapons = await WeaponDatabaseAccessor.getAvailableWeapons(created_user.user_id)
+
+        self.assertEqual(weapons["Пушечный выстрел"], 999)
 

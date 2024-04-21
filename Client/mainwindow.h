@@ -47,12 +47,6 @@ public:
 private slots:
     void on_placeShipButton_clicked();
 
-    // Обработка ответов с сервера
-    void getGameState(QNetworkReply* t_reply);
-    void getUserIdTurn(QNetworkReply* t_reply);
-    void fillField(QNetworkReply* t_reply);
-    void getFireStatus(QNetworkReply* t_reply);
-    void getWinner(QNetworkReply* t_reply);
     void acceptCloseEvent(QNetworkReply* t_reply);
 
     void setWeaponsUsesLeftLabel(QString t_currentWeaponText);
@@ -86,6 +80,9 @@ private:
     //! Было нажато подтверждение закрытия окна
     bool m_closeEventIsAccepted;
 
+    //! Состояние игры началась или нет
+    bool m_gameStarted;
+
     // Сокеты
     //! Сокет для обработки игровых действий
     QWebSocket *m_gameSocket;
@@ -107,7 +104,7 @@ private:
     //! Последняя ячейка, на которую нажал пользователь
     QTableWidgetItem *m_lastMarkedItem = nullptr;
     //! Координаты ячейки, по которой нужно стрелять
-    QMap<QString, int> m_firePosition;
+    QJsonArray m_firePosition;
     void highlightOpponentCell(QTableWidgetItem *t_item);
     void markOpponentCell(QTableWidgetItem *t_item);
 
@@ -123,44 +120,16 @@ private:
     void createTablesWidgets();
     void createUserTable();
     void createOpponentTable();
-    void fillWeaponsComboBox();
 
-    // Запросы на сервер
-    void getShipsAmountResponse();
+    void getAvailableWeapons();
+    void fillWeaponsComboBox(QJsonObject jsonObj);
 
-    // ----------------------------- //
-    void waitForGameStart();
-    void waitForTurn();
-    void getDamagedCells();
-    void checkForWinner();
-    // ----------------------------- //
+    QMap<QString, int> m_availableWeapons;
+    QMap<QString, QList<int>> m_weaponRange;
 
-    // DEBUG
-    QMap<QString, int> m_availableWeapons = {
-        {"Самолёт", 1},
-        {"Ядерная бомба", 2},
-        {"Бомба", 4}
-    };
+    void autoPlaceShips();
 
-    QMap<QString, QMap<QString, int>> m_weaponSelection = []() {
-      QMap<QString, QMap<QString, int>> result;
-      QMap<QString, int> innerResult;
-      innerResult["x"] = 8;
-      innerResult["y"] = 0;
-      result["Самолёт"] = innerResult;
-
-      innerResult["x"] = 4;
-      innerResult["y"] = 4;
-      result["Ядерная бомба"] = innerResult;
-
-      innerResult["x"] = 2;
-      innerResult["y"] = 2;
-      result["Бомба"] = innerResult;
-
-      return result;
-    }();
-
-    bool m_weaponActivated = true;
+    bool m_weaponActivated = false;
 
     void makeTurn();
 

@@ -186,7 +186,7 @@ void MainMenu::processFriendRequestAction(QString t_friendUserName, int t_action
     queryParams["process_status"] =
         QString::number(t_action == FriendRequestAction::ACCEPT_REQUEST_ACTION);
 
-    m_friendsUpdateSocket->sendTextMessage(jsonObjectToQString(queryParams));
+    m_friendsUpdateSocket->sendTextMessage(convertJsonObjectToString(queryParams));
 }
 
 /*! @brief Открытие окна с игрой
@@ -244,7 +244,7 @@ void MainMenu::sendFriendRequest(int t_friendId)
     queryItems["sender_id"] = QString::number(m_userId);
     queryItems["receiver_id"] = QString::number(t_friendId);
 
-    m_friendsUpdateSocket->sendTextMessage(jsonObjectToQString(queryItems));
+    m_friendsUpdateSocket->sendTextMessage(convertJsonObjectToString(queryItems));
 }
 
 /*!  @brief Отправка запроса на дуэль
@@ -260,7 +260,7 @@ void MainMenu::sendFriendlyDuelRequest(QString t_friendUsername)
     jsonObj["user_id"] = QString::number(m_userId);
     jsonObj["to_user_name"] = t_friendUsername;
 
-    m_gameCreatorSocket->sendTextMessage(jsonObjectToQString(jsonObj));
+    m_gameCreatorSocket->sendTextMessage(convertJsonObjectToString(jsonObj));
 }
 
 /*! @brief Удаление друга
@@ -277,7 +277,7 @@ void MainMenu::deleteFriend(int t_userId, QString t_friendUserName)
     queryParams["user_id"] = QString::number(t_userId);
     queryParams["friend_username"] = t_friendUserName;
 
-    m_friendsUpdateSocket->sendTextMessage(jsonObjectToQString(queryParams));
+    m_friendsUpdateSocket->sendTextMessage(convertJsonObjectToString(queryParams));
 }
 
 /*! @brief Установка списка действий
@@ -321,14 +321,14 @@ void MainMenu::createGame()
     QJsonObject jsonObj;
     jsonObj["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::CREATE_GAME];
     jsonObj["user_id"] = QString::number(m_userId);
-    m_gameCreatorSocket->sendTextMessage(jsonObjectToQString(jsonObj));
+    m_gameCreatorSocket->sendTextMessage(convertJsonObjectToString(jsonObj));
 }
 
 void MainMenu::connectToRandomGame()
 {
     QJsonObject jsonObj;
     jsonObj["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::FIND_GAME];
-    m_gameCreatorSocket->sendTextMessage(jsonObjectToQString(jsonObj));
+    m_gameCreatorSocket->sendTextMessage(convertJsonObjectToString(jsonObj));
 }
 
 /*! @brief Инициалиализация сокетов
@@ -412,7 +412,7 @@ void MainMenu::onFriendsUpdateSocketConnected()
     QJsonObject jsonObj;
     jsonObj["user_id"] = m_userId;
     jsonObj["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::SUBSCRIBE];
-    m_friendsUpdateSocket->sendTextMessage(jsonObjectToQString(jsonObj));
+    m_friendsUpdateSocket->sendTextMessage(convertJsonObjectToString(jsonObj));
 }
 
 /*! @brief Обработчик получения информации с сервера через сокет
@@ -475,7 +475,7 @@ void MainMenu::onGameCreatorSocketConnected()
     QJsonObject jsonObj;
     jsonObj["user_id"] = m_userId;
     jsonObj["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::SUBSCRIBE];
-    m_gameCreatorSocket->sendTextMessage(jsonObjectToQString(jsonObj));
+    m_gameCreatorSocket->sendTextMessage(convertJsonObjectToString(jsonObj));
 }
 
 void MainMenu::onGameCreatorSocketDisconnected()
@@ -499,24 +499,20 @@ void MainMenu::onGameCreatorSocketMessageReceived(QString t_textMessage)
         return;
     }
 
-    if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::GAME_CREATED]){
+    if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::GAME_CREATED] ||
+        actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::INCOMIG_GAME_INVITE] ||
+        actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::GAME_FOUND]){
         QString gameId = jsonResponse["game_id"].toString();
         QString gameInviteId = jsonResponse["game_invite_id"].toString();
-        m_mainWindow = new MainWindow(gameId, m_userId, gameInviteId);
-        m_mainWindow->show();
-        close();
-    // Открываем окно с игрой и подключаемся к игре
-    } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::INCOMIG_GAME_INVITE]) {
-        QString gameId = jsonResponse["game_id"].toString();
-        QString gameInviteId = jsonResponse["game_invite_id"].toString();
-        m_gameInviteNotifier = new GameInviteNotifier();
-        m_gameInviteNotifier->show();
-        connect(m_gameInviteNotifier, &GameInviteNotifier::gameInviteAccepted, this, [=]() {
-            openMainWindow(gameId, gameInviteId);
-        });
-    } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::GAME_FOUND]) {
-        qDebug() << jsonResponse;
-        showMessage(jsonResponse["game_id"].toString(), QMessageBox::Icon::Information);
+        if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::INCOMIG_GAME_INVITE]) {
+            m_gameInviteNotifier = new GameInviteNotifier();
+            m_gameInviteNotifier->show();
+            connect(m_gameInviteNotifier, &GameInviteNotifier::gameInviteAccepted, this, [=]() {
+                openMainWindow(gameId, gameInviteId);
+            });
+            return;
+        }
+        openMainWindow(gameId, gameInviteId);
     }
 }
 

@@ -164,6 +164,19 @@
      <string>Ваше ID: </string>
     </property>
    </widget>
+   <widget class="QPushButton" name="autoPlaceShipsButton">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>490</y>
+      <width>141</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Разместить корабли</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -171,7 +184,7 @@
      <x>0</x>
      <y>0</y>
      <width>879</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
   </widget>

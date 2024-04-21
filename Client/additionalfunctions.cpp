@@ -49,7 +49,7 @@ inline void sendServerRequest(const QString t_requestUrl,
  *
  *  @return QString
 */
-QString jsonObjectToQString(const QJsonObject t_jsonObj)
+QString convertJsonObjectToString(const QJsonObject t_jsonObj)
 {
     return QString(QJsonDocument(t_jsonObj).toJson(
            QJsonDocument::Compact).toStdString().c_str());

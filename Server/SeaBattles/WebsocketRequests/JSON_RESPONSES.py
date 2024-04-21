@@ -25,3 +25,6 @@ GAME_DOES_NOT_EXIST = {
 NO_AVAILABLE_GAMES = {
     "error": "На данный момент для Вас нет доступных игр"
 }
+NOT_YOUR_TURN = {
+    "error": "Сейчас не Ваш ход"
+}

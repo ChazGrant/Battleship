@@ -1200,8 +1200,8 @@ class WeaponTypeViewSet(ViewSet):
                 weapon_y_range=1,
                 weapon_price=50.0
             )
-            print(type)
             weapon_type.full_clean()
+            weapon_type.save()
 
         return Response({"inited": True})
 
