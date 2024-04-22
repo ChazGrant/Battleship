@@ -9,7 +9,7 @@ from django.core.exceptions import ValidationError
 import json
 import hashlib
 
-from .models import Game, Field, Ship, ShipPart, MarkedCell, User, FriendRequest, Friends, Weapon, WeaponType
+from .models import Game, Field, Ship, ShipPart, MissedCell, User, FriendRequest, Friends, Weapon, WeaponType
 from .serializers import (GameSerializer, FieldSerializer, ShipSerializer, UserSerializer, 
                           FriendRequestSerializer, FriendsSerializer, WeaponTypeSerializer)
 
@@ -59,7 +59,7 @@ known_ips = list()
 """
 
 
-def createMarkedCellsAroundShip(ship: Ship, field: Field) -> List[str]:
+def createMissedCellsAroundShip(ship: Ship, field: Field) -> List[str]:
     """
         Создаёт помеченные части поля вокруг уничтоженного корабля и возвращает их координаты
 
@@ -89,11 +89,11 @@ def createMarkedCellsAroundShip(ship: Ship, field: Field) -> List[str]:
 
                 # Добавляем "серую" клетку
                 marked_cells.append(f"{x} {y}")
-                # Создаём MarkedCell, если такой ещё нет
+                # Создаём MissedCell, если такой ещё нет
                 try:
-                    MarkedCell.objects.get(field=field, x_pos=x, y_pos=y)
-                except MarkedCell.DoesNotExist:
-                    MarkedCell.objects.create(field=field, x_pos=x, y_pos=y)
+                    MissedCell.objects.get(field=field, x_pos=x, y_pos=y)
+                except MissedCell.DoesNotExist:
+                    MissedCell.objects.create(field=field, x_pos=x, y_pos=y)
 
     return marked_cells
 
@@ -311,7 +311,7 @@ class FieldViewSet(ViewSet):
         data["damaged_parts"] = damaged_parts
 
         # Получаем все повреждённые клетки
-        marked_cells = MarkedCell.objects.filter(field=field)
+        marked_cells = MissedCell.objects.filter(field=field)
         if marked_cells:
             marked_cells = [f"{cell.x_pos} {cell.y_pos}" for cell in marked_cells]
             data["marked_cells"] = marked_cells
@@ -750,7 +750,7 @@ class GameViewSet(ViewSet):
                     # Мёртвые части
                     dead_parts = [f"{part.x_pos} {part.y_pos}" for part in ship_parts]
 
-                    marked_cells = createMarkedCellsAroundShip(ship=ship, field=field)
+                    marked_cells = createMissedCellsAroundShip(ship=ship, field=field)
 
                     return Response({
                         "ship_is_killed": True,
@@ -770,15 +770,15 @@ class GameViewSet(ViewSet):
         # Нужно проверить, стреляли по этой клетке уже или нет
         try:
             # Ищем клетку в базе
-            MarkedCell.objects.get(field=field, x_pos=x, y_pos=y)
+            MissedCell.objects.get(field=field, x_pos=x, y_pos=y)
 
             # Если она в базе, значит по ней уже стреляли
             return Response({
                 "error": "Cell is already damaged"
             })
 
-        except MarkedCell.DoesNotExist:
-            MarkedCell.objects.create(field=field, x_pos=x, y_pos=y)
+        except MissedCell.DoesNotExist:
+            MissedCell.objects.create(field=field, x_pos=x, y_pos=y)
 
             # Меняем ход игрока, т.к. попаданий не было
             swapGameUserIdTurn(game=game)
@@ -1211,6 +1211,11 @@ class WeaponTypeViewSet(ViewSet):
 
         serializer = WeaponTypeSerializer(weapon_types, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=["get"])
+    def delete_weapons_types(self, request):
+        WeaponType.objects.all().delete()
+        return Response({"deleted": "ok"})
 
 class WeaponViewSet(ViewSet):
     @action(detail=False, methods=["get"])

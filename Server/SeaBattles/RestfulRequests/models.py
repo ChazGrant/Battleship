@@ -24,9 +24,10 @@ class User(models.Model):
 
 class Game(models.Model):
     game_id = models.CharField(max_length=30, unique=True)
-    user_id_turn = models.CharField(max_length=30)
+    user_id_turn = models.IntegerField(unique=True)
     game_is_over = models.BooleanField(default=False)
     has_winner = models.BooleanField(default=False)
+    winner_id = models.IntegerField(null=True)
 
     is_friendly = models.BooleanField(default=False)
     game_invite_id = models.CharField(max_length=30, default="")
@@ -47,7 +48,7 @@ class Field(models.Model):
 
 
 # Повреждённая клетка поля, которая не является часть корабля
-class MarkedCell(models.Model):
+class MissedCell(models.Model):
     x_pos = models.IntegerField()
     y_pos = models.IntegerField()
 

@@ -7,6 +7,7 @@ const QColor GREEN = QColor("darkgreen");
 const QColor YELLOW = QColor("yellow");
 const QColor RED = QColor("darkred");
 const QColor GRAY = QColor("darkgray");
+const QColor ORANGE = QColor("orange");
 
 const int FIELD_ROW_COUNT = 10;
 const int FIELD_COLUMN_COUNT = 10;
@@ -151,19 +152,21 @@ void MainWindow::onGameSocketMessageReceived(QString t_textMessage)
     } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::CONNECTED_TO_GAME]) {
         setShipsAmountLabel(jsonResponse);
     } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::ALL_SHIPS_PLACED]) {
-        if (!m_gameStarted) setDisabled(true);
+        // if (!m_gameStarted) setDisabled(true);
         showMessage("Все корабли были установлены, ожидаем оппонента", QMessageBox::Information);
     } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::GAME_STARTED]) {
-        int userIdTurn = jsonResponse["user_id_turn"].toString().toInt();
-        showMessage("Сейчас ход игрока "+ QString::number(userIdTurn), QMessageBox::Information);
+        int userIdTurn = jsonResponse["user_id_turn"].toInt();
 
         m_gameStarted = true;
 
         if (userIdTurn == m_userId) {
             setDisabled(false);
+            showMessage("Вы начинаете игру", QMessageBox::Icon::Information);
         }
     } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::AVAILABLE_WEAPONS]) {
         fillWeaponsComboBox(jsonResponse);
+    } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::TURN_MADE]) {
+        markOpponentField(jsonResponse);
     }
 }
 
@@ -303,17 +306,12 @@ void MainWindow::connectToGame()
 void MainWindow::highlightOpponentCell(QTableWidgetItem *t_item)
 {
     // DEBUG
-    for (int x = 0; x < FIELD_ROW_COUNT; ++x) {
-        for (int y = 0; y < FIELD_COLUMN_COUNT; ++y) {
-            ui->opponentField->itemAt(x, y)->setBackgroundColor(WHITE);
-        }
-    }
-    if (m_lastHighlightedItem != nullptr && m_lastHighlightedItem->backgroundColor() != RED) {
-         m_lastHighlightedItem->setBackgroundColor(WHITE);
-    }
-
+    clearHighlightedCells();
     m_lastHighlightedItem = t_item;
-    if (t_item->backgroundColor() != WHITE) return;
+    if (t_item->backgroundColor() != WHITE ||
+        t_item->backgroundColor() == ORANGE ||
+        t_item->backgroundColor() == GRAY ||
+        t_item->backgroundColor() == RED) return;
 //    if (m_weaponActivated) {
 //        int xOffset = m_weaponSelection[ui->weaponsComboBox->currentText()]["x"];
 //        int yOffset = m_weaponSelection[ui->weaponsComboBox->currentText()]["y"];
@@ -333,7 +331,6 @@ void MainWindow::highlightOpponentCell(QTableWidgetItem *t_item)
 //                    itemToHighlight->setBackgroundColor(YELLOW);
 //            }
 //        }
-
     t_item->setBackgroundColor(YELLOW);
 }
 
@@ -350,9 +347,31 @@ void MainWindow::markOpponentCell(QTableWidgetItem *t_item)
     }
 
     m_lastMarkedItem = t_item;
-    t_item->setBackgroundColor(RED);
+    t_item->setBackgroundColor(GREEN);
 
-    m_firePosition = { t_item->row(), t_item->column() };
+    m_firePosition = { t_item->column(), t_item->row() };
+}
+
+void MainWindow::clearHighlightedCells()
+{
+//    for (int x = 0; x < FIELD_ROW_COUNT; ++x) {
+//        for (int y = 0; y < FIELD_COLUMN_COUNT; ++y) {
+//            if (ui->opponentField->itemAt(x, y)->backgroundColor() == ORANGE ||
+//                ui->opponentField->itemAt(x, y)->backgroundColor() == GRAY ||
+//                ui->opponentField->itemAt(x, y)->backgroundColor() == RED) {
+//                continue;
+//            }
+//            ui->opponentField->itemAt(x, y)->setBackgroundColor(WHITE);
+//        }
+//    }
+    if (m_lastHighlightedItem != nullptr) {
+        if (m_lastHighlightedItem->backgroundColor() != GREEN &&
+            m_lastHighlightedItem->backgroundColor() != ORANGE &&
+            m_lastHighlightedItem->backgroundColor() != GRAY &&
+            m_lastHighlightedItem->backgroundColor() != RED) {
+                m_lastHighlightedItem->setBackgroundColor(WHITE);
+        }
+    }
 }
 
 /*! @brief Обработка сигнала закрытия окна
@@ -513,7 +532,6 @@ void MainWindow::getAvailableWeapons()
 void MainWindow::fillWeaponsComboBox(QJsonObject jsonObj)
 {
     QJsonObject availableWeapons = jsonObj["available_weapons"].toObject();
-    qDebug() << availableWeapons;
     foreach(const QString& weaponName, availableWeapons.keys()) {
         m_availableWeapons[weaponName] = availableWeapons[weaponName].toInt();
         ui->weaponsComboBox->addItem(weaponName);
@@ -617,7 +635,53 @@ void MainWindow::makeTurn()
     jsonObj["weapon_type"] = ui->weaponsComboBox->currentText();
     jsonObj["shoot_position"] = m_firePosition;
 
+    clearHighlightedCells();
+    m_lastHighlightedItem = nullptr;
+    m_lastMarkedItem = nullptr;
 
     m_gameSocket->sendTextMessage(convertJsonObjectToString(jsonObj));
+}
 
+void MainWindow::markOpponentField(QJsonObject t_jsonObj)
+{
+    QJsonArray damagedCells = t_jsonObj["damaged_cells"].toArray();
+    QJsonArray deadCells = t_jsonObj["dead_cells"].toArray();
+    QJsonArray missedCells = t_jsonObj["missed_cells"].toArray();
+
+    qDebug() << t_jsonObj;
+    qDebug() << damagedCells;
+    qDebug() << deadCells;
+    qDebug() << missedCells;
+
+    int x, y;
+
+    for (int i = 0; i < damagedCells.size(); ++i) {
+        QJsonArray xYPos = damagedCells[i].toArray();
+        x = QString::number(xYPos[0].toDouble()).toInt();
+        y = QString::number(xYPos[1].toDouble()).toInt();
+
+        QTableWidgetItem *item = new QTableWidgetItem("");
+        item->setBackground(ORANGE);
+        ui->opponentField->setItem(y, x, item);
+    }
+
+    for (int i = 0; i < deadCells.size(); ++i) {
+        QJsonArray xYPos = deadCells[i].toArray();
+        x = QString::number(xYPos[0].toDouble()).toInt();
+        y = QString::number(xYPos[1].toDouble()).toInt();
+
+        QTableWidgetItem *item = new QTableWidgetItem("");
+        item->setBackground(RED);
+        ui->opponentField->setItem(y, x, item);
+    }
+
+    for (int i = 0; i < missedCells.size(); ++i) {
+        QJsonArray xYPos = missedCells[i].toArray();
+        x = static_cast<int>(xYPos[0].toDouble());
+        y = static_cast<int>(xYPos[1].toDouble());
+
+        QTableWidgetItem *item = new QTableWidgetItem("");
+        item->setBackground(GRAY);
+        ui->opponentField->setItem(y, x, item);
+    }
 }

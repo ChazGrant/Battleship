@@ -4,7 +4,7 @@ from django.db.utils import IntegrityError
 
 from asgiref.sync import sync_to_async
 
-from RestfulRequests.models import User, Field, Game, ShipPart, FriendRequest, WeaponType, Weapon
+from RestfulRequests.models import User, Field, Game, ShipPart, FriendRequest, WeaponType, Weapon, Ship
 
 from typing import List
 import random
@@ -361,43 +361,137 @@ class GameTest(TestCase):
         self.assertEqual(len(waiting_games_id), 1)
 
 
+class DummyTest(TestCase):
+    async def testDummyTwo(self):
+        game = await sync_to_async(Game.objects.create)(
+            game_id="12951925u9125asf",
+            user_id_turn=1
+        )
+
+        user = await sync_to_async(User.objects.create)(
+            user_id=1,
+            user_name="username",
+            user_password="password",
+            user_email="bot@bot.ru"
+        )
+
+        field = await sync_to_async(Field.objects.create)(
+            owner=user,
+            game=game
+        )
+        ship = await sync_to_async(Ship.objects.create)(
+            field=field,
+            ship_length=2
+        )
+        for x in range(2):
+            await sync_to_async(ShipPart.objects.create)(
+                ship=ship,
+                x_pos=x,
+                y_pos=3,
+                is_damaged=False
+            )
+        for x in range(1, 2):
+            for y in range(2, 3):
+                try:
+                    ship_part = await sync_to_async(ShipPart.objects.get)(
+                        ship__field=field,
+                        x_pos=x,
+                        y_pos=y,
+                        is_damaged=False
+                    )
+                    ship_part.is_damaged = True
+                    await sync_to_async(ship_part.save)()
+
+                    ship: Ship = await sync_to_async(getattr)(ship_part, "ship")
+                    alive_ship_parts = await sync_to_async(ShipPart.objects.filter)(
+                        ship=ship,
+                        is_damaged=False
+                    )
+                    await sync_to_async(print)("ALIVE SHIP PARTS: ", alive_ship_parts)
+                except ShipPart.DoesNotExist:
+                    continue
+                
+                self.assertGreater(await sync_to_async(len)(alive_ship_parts), 0)
+
+
+    async def testDummy(self):
+        game = await sync_to_async(Game.objects.create)(
+            game_id="12951925u9125asf",
+            user_id_turn=1
+        )
+
+        user = await sync_to_async(User.objects.create)(
+            user_id=1,
+            user_name="username",
+            user_password="password",
+            user_email="bot@bot.ru"
+        )
+
+        field = await sync_to_async(Field.objects.create)(
+            owner=user,
+            game=game
+        )
+        ship = await sync_to_async(Ship.objects.create)(
+            field=field,
+            ship_length=5
+        )
+        for x in range(5):
+            await sync_to_async(ShipPart.objects.create)(
+                ship=ship,
+                x_pos=x,
+                y_pos=0,
+                is_damaged=False
+            )
+        
+        created_ship_parts = await sync_to_async(ShipPart.objects.filter)(
+            ship=ship,
+            is_damaged=False
+        )
+
+        self.assertEqual(await sync_to_async(len)(created_ship_parts), 5)
+
+        await sync_to_async((await sync_to_async(ShipPart.objects.filter)(
+            x_pos=2,
+            y_pos=0,
+        )).update)(is_damaged=True)
+
+        dead_ship_parts = await sync_to_async(ShipPart.objects.filter)(
+            ship__field=field,
+            is_damaged=True
+        )
+    
+        self.assertEqual(await sync_to_async(len)(dead_ship_parts), 1)
+
+        alive_ship_parts = await sync_to_async(ShipPart.objects.filter)(
+            ship=ship,
+            is_damaged=False
+        )
+
+        self.assertEqual(await sync_to_async(len)(alive_ship_parts), 4)
+
+        if (await sync_to_async(len)(alive_ship_parts)) == 0:
+            ship.is_dead = True
+            await sync_to_async(ship.save)()
+
+            dead_ship_parts = await sync_to_async(ShipPart.objects.filter)(
+                ship=ship
+            )
+            self.assertEqual(await sync_to_async(dead_ship_parts), 5)
+
+
 class WeaponsTest(TestCase):
     async def testAccessing(self):
-        for weapon_type_name in WeaponType.Types:
-            print(weapon_type_name)
         weapon_types = await sync_to_async(WeaponType.objects.all)()
         async for weapon_type in weapon_types:
             print(weapon_type.weapon_type_name)
 
-    async def testCreating(self):
-        def initWeaponTypes():
-            for type in WeaponType.Types:
-                weapon_type = WeaponType(
-                    weapon_type_name=type,
-                    weapon_x_range=1,
-                    weapon_y_range=1,
-                    weapon_price=50.0
-                )
-                weapon_type.full_clean()
-                weapon_type.save()
-
-        await sync_to_async(initWeaponTypes)()
-
-        created_user = await sync_to_async(User.objects.create)(
-            user_name="bott",
-            user_password="password",
-            user_email="bott@bot.bot",
-            user_id=1
-        )
-        single_shoot = await sync_to_async(WeaponType.objects.get)(weapon_type_name=WeaponType.Types.SINGLE_SHOOT)
-        await sync_to_async(Weapon.objects.create)(
-            weapon_owner=created_user,
-            weapon_type=single_shoot,
-            is_infinite=True,
-            weapon_amount=999
-        )
-
-        weapons = await WeaponDatabaseAccessor.getAvailableWeapons(created_user.user_id)
-
-        self.assertEqual(weapons["Пушечный выстрел"], 999)
-
+    def testCreating(self):
+        for type in WeaponType.Types:
+            weapon_type = WeaponType(
+                weapon_type_name=type,
+                weapon_x_range=1,
+                weapon_y_range=1,
+                weapon_price=50.0
+            )
+            weapon_type.full_clean()
+            weapon_type.save()

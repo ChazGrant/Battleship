@@ -13,6 +13,7 @@ from WebsocketRequests.DatabaseAccessors.UserDatabaseAccessor import UserDatabas
 from WebsocketRequests.DatabaseAccessors.FieldDatabaseAccessor import FieldDatabaseAccessor
 from WebsocketRequests.DatabaseAccessors.GameDatabaseAccessor import GameDatabaseAccessor
 from WebsocketRequests.DatabaseAccessors.WeaponDatabaseAccessor import WeaponDatabaseAccessor
+from WebsocketRequests.DatabaseAccessors.WeaponTypeDatabaseAccessor import WeaponTypeDatabaseAccessor
 
 
 class GameConsumer(AsyncJsonWebsocketConsumer):
@@ -44,7 +45,6 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         }
 
     async def getWeapons(self, json_object: dict) -> None:
-        print("get_weapons")
         try:
             user_id = int(json_object["user_id"])
         except KeyError:
@@ -97,10 +97,17 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         
         if await GameDatabaseAccessor.opponentPlacedAllShips(game_id, user_id):
             game = await GameDatabaseAccessor.getGameByPlayerId(user_id)
+            opponent_id = await FieldDatabaseAccessor.getOpponentId(game, user_id)
             await self.send_json({
                 "action_type": "game_started",
                 "user_id_turn": game.user_id_turn
             })
+
+            if opponent_id in self.listeners:
+                await self.listeners[opponent_id].send_json({
+                "action_type": "game_started",
+                "user_id_turn": game.user_id_turn
+                })
 
 
     async def placeShip(self, json_object: dict) -> None:
@@ -155,15 +162,21 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                 "action_type": "all_ships_are_placed"
             })
 
-            if await GameDatabaseAccessor.opponentPlacedAllShips(game_id, user_id):
-                opponent_id = await FieldDatabaseAccessor.getOpponentId(game, user_id)
+            opponent_placed_all_ships, error = \
+                    await GameDatabaseAccessor.opponentPlacedAllShips(game_id, user_id)
+            if error:
+                return await self.send_json({
+                    "error": error
+                })
+            if opponent_placed_all_ships:
                 game = await GameDatabaseAccessor.getGameByPlayerId(user_id)
+                opponent_id = await FieldDatabaseAccessor.getOpponentId(game, user_id)
                 await self.send_json({
                     "action_type": "game_started",
                     "user_id_turn": game.user_id_turn
                 })
 
-                if opponent_id in self.listeners:
+                if opponent_id in self.listeners.keys():
                     await self.listeners[opponent_id].send_json({
                     "action_type": "game_started",
                     "user_id_turn": game.user_id_turn
@@ -187,7 +200,10 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             user_id = int(json_object["user_id"])
             game_id = str(int(json_object["game_id"]))
             x_pos, y_pos = map(int, json_object["shoot_position"])
-            weapon_name = json_object["weapon_type"]
+            if "weapon_name" not in json_object.keys():
+                weapon_name = ""
+            else:
+                weapon_name = json_object["weapon_name"]
         except KeyError:
             return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
         except ValueError:
@@ -211,20 +227,45 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             return await self.send_json(NOT_YOUR_TURN)
         
         # Бомбим поле
-        opponent_id = await FieldDatabaseAccessor.getOpponentId()
-        marked_cells, dead_cells, missed_cells = \
-            await FieldDatabaseAccessor.checkForShipPartHit(opponent_id, x_pos, y_pos, weapon_name)
+        opponent_id = await FieldDatabaseAccessor.getOpponentId(game, user_id)
+        # *DEBUG
+        opponent_field = await FieldDatabaseAccessor.getField(user_id)
+        x_range, y_range = await WeaponTypeDatabaseAccessor.getWeaponRange(weapon_name)
+
+        missed_cells, damaged_cells, dead_cells = await ShipDatabaseAccessor.\
+                markShipsCells(opponent_field, x_pos, x_pos+x_range, y_pos, y_pos+y_range)
         
+        await FieldDatabaseAccessor.createMissedCells(opponent_field, missed_cells)
+        if dead_cells:
+            for x, y in await FieldDatabaseAccessor.createMissedCellsAroundDeadCells(
+                opponent_field, dead_cells):
+                missed_cells.append([x, y])
+
+        # Если есть мёртвые корабли и нет повреждённых кораблей
+        if dead_cells and not damaged_cells:
+            all_ships_are_dead = await ShipDatabaseAccessor.allShipsAreDead(opponent_field)
+            if all_ships_are_dead:
+                await GameDatabaseAccessor.setWinner(user_id)
+
+                if opponent_id in self.listeners.keys():
+                    await self.listeners[opponent_id].send_json({
+                        "action_type": "game_over",
+                        "game_over_cause": "all_ships_are_dead",
+                        "winner_id": user_id
+                    })
+                
+                return await self.send_json({
+                    "action_type": "game_over",
+                    "game_over_cause": "all_ships_are_dead",
+                    "winner_id": user_id
+                })
+
         return await self.send_json({
             "action_type": "turn_made",
-            "marked_cells": marked_cells,
+            "damaged_cells": damaged_cells,
             "dead_cells": dead_cells,
             "missed_cells": missed_cells
         })
-
-        # Проверяем на попадание
-
-        # Если корабль уничтожен то проверяем сколько кораблей осталось
 
     async def disconnectFromTheGame(self, json_object: dict) -> None:
         """
@@ -236,9 +277,18 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         """
         try:
             user_id = int(json_object["user_id"])
-            game_id = str(int(json_object["game_id"]))
         except KeyError:
             return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
+        
+        game = await GameDatabaseAccessor.getGameByPlayerId(user_id)
+        opponent_id = await FieldDatabaseAccessor.getOpponentId(game, user_id)
+        GameDatabaseAccessor.setWinner(opponent_id)
+
+        await self.listeners[opponent_id].send_json({
+            "action_type": "game_over",
+            "game_over_cause": "opponent_disconnected",
+            "winner_id": opponent_id
+        })
         
         # Устанавливаем победителем оппонента
 
@@ -332,4 +382,10 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         """
             Отключает сокет от сервера
         """
+        user_id = self.reversed_listeners[self]
+        await self.disconnectFromTheGame({"user_id": user_id})
+
+        # self.listeners.pop(user_id)
+        # self.reversed_listeners.pop(self)
+
         await GameDatabaseAccessor.deleteGames()

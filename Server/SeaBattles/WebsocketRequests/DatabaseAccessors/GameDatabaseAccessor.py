@@ -41,6 +41,14 @@ class GameDatabaseAccessor:
         return choice(waiting_games_id)
 
     @staticmethod
+    async def setWinner(user_id: int) -> None:
+        game = await GameDatabaseAccessor.getGameByPlayerId(user_id)
+        game.has_winner = True
+        game.winner_id = user_id
+
+        await sync_to_async(game.save)()
+
+    @staticmethod
     async def getGame(game_id: str, game_invite_id:str="") -> Union[Game, None]:
         try:
             return await sync_to_async(Game.objects.get)(
@@ -93,8 +101,9 @@ class GameDatabaseAccessor:
     async def opponentPlacedAllShips(game_id: str, player_id: int) -> Union[bool, None]:
         game = await GameDatabaseAccessor.getGame(game_id)
         opponent_id = await FieldDatabaseAccessor.getOpponentId(game, player_id)
+
         if opponent_id == None:
-            return None
+            return None, "Оппонент не найден"
         
         return await FieldDatabaseAccessor.allShipsArePlaced(opponent_id)
 

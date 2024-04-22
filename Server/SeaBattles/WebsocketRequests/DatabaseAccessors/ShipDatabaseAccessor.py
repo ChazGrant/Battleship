@@ -2,6 +2,7 @@ from os import environ
 from asgiref.sync import sync_to_async
 from typing import List, Tuple
 from json import loads
+from asyncio import sleep
 
 import random
 
@@ -202,3 +203,57 @@ class ShipDatabaseAccessor:
         await FieldDatabaseAccessor.decreaseShipsAmount(field, ship_length_str)
 
         return True, ""
+
+    @staticmethod
+    async def allShipsAreDead(field: Field) -> bool:
+        alive_ships = await sync_to_async(Ship.objects.filter)(
+            field=field,
+            is_dead=False
+        )
+        return alive_ships == None
+
+    @staticmethod
+    async def markShipsCells(field: Field, 
+                             x_start: int, x_end: int, 
+                             y_start: int, y_end: int) -> \
+                                Tuple[List[int], List[int], List[int]]:
+        missed_cells = []
+        dead_cells = []
+        damaged_cells = []
+        x, y = x_start, y_start
+        # for x in range(x_start, x_end):
+        #     for y in range(y_start, y_end):
+        try:
+            ship_part = await sync_to_async(ShipPart.objects.get)(
+                ship__field=field,
+                x_pos=x,
+                y_pos=y,
+                is_damaged=False
+            )
+            ship_part.is_damaged = True
+            await sync_to_async(ship_part.save)()
+
+            ship: Ship = await sync_to_async(getattr)(ship_part, "ship")
+            dead_ship_parts = await sync_to_async(ShipPart.objects.filter)(
+                ship=ship,
+                is_damaged=True
+            )
+
+            print(await sync_to_async(len)(dead_ship_parts))
+            print(ship.ship_length)
+
+            if (await sync_to_async(len)(dead_ship_parts)) == ship.ship_length:
+                ship.is_dead = True
+                await sync_to_async(ship.save)()
+
+                dead_ship_parts = await sync_to_async(ShipPart.objects.filter)(
+                    ship=ship
+                )
+                async for dead_ship_part in dead_ship_parts:
+                    dead_cells.append([dead_ship_part.x_pos, dead_ship_part.y_pos])
+            else:
+                damaged_cells.append([x, y])
+        except ShipPart.DoesNotExist:
+            missed_cells.append([x, y])               
+
+        return missed_cells, damaged_cells, dead_cells

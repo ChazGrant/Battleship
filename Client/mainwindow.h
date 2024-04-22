@@ -105,8 +105,10 @@ private:
     QTableWidgetItem *m_lastMarkedItem = nullptr;
     //! Координаты ячейки, по которой нужно стрелять
     QJsonArray m_firePosition;
+
     void highlightOpponentCell(QTableWidgetItem *t_item);
     void markOpponentCell(QTableWidgetItem *t_item);
+    void clearHighlightedCells();
 
     // Таймеры
     //! Указатель на таймер ожидания подключения противника
@@ -132,6 +134,7 @@ private:
     bool m_weaponActivated = false;
 
     void makeTurn();
+    void markOpponentField(QJsonObject t_jsonObj);
 
 };
 #endif // MAINWINDOW_H
