@@ -26,7 +26,8 @@ SOURCES += \
     loginform.cpp \
     main.cpp \
     mainmenu.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    shop.cpp
 
 HEADERS += \
     additionalfunctions.h \
@@ -34,14 +35,16 @@ HEADERS += \
     gameinvitenotifier.h \
     loginform.h \
     mainmenu.h \
-    mainwindow.h
+    mainwindow.h \
+    shop.h
 
 FORMS += \
     friendadder.ui \
     gameinvitenotifier.ui \
     loginform.ui \
     mainmenu.ui \
-    mainwindow.ui
+    mainwindow.ui \
+    shop.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

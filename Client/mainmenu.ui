@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>521</width>
+    <width>615</width>
     <height>315</height>
    </rect>
   </property>
@@ -19,7 +19,7 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>521</width>
+      <width>611</width>
       <height>291</height>
      </rect>
     </property>
@@ -46,7 +46,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>90</y>
+       <y>40</y>
        <width>151</width>
        <height>41</height>
       </rect>
@@ -59,7 +59,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>190</y>
+       <y>140</y>
        <width>151</width>
        <height>41</height>
       </rect>
@@ -71,8 +71,8 @@
     <widget class="QPushButton" name="showClansButton">
      <property name="geometry">
       <rect>
-       <x>10</x>
-       <y>240</y>
+       <x>170</x>
+       <y>90</y>
        <width>151</width>
        <height>41</height>
       </rect>
@@ -85,7 +85,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>140</y>
+       <y>90</y>
        <width>151</width>
        <height>41</height>
       </rect>
@@ -97,7 +97,7 @@
     <widget class="QTabWidget" name="tabWidget">
      <property name="geometry">
       <rect>
-       <x>260</x>
+       <x>350</x>
        <y>10</y>
        <width>251</width>
        <height>281</height>
@@ -107,7 +107,7 @@
       <string notr="true">background: transparent</string>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="friendsTab">
       <attribute name="title">
@@ -143,7 +143,7 @@
     <widget class="QPushButton" name="findGameButton">
      <property name="geometry">
       <rect>
-       <x>10</x>
+       <x>170</x>
        <y>40</y>
        <width>151</width>
        <height>41</height>
@@ -156,7 +156,7 @@
     <widget class="QToolButton" name="exitButton">
      <property name="geometry">
       <rect>
-       <x>490</x>
+       <x>570</x>
        <y>10</y>
        <width>23</width>
        <height>23</height>
@@ -169,7 +169,7 @@
     <widget class="QToolButton" name="addFriendButton">
      <property name="geometry">
       <rect>
-       <x>460</x>
+       <x>540</x>
        <y>10</y>
        <width>23</width>
        <height>23</height>
@@ -179,6 +179,19 @@
       <string>+</string>
      </property>
     </widget>
+    <widget class="QPushButton" name="openShopButton">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>140</y>
+       <width>151</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Открыть магазин</string>
+     </property>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -186,7 +199,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>521</width>
+     <width>615</width>
      <height>20</height>
     </rect>
    </property>

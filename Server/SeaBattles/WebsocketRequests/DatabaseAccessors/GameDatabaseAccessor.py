@@ -23,6 +23,12 @@ class GameDatabaseAccessor:
        await sync_to_async((await sync_to_async(Game.objects.all)()).delete)()
 
     @staticmethod
+    async def deleteGame(game: Game) -> None:
+        print(game)
+        await sync_to_async(game.delete())
+        await sync_to_async(game.save)()
+
+    @staticmethod
     async def getRandomWaitingGameId() -> Union[str, None]:
         game_ids = await FieldDatabaseAccessor.getFieldsParents()
         waiting_games_id = list()
@@ -43,7 +49,7 @@ class GameDatabaseAccessor:
     @staticmethod
     async def setWinner(user_id: int) -> None:
         game = await GameDatabaseAccessor.getGameByPlayerId(user_id)
-        game.has_winner = True
+        game.game_is_over = True
         game.winner_id = user_id
 
         await sync_to_async(game.save)()
@@ -93,24 +99,32 @@ class GameDatabaseAccessor:
             return 0
 
     @staticmethod
-    async def getGameByPlayerId(player_id: int) -> Game:
+    async def getGameByPlayerId(player_id: int) -> Union[Game, None]:
         field = await FieldDatabaseAccessor.getField(player_id)
-        return await sync_to_async(getattr)(field, "game")
+        try:
+            return await sync_to_async(getattr)(field, "game")
+        except AttributeError:
+            return None
 
     @staticmethod
-    async def opponentPlacedAllShips(game_id: str, player_id: int) -> Union[bool, None]:
+    async def opponentPlacedAllShips(game_id: str, player_id: int) -> bool:
         game = await GameDatabaseAccessor.getGame(game_id)
         opponent_id = await FieldDatabaseAccessor.getOpponentId(game, player_id)
 
         if opponent_id == None:
-            return None, "Оппонент не найден"
+            return False
         
         return await FieldDatabaseAccessor.allShipsArePlaced(opponent_id)
 
     @staticmethod
-    async def switchCurrentTurn(game_id: int) -> int:
-        ...
+    async def switchCurrentTurn(game_id: int) -> None:
+        game = await GameDatabaseAccessor.getGame(game_id)
+        opponent_id = await FieldDatabaseAccessor.getOpponentId(game, game.user_id_turn)
+
+        game.user_id_turn = opponent_id
+        await sync_to_async(game.save)()
 
     @staticmethod
-    async def makeTurn(game_id: int, user_id: int, weapon_type: str, fire_position: List[int]):
-        ...
+    async def getUserIdTurn(game_id: int) -> int:
+        game = await GameDatabaseAccessor.getGame(game_id)
+        return game.user_id_turn

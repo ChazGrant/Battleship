@@ -34,13 +34,11 @@ inline void sendServerRequest(const QString t_requestUrl,
 
     QUrlQuery query;
 
-    for (QString queryKey : t_queryParams.keys())
+    for (QString queryKey : t_queryParams.keys()) {
         query.addQueryItem(queryKey, t_queryParams[queryKey]);
+    }
 
-    QUrl queryUrl;
-    queryUrl.setQuery(query);
-
-    t_manager->post(request, queryUrl.toEncoded().remove(0, 1));
+    t_manager->post(request, query.toString(QUrl::FullyEncoded).toUtf8());
 }
 
 /*! @brief Превращает json объект в строку

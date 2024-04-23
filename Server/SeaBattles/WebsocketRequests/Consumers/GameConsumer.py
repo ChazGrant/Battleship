@@ -37,7 +37,6 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         self._available_actions: Dict[str, Callable] = {
             "subscribe": self.subscribe,
             "make_turn": self.makeTurn,
-            "disconnect_from_the_game": self.disconnectFromTheGame,
             "place_ship": self.placeShip,
             "connect_to_game": self.connectToGame,
             "generate_field": self.generateField,
@@ -142,11 +141,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                 "error": error
             })
 
-        (one_deck, two_deck, three_deck, four_deck), error = await FieldDatabaseAccessor.getShipsLeft(user_id)
-        if error:
-            return await self.send_json({
-                "error": error
-            })
+        (one_deck, two_deck, three_deck, four_deck) = await FieldDatabaseAccessor.getShipsLeft(user_id)
         
         await self.send_json({
             "action_type": "ship_placed",
@@ -162,7 +157,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                 "action_type": "all_ships_are_placed"
             })
 
-            opponent_placed_all_ships, error = \
+            opponent_placed_all_ships = \
                     await GameDatabaseAccessor.opponentPlacedAllShips(game_id, user_id)
             if error:
                 return await self.send_json({
@@ -226,10 +221,9 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         if not (game.user_id_turn == user_id):
             return await self.send_json(NOT_YOUR_TURN)
         
-        # Бомбим поле
         opponent_id = await FieldDatabaseAccessor.getOpponentId(game, user_id)
-        # *DEBUG
-        opponent_field = await FieldDatabaseAccessor.getField(user_id)
+
+        opponent_field = await FieldDatabaseAccessor.getField(opponent_id)
         x_range, y_range = await WeaponTypeDatabaseAccessor.getWeaponRange(weapon_name)
 
         missed_cells, damaged_cells, dead_cells = await ShipDatabaseAccessor.\
@@ -242,6 +236,25 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                 missed_cells.append([x, y])
 
         # Если есть мёртвые корабли и нет повреждённых кораблей
+        await self.send_json({
+            "action_type": "turn_made",
+            "damaged_cells": damaged_cells,
+            "dead_cells": dead_cells,
+            "missed_cells": missed_cells
+        })
+
+        if not damaged_cells and not dead_cells:
+            await GameDatabaseAccessor.switchCurrentTurn(game_id)
+            
+        if opponent_id in self.listeners.keys():
+            await self.listeners[opponent_id].send_json({
+                "action_type": "opponent_made_turn",
+                "user_id_turn": await GameDatabaseAccessor.getUserIdTurn(game_id),
+                "damaged_cells": damaged_cells,
+                "dead_cells": dead_cells,
+                "missed_cells": missed_cells
+            })
+
         if dead_cells and not damaged_cells:
             all_ships_are_dead = await ShipDatabaseAccessor.allShipsAreDead(opponent_field)
             if all_ships_are_dead:
@@ -258,50 +271,18 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                     "action_type": "game_over",
                     "game_over_cause": "all_ships_are_dead",
                     "winner_id": user_id
-                })
-
-        return await self.send_json({
-            "action_type": "turn_made",
-            "damaged_cells": damaged_cells,
-            "dead_cells": dead_cells,
-            "missed_cells": missed_cells
-        })
-
-    async def disconnectFromTheGame(self, json_object: dict) -> None:
-        """
-            Отключает пользователя от игры
-
-            json_object содержит
-            user_id - Идентификатор пользователя, который хочет отключиться
-            game_id - Идентификатор игры
-        """
-        try:
-            user_id = int(json_object["user_id"])
-        except KeyError:
-            return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
+                })       
         
-        game = await GameDatabaseAccessor.getGameByPlayerId(user_id)
-        opponent_id = await FieldDatabaseAccessor.getOpponentId(game, user_id)
-        GameDatabaseAccessor.setWinner(opponent_id)
-
-        await self.listeners[opponent_id].send_json({
-            "action_type": "game_over",
-            "game_over_cause": "opponent_disconnected",
-            "winner_id": opponent_id
-        })
-        
-        # Устанавливаем победителем оппонента
-
-        # Оппоненту отправляется сообщение, что игра закончена из-за выхода из игры
-
     async def subscribe(self, json_object: dict) -> None:
         """
             Обрабатывает поведение при отключении сокета от сервера
         """
         try:
-            user_id = json_object["user_id"]
+            user_id = int(json_object["user_id"])
         except KeyError:
             return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
+        except ValueError:
+            return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
         
         self.listeners[user_id] = self
         self.reversed_listeners[self] = user_id
@@ -380,12 +361,24 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
 
     async def disconnect(self, event) -> None:
         """
-            Отключает сокет от сервера
+            Отключает пользователя от игры
         """
         user_id = self.reversed_listeners[self]
-        await self.disconnectFromTheGame({"user_id": user_id})
+        game = await GameDatabaseAccessor.getGameByPlayerId(user_id)
+        opponent_id = await FieldDatabaseAccessor.getOpponentId(game, user_id)
+        # Если победителя нет(игра не закончена по количеству кораблей)
+        if not game.game_is_over:
+            # Устанавливаем победителем оппонента
+            await GameDatabaseAccessor.setWinner(user_id)
+            # Оппоненту отправляется сообщение, что игра закончена из-за выхода из игры
+            if opponent_id in self.listeners.keys():
+                await self.listeners[opponent_id].send_json({
+                    "action_type": "game_over",
+                    "game_over_cause": "opponent_disconnected",
+                    "winner_id": opponent_id
+                })
+            # else:
+            #     await GameDatabaseAccessor.deleteGame(game)
 
-        # self.listeners.pop(user_id)
-        # self.reversed_listeners.pop(self)
-
-        await GameDatabaseAccessor.deleteGames()
+        self.listeners.pop(user_id)
+        self.reversed_listeners.pop(self)

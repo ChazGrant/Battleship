@@ -26,6 +26,7 @@
 #include "additionalfunctions.h"
 #include "mainwindow.h"
 #include "friendadder.h"
+#include "shop.h"
 #include "gameinvitenotifier.h"
 
 
@@ -62,6 +63,7 @@ private slots:
     void processFriendRequestAction(QString t_friendUserName, int t_action);
 
     void openMainWindow(QString t_gameId, QString t_gameInviteId = "");
+    void openShopWidget();
 
     void updateFriendsTab(int t_tabIndex);
 
@@ -102,6 +104,8 @@ private:
     MainWindow *m_mainWindow;
     //! Указатель на класс FriendAdder
     FriendAdder *m_friendAdderWindow;
+    //! Указатель на класс Shop
+    Shop *m_shopWindow;
     //! Указатель на класс GameInviteNotifier
     GameInviteNotifier *m_gameInviteNotifier;
     //! Идентификатор пользователя

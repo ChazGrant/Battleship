@@ -107,7 +107,7 @@ private:
     QJsonArray m_firePosition;
 
     void highlightOpponentCell(QTableWidgetItem *t_item);
-    void markOpponentCell(QTableWidgetItem *t_item);
+    void setFirePosition(QTableWidgetItem *t_item);
     void clearHighlightedCells();
 
     // Таймеры
@@ -135,6 +135,7 @@ private:
 
     void makeTurn();
     void markOpponentField(QJsonObject t_jsonObj);
+    void markOwnerField(QJsonObject t_jsonObj);
 
 };
 #endif // MAINWINDOW_H

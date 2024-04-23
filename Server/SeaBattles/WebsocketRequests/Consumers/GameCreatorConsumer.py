@@ -165,4 +165,4 @@ class GameCreatorConsumer(AsyncJsonWebsocketConsumer):
         """
             Обрабатывает поведение при отключении сокета от сервера
         """
-        print("Disconnected from server")
+        ...

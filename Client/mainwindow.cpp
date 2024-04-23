@@ -9,6 +9,11 @@ const QColor RED = QColor("darkred");
 const QColor GRAY = QColor("darkgray");
 const QColor ORANGE = QColor("orange");
 
+const QMap<QString, QStringList> GAME_OVER_CLAUSES = {
+    {"opponent_disconnected", {"", "Противник покинул игру"}},
+    {"all_ships_are_dead", {"Ваши корабли были уничтожены", "Вы уничтожили все корабли"}}
+};
+
 const int FIELD_ROW_COUNT = 10;
 const int FIELD_COLUMN_COUNT = 10;
 
@@ -40,7 +45,7 @@ MainWindow::MainWindow(const QString t_gameId, const int t_userId,
 
     connect(ui->makeTurnButton, &QPushButton::clicked, this, &MainWindow::makeTurn);
 
-    // ui->fireButton->hide();
+    ui->makeTurnButton->hide();
     ui->opponentField->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
 
     m_oponnentConnectionTimer = new QTimer();
@@ -51,7 +56,7 @@ MainWindow::MainWindow(const QString t_gameId, const int t_userId,
     ui->opponentField->setMouseTracking(true);
 
     connect(ui->opponentField, &QTableWidget::itemEntered, this, &MainWindow::highlightOpponentCell);
-    connect(ui->opponentField, &QTableWidget::itemClicked, this, &MainWindow::markOpponentCell);
+    connect(ui->opponentField, &QTableWidget::itemClicked, this, &MainWindow::setFirePosition);
     connect(ui->weaponsComboBox, &QComboBox::currentTextChanged,
             this, &MainWindow::setWeaponsUsesLeftLabel);
     connect(ui->activateWeaponButton, &QPushButton::clicked, this, [=]() {
@@ -153,20 +158,34 @@ void MainWindow::onGameSocketMessageReceived(QString t_textMessage)
         setShipsAmountLabel(jsonResponse);
     } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::ALL_SHIPS_PLACED]) {
         // if (!m_gameStarted) setDisabled(true);
+        ui->placeShipButton->hide();
+        ui->makeTurnButton->show();
         showMessage("Все корабли были установлены, ожидаем оппонента", QMessageBox::Information);
     } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::GAME_STARTED]) {
         int userIdTurn = jsonResponse["user_id_turn"].toInt();
 
         m_gameStarted = true;
-
+        // setDisabled(true);
         if (userIdTurn == m_userId) {
             setDisabled(false);
+            ui->makeTurnButton->setVisible(true);
+            ui->placeShipButton->setVisible(false);
             showMessage("Вы начинаете игру", QMessageBox::Icon::Information);
         }
     } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::AVAILABLE_WEAPONS]) {
         fillWeaponsComboBox(jsonResponse);
     } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::TURN_MADE]) {
         markOpponentField(jsonResponse);
+    } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::GAME_OVER]) {
+        int winnerId = jsonResponse["winner_id"].toInt();
+        QString gameOverCause = jsonResponse["game_over_cause"].toString();
+        QString winnerString = "Вы проиграли";
+        if (winnerId == m_userId) winnerString = "Вы победили";
+        showMessage("Игра закончена\n" + winnerString + "\n" + GAME_OVER_CLAUSES[gameOverCause][winnerId==m_userId],
+                    QMessageBox::Icon::Information);
+        close();
+    } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::OPPONENT_MADE_TURN]) {
+        markOwnerField(jsonResponse);
     }
 }
 
@@ -340,16 +359,21 @@ void MainWindow::highlightOpponentCell(QTableWidgetItem *t_item)
  *
  *  @return void
 */
-void MainWindow::markOpponentCell(QTableWidgetItem *t_item)
+void MainWindow::setFirePosition(QTableWidgetItem *t_item)
 {
+    if (m_lastMarkedItem == t_item) return;
     if (m_lastMarkedItem != nullptr) {
         m_lastMarkedItem->setBackgroundColor(WHITE);
     }
 
-    m_lastMarkedItem = t_item;
-    t_item->setBackgroundColor(GREEN);
+    qDebug() << m_firePosition;
 
-    m_firePosition = { t_item->column(), t_item->row() };
+    if (t_item->backgroundColor() == YELLOW) {
+        t_item->setBackgroundColor(GREEN);
+        m_lastMarkedItem = t_item;
+        m_firePosition = { t_item->column(), t_item->row() };
+    }
+
 }
 
 void MainWindow::clearHighlightedCells()
@@ -471,21 +495,21 @@ void MainWindow::setShipsAmountLabel(QJsonObject t_jsonResponse)
 */
 void MainWindow::createUserTable()
 {
-    ui->yourField->setRowCount(FIELD_ROW_COUNT);
-    ui->yourField->setColumnCount(FIELD_COLUMN_COUNT);
+    ui->ownerField->setRowCount(FIELD_ROW_COUNT);
+    ui->ownerField->setColumnCount(FIELD_COLUMN_COUNT);
     for (int y = 0; y < FIELD_ROW_COUNT; ++y) {
         for (int x = 0;x < FIELD_COLUMN_COUNT; ++x) {
             QTableWidgetItem *item = new QTableWidgetItem();
             item->setText(QString(" "));
 
             item->setBackground(WHITE);
-            ui->yourField->setItem(y, x, item);
+            ui->ownerField->setItem(y, x, item);
         }
     }
 
-    ui->yourField->resizeColumnsToContents();
-    ui->yourField->resizeRowsToContents();
-    ui->yourField->setEditTriggers(QAbstractItemView::EditTrigger::NoEditTriggers);
+    ui->ownerField->resizeColumnsToContents();
+    ui->ownerField->resizeRowsToContents();
+    ui->ownerField->setEditTriggers(QAbstractItemView::EditTrigger::NoEditTriggers);
 }
 
 /*! @brief Создание пустого поля оппонента
@@ -566,7 +590,7 @@ void MainWindow::placeShip(QJsonArray t_cells)
         QJsonArray currentCell = t_cells[i].toArray();
         QTableWidgetItem* item = new QTableWidgetItem();
         item->setBackground(GREEN);
-        ui->yourField->setItem(currentCell[1].toInt(), currentCell[0].toInt(), item);
+        ui->ownerField->setItem(currentCell[1].toInt(), currentCell[0].toInt(), item);
         item->setSelected(false);
     }
 
@@ -584,14 +608,14 @@ void MainWindow::placeShip(QJsonArray t_cells)
 */
 void MainWindow::on_placeShipButton_clicked()
 {
-    if (ui->yourField->selectedItems().isEmpty()) {
+    if (ui->ownerField->selectedItems().isEmpty()) {
         return showMessage("Ячейки не выбраны", QMessageBox::Icon::Critical);
     }
 
-    // this->setDisabled(true);
+    this->setDisabled(true);
 
     QJsonArray cells;
-    QList<QTableWidgetItem*> selectedItems = ui->yourField->selectedItems();
+    QList<QTableWidgetItem*> selectedItems = ui->ownerField->selectedItems();
     QListIterator<QTableWidgetItem*> itemsIterator(selectedItems);
 
     while (itemsIterator.hasNext())
@@ -638,8 +662,10 @@ void MainWindow::makeTurn()
     clearHighlightedCells();
     m_lastHighlightedItem = nullptr;
     m_lastMarkedItem = nullptr;
+    m_firePosition = {};
 
     m_gameSocket->sendTextMessage(convertJsonObjectToString(jsonObj));
+    // setDisabled(true);
 }
 
 void MainWindow::markOpponentField(QJsonObject t_jsonObj)
@@ -648,13 +674,7 @@ void MainWindow::markOpponentField(QJsonObject t_jsonObj)
     QJsonArray deadCells = t_jsonObj["dead_cells"].toArray();
     QJsonArray missedCells = t_jsonObj["missed_cells"].toArray();
 
-    qDebug() << t_jsonObj;
-    qDebug() << damagedCells;
-    qDebug() << deadCells;
-    qDebug() << missedCells;
-
     int x, y;
-
     for (int i = 0; i < damagedCells.size(); ++i) {
         QJsonArray xYPos = damagedCells[i].toArray();
         x = QString::number(xYPos[0].toDouble()).toInt();
@@ -683,5 +703,52 @@ void MainWindow::markOpponentField(QJsonObject t_jsonObj)
         QTableWidgetItem *item = new QTableWidgetItem("");
         item->setBackground(GRAY);
         ui->opponentField->setItem(y, x, item);
+    }
+
+    if (deadCells.size() || damagedCells.size()) {
+        setDisabled(false);
+    }
+}
+
+void MainWindow::markOwnerField(QJsonObject t_jsonObj)
+{
+    QJsonArray damagedCells = t_jsonObj["damaged_cells"].toArray();
+    QJsonArray deadCells = t_jsonObj["dead_cells"].toArray();
+    QJsonArray missedCells = t_jsonObj["missed_cells"].toArray();
+    int userIdTurn = t_jsonObj["user_id_turn"].toInt();
+
+    int x, y;
+    for (int i = 0; i < damagedCells.size(); ++i) {
+        QJsonArray xYPos = damagedCells[i].toArray();
+        x = QString::number(xYPos[0].toDouble()).toInt();
+        y = QString::number(xYPos[1].toDouble()).toInt();
+
+        QTableWidgetItem *item = new QTableWidgetItem("");
+        item->setBackground(ORANGE);
+        ui->ownerField->setItem(y, x, item);
+    }
+
+    for (int i = 0; i < deadCells.size(); ++i) {
+        QJsonArray xYPos = deadCells[i].toArray();
+        x = QString::number(xYPos[0].toDouble()).toInt();
+        y = QString::number(xYPos[1].toDouble()).toInt();
+
+        QTableWidgetItem *item = new QTableWidgetItem("");
+        item->setBackground(RED);
+        ui->ownerField->setItem(y, x, item);
+    }
+
+    for (int i = 0; i < missedCells.size(); ++i) {
+        QJsonArray xYPos = missedCells[i].toArray();
+        x = static_cast<int>(xYPos[0].toDouble());
+        y = static_cast<int>(xYPos[1].toDouble());
+
+        QTableWidgetItem *item = new QTableWidgetItem("");
+        item->setBackground(GRAY);
+        ui->ownerField->setItem(y, x, item);
+    }
+
+    if (userIdTurn == m_userId) {
+        setDisabled(false);
     }
 }

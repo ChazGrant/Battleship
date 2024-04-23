@@ -30,35 +30,36 @@ class FieldDatabaseAccessor:
         )).values_list)("game_id")
 
     @staticmethod
-    async def allShipsArePlaced(user_id: int) -> Tuple[bool, str]:
-        (one_deck, two_deck, three_deck, four_deck), error = \
+    async def allShipsArePlaced(user_id: int) -> bool:
+        (one_deck, two_deck, three_deck, four_deck) = \
             await FieldDatabaseAccessor.getShipsLeft(user_id)
-        if error:
-            return False, error
-        print("allShipsArePlaced: ", one_deck, two_deck, three_deck, four_deck)
-        return (one_deck + two_deck + three_deck + four_deck) == 0, ""
+        
+        return (one_deck + two_deck + three_deck + four_deck) == 0
         
     @staticmethod
     async def createMissedCellsAroundDeadCells(field: Field, dead_cells: List[int]) -> List[int]:
         x_cells = [cell[0] for cell in dead_cells]
         y_cells = [cell[1] for cell in dead_cells]
-        min_x = min(x_cells)
+        min_x = min(x_cells) - 1
         max_x = max(x_cells)
-        min_y = min(y_cells)
+        min_y = min(y_cells) - 1
         max_y = max(y_cells)
 
         missed_cells:List[int] = list()
         for x in range(min_x, max_x + 2):
             for y in range(min_y, max_y + 2):
-                if not(x < 1 or x > 9 or y < 1 or y > 9) and \
+                if not(x < 0 or x > 9 or y < 0 or y > 9) and \
                     not(x in x_cells and y in y_cells):
                     try:
                         await sync_to_async((
-                            await sync_to_async(MissedCell.objects.create)(field=field)
+                            await sync_to_async(MissedCell.objects.create)(
+                                field=field,
+                                x_pos=x,
+                                y_pos=y)
                         ).full_clean)()
                         missed_cells.append([x, y])
                     except Exception:
-                        pass
+                        raise
 
         return missed_cells
 
@@ -88,9 +89,9 @@ class FieldDatabaseAccessor:
         try:
             user = await UserDatabaseAccessor.getUserById(user_id)
             field = await sync_to_async(Field.objects.get)(owner=user)
-            return (field.one_deck, field.two_deck, field.three_deck, field.four_deck), ""
+            return (field.one_deck, field.two_deck, field.three_deck, field.four_deck)
         except Field.DoesNotExist:
-            return (None, None, None, None), "Данный пользователь не имеет поля"
+            return (None, None, None, None)
         
     @staticmethod
     async def areShipsLeft(field: Field, ship_length_str: str) -> Tuple[bool, str]:

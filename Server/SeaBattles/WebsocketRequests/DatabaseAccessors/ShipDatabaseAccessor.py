@@ -210,7 +210,7 @@ class ShipDatabaseAccessor:
             field=field,
             is_dead=False
         )
-        return alive_ships == None
+        return await sync_to_async(len)(alive_ships) == 0
 
     @staticmethod
     async def markShipsCells(field: Field, 
@@ -238,9 +238,6 @@ class ShipDatabaseAccessor:
                 ship=ship,
                 is_damaged=True
             )
-
-            print(await sync_to_async(len)(dead_ship_parts))
-            print(ship.ship_length)
 
             if (await sync_to_async(len)(dead_ship_parts)) == ship.ship_length:
                 ship.is_dead = True

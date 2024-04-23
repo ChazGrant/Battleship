@@ -29,6 +29,8 @@ MainMenu::MainMenu(int t_userId, QWidget *parent) :
     connect(ui->createNewGameButton, &QPushButton::clicked, this, &MainMenu::createGame);
     connect(ui->findGameButton, &QPushButton::clicked, this, &MainMenu::connectToRandomGame);
 
+    connect(ui->openShopButton, &QPushButton::clicked, this, &MainMenu::openShopWidget);
+
     connect(ui->addFriendButton, &QPushButton::clicked, this, &MainMenu::openFriendAdder);
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(updateFriendsTab(int)));
     connect(ui->friendRequestsListWidget, SIGNAL(customContextMenuRequested(QPoint)),
@@ -48,6 +50,8 @@ MainMenu::MainMenu(int t_userId, QWidget *parent) :
     setActionsLists();
 
     updateFriendsTab(ui->tabWidget->currentIndex());
+
+    setAttribute(Qt::WA_DeleteOnClose);
 }
 
 //! @brief Деструктор класса
@@ -199,6 +203,13 @@ void MainMenu::openMainWindow(QString t_gameId, QString t_gameInviteId)
 {
     m_mainWindow = new MainWindow(t_gameId, m_userId, t_gameInviteId);
     m_mainWindow->show();
+    close();
+}
+
+void MainMenu::openShopWidget()
+{
+    m_shopWindow = new Shop(m_userId);
+    m_shopWindow->show();
     close();
 }
 

@@ -1,5 +1,6 @@
 from django.db import models
-from django.core.validators import MinLengthValidator, validate_email
+from django.core.validators import (MinLengthValidator, validate_email, MinValueValidator, 
+                                    MaxValueValidator)
 from django.core.exceptions import ValidationError
 
 
@@ -13,6 +14,7 @@ class User(models.Model):
     user_password = models.CharField(max_length=25, validators=[MinLengthValidator(8)])
     user_id = models.IntegerField(unique=True)
     user_email = models.CharField(max_length=40, validators=[MinLengthValidator(5), validate_email], unique=True)
+    silver_coins = models.FloatField(default=0, validators=[MinValueValidator(0)])
 
     class Meta:
         verbose_name = "User"
@@ -26,7 +28,6 @@ class Game(models.Model):
     game_id = models.CharField(max_length=30, unique=True)
     user_id_turn = models.IntegerField(unique=True)
     game_is_over = models.BooleanField(default=False)
-    has_winner = models.BooleanField(default=False)
     winner_id = models.IntegerField(null=True)
 
     is_friendly = models.BooleanField(default=False)
@@ -38,10 +39,10 @@ class Game(models.Model):
     
 
 class Field(models.Model):
-    one_deck = models.IntegerField(default=4)
-    two_deck = models.IntegerField(default=3)
-    three_deck = models.IntegerField(default=2)
-    four_deck = models.IntegerField(default=1)
+    one_deck = models.IntegerField(default=4, validators=[MinValueValidator(0), MaxValueValidator(4)])
+    two_deck = models.IntegerField(default=3, validators=[MinValueValidator(0), MaxValueValidator(3)])
+    three_deck = models.IntegerField(default=2, validators=[MinValueValidator(0), MaxValueValidator(2)])
+    four_deck = models.IntegerField(default=1, validators=[MinValueValidator(0), MaxValueValidator(1)])
 
     owner = models.OneToOneField(User, on_delete=models.CASCADE, unique=True)
     game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name="fieldChild")
