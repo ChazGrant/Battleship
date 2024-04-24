@@ -6,3 +6,4 @@ djangochannelsrestframework
 uvicorn
 channels
 websockets
+asyncstdlib

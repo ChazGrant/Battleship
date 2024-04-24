@@ -32,6 +32,13 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
+const QColor WHITE = QColor("white");
+const QColor GREEN = QColor("darkgreen");
+const QColor YELLOW = QColor("yellow");
+const QColor RED = QColor("darkred");
+const QColor GRAY = QColor("darkgray");
+const QColor ORANGE = QColor("orange");
+
 
 class MainWindow : public QMainWindow
 {
@@ -49,7 +56,7 @@ private slots:
 
     void acceptCloseEvent(QNetworkReply* t_reply);
 
-    void setWeaponsUsesLeftLabel(QString t_currentWeaponText);
+    void onCurrentWeaponChange(QString t_currentWeaponText);
     // Слоты сокетов
     void onGameSocketConnected();
     void onGameSocketDisconnected();
@@ -60,6 +67,7 @@ private slots:
     void onChatSocketMessageReceived(QString t_textMessage);
     void onChatSocketErrorOccurred(QAbstractSocket::SocketError t_socketError);
 
+    void onTimeOut(QTimer *t_timer);
 private:
     //! Указатель на виджет класса
     Ui::MainWindow *ui;
@@ -99,6 +107,9 @@ private:
 
     void connectToGame();
 
+    int secondsToConnectPassed;
+    int secondsToMakeTurnPassed;
+
     //! Последняя ячейка, на которую навёл пользователь
     QTableWidgetItem *m_lastHighlightedItem = nullptr;
     //! Последняя ячейка, на которую нажал пользователь
@@ -106,13 +117,14 @@ private:
     //! Координаты ячейки, по которой нужно стрелять
     QJsonArray m_firePosition;
 
+    void paintOpponentCells(int t_xStart, int t_yStart, QColor t_color);
     void highlightOpponentCell(QTableWidgetItem *t_item);
     void setFirePosition(QTableWidgetItem *t_item);
-    void clearHighlightedCells();
+    void clearHighlightedCells(QColor t_avoidColor=ORANGE);
 
     // Таймеры
     //! Указатель на таймер ожидания подключения противника
-    QTimer *m_oponnentConnectionTimer;
+    QTimer *m_opponentConnectionTimer;
     //! Указатель на таймер ожидания хода противника
     QTimer *m_userTurnTimer;
 

@@ -26,6 +26,21 @@ class UserDatabaseAccessor:
             return None
 
     @staticmethod
+    async def awardSilverCoins(user_id: int) -> None:
+        user = await UserDatabaseAccessor.getUserById(user_id)
+        if not (user == None):
+            user.silver_coins += 50
+            user.win_streak += 1
+            await sync_to_async(user.save)()
+
+    @staticmethod
+    async def resetWinStreak(user_id: int) -> None:
+        user = await UserDatabaseAccessor.getUserById(user_id)
+        if not(user == None):
+            user.win_streak = 0
+            await sync_to_async(user.save)()
+
+    @staticmethod
     async def getUserByUsername(user_name: str) -> User:
         try:
             return await sync_to_async(User.objects.get)(user_name=user_name)

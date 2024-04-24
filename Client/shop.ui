@@ -7,20 +7,20 @@
     <x>0</x>
     <y>0</y>
     <width>863</width>
-    <height>525</height>
+    <height>642</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QTableWidget" name="tableWidget">
+   <widget class="QTableWidget" name="shootingRangeTable">
     <property name="geometry">
      <rect>
-      <x>240</x>
+      <x>420</x>
       <y>250</y>
-      <width>341</width>
-      <height>221</height>
+      <width>431</width>
+      <height>341</height>
      </rect>
     </property>
    </widget>
@@ -29,7 +29,7 @@
      <rect>
       <x>20</x>
       <y>10</y>
-      <width>71</width>
+      <width>81</width>
       <height>16</height>
      </rect>
     </property>
@@ -42,7 +42,7 @@
      <rect>
       <x>420</x>
       <y>10</y>
-      <width>91</width>
+      <width>101</width>
       <height>16</height>
      </rect>
     </property>
@@ -53,9 +53,9 @@
    <widget class="QLabel" name="label_3">
     <property name="geometry">
      <rect>
-      <x>350</x>
+      <x>580</x>
       <y>230</y>
-      <width>131</width>
+      <width>141</width>
       <height>20</height>
      </rect>
     </property>
@@ -66,7 +66,7 @@
    <widget class="QPushButton" name="buyWeaponButton">
     <property name="geometry">
      <rect>
-      <x>40</x>
+      <x>10</x>
       <y>270</y>
       <width>101</width>
       <height>21</height>
@@ -79,7 +79,7 @@
    <widget class="QPushButton" name="sellWeaponButton">
     <property name="geometry">
      <rect>
-      <x>40</x>
+      <x>10</x>
       <y>300</y>
       <width>101</width>
       <height>21</height>
@@ -94,9 +94,12 @@
      <rect>
       <x>90</x>
       <y>240</y>
-      <width>91</width>
+      <width>41</width>
       <height>22</height>
      </rect>
+    </property>
+    <property name="minimum">
+     <number>1</number>
     </property>
    </widget>
    <widget class="QLabel" name="label_4">
@@ -132,6 +135,74 @@
      </rect>
     </property>
    </widget>
+   <widget class="QLabel" name="userCoinsLabel">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>330</y>
+      <width>381</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="buyAllWeaponsButton">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>270</y>
+      <width>111</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Купить максимум</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="sellAllWeaponsButton">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>300</y>
+      <width>111</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Продать все</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="totalBuyLabel">
+    <property name="geometry">
+     <rect>
+      <x>240</x>
+      <y>270</y>
+      <width>171</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="totalSellLabel">
+    <property name="geometry">
+     <rect>
+      <x>240</x>
+      <y>300</y>
+      <width>171</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -139,7 +210,7 @@
      <x>0</x>
      <y>0</y>
      <width>863</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

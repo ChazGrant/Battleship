@@ -14,12 +14,38 @@ from WebsocketRequests.DatabaseAccessors.UserDatabaseAccessor import UserDatabas
 
 class WeaponDatabaseAccessor:
     @staticmethod
-    async def getAvailableWeapons(user_id: int) -> Dict[str, int]:
+    async def getAvailableWeapons(user_id: int) -> Dict[str, Dict[str, int]]:
         user = await UserDatabaseAccessor.getUserById(user_id)
         weapons = await sync_to_async(Weapon.objects.filter)(weapon_owner=user)
         available_weapons: Dict[str, int] = dict()
         async for weapon in weapons:
             weapon_type: WeaponType = await sync_to_async(getattr)(weapon, "weapon_type")
-            available_weapons[weapon_type.weapon_type_name] = weapon.weapon_amount
+            available_weapons[weapon_type.weapon_type_name] = {
+                "weapon_amount": weapon.weapon_amount,
+                "weapon_x_range": weapon.weapon_type.weapon_x_range,
+                "weapon_y_range": weapon.weapon_type.weapon_y_range
+            }
 
         return available_weapons
+
+    @staticmethod
+    async def hasMassiveDamageProperty(weapon_name: str) -> bool:
+        try:
+            weapon_type = await sync_to_async(WeaponType.objects.get)(weapon_type_name=weapon_name)
+        except WeaponType.DoesNotExist:
+            return False
+        
+        return weapon_type.massive_damage
+
+    @staticmethod
+    async def getWeaponAmountLeft(user_id: int, weapon_name: str) -> int:
+        user = await UserDatabaseAccessor.getUserById(user_id)
+        try:
+            weapon: Weapon = await sync_to_async(Weapon.objects.get)(
+                weapon_type__weapon_type_name=weapon_name,
+                weapon_owner=user
+            )
+        except Weapon.DoesNotExist:
+            return 0
+        
+        return weapon.weapon_amount

@@ -15,6 +15,7 @@ class User(models.Model):
     user_id = models.IntegerField(unique=True)
     user_email = models.CharField(max_length=40, validators=[MinLengthValidator(5), validate_email], unique=True)
     silver_coins = models.FloatField(default=0, validators=[MinValueValidator(0)])
+    win_streak = models.IntegerField(default=0, validators=[MinValueValidator(0)])
 
     class Meta:
         verbose_name = "User"
@@ -82,13 +83,14 @@ class WeaponType(models.Model):
     class Types(models.TextChoices):
         AIRPLANE = "Самолёт"
         NUKE_BOMB = "Ядерная бомба"
-        MINE = "Мина"
-        DEFAULT_BOMB = "Бомба"
+        SMALL_BOMB = "Бомба"
+        TIN_FISH = "Торпеда"
 
-    weapon_type_name = models.CharField(max_length=50, choices=Types.choices, unique=True)
+    weapon_type_name = models.CharField(max_length=30, choices=Types.choices, unique=True)
     weapon_x_range = models.IntegerField()
     weapon_y_range = models.IntegerField()
     weapon_price = models.FloatField(default=0.0)
+    massive_damage = models.BooleanField(default=False)
 
 
 class Weapon(models.Model):

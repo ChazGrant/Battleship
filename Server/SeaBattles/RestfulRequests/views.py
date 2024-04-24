@@ -490,17 +490,41 @@ class WeaponTypeViewSet(ViewSet):
         @author     ChazGrant
         @version    1.0
     """
+    def _deleteWeaponTypes(self):
+        WeaponType.objects.all().delete()
+        return Response({"deleted": "ok"})
+
     @action(detail=False, methods=["get"])
     def init_weapon_types(self, request):
-        for type in WeaponType.Types:
-            weapon_type = WeaponType(
-                weapon_type_name=type,
-                weapon_x_range=1,
-                weapon_y_range=1,
-                weapon_price=50.0
-            )
-            weapon_type.full_clean()
-            weapon_type.save()
+        self._deleteWeaponTypes()
+        WeaponType.objects.create(
+            weapon_type_name="Ядерная бомба",
+            weapon_x_range=3,
+            weapon_y_range=3,
+            weapon_price=150.0,
+            massive_damage=True
+        )
+        WeaponType.objects.create(
+            weapon_type_name="Бомба",
+            weapon_x_range=2,
+            weapon_y_range=2,
+            weapon_price=100.0,
+            massive_damage=True
+        )
+        WeaponType.objects.create(
+            weapon_type_name="Самолёт",
+            weapon_x_range=2,
+            weapon_y_range=10,
+            weapon_price=200.0,
+            massive_damage=False
+        )
+        WeaponType.objects.create(
+            weapon_type_name="Торпеда",
+            weapon_x_range=10,
+            weapon_y_range=1,
+            weapon_price=75.0,
+            massive_damage=False
+        )
 
         return Response({"inited": True})
 
@@ -511,10 +535,6 @@ class WeaponTypeViewSet(ViewSet):
         serializer = WeaponTypeSerializer(weapon_types, many=True)
         return Response(serializer.data)
 
-    @action(detail=False, methods=["get"])
-    def delete_weapons_types(self, request):
-        WeaponType.objects.all().delete()
-        return Response({"deleted": "ok"})
 
 
 class WeaponViewSet(ViewSet):
@@ -551,6 +571,7 @@ class ShopViewSet(ViewSet):
         try:
             user_id = int(request.data["user_id"])
             weapon_name = request.data["weapon_name"]
+            buy_all = int(request.data["buy_all"])
             weapons_amount_to_buy = int(request.data["weapons_amount"])
         except KeyError:
             return Response(NOT_ENOUGH_ARGUMENTS_JSON)
@@ -567,11 +588,16 @@ class ShopViewSet(ViewSet):
         except WeaponType.DoesNotExist:
             return Response(WEAPON_TYPE_DOES_NOT_EXIST_JSON)
 
+        user.silver_coins = 50000
+        user.save()
         weapon_price = weapon_type.weapon_price
+        if buy_all:
+            weapons_amount_to_buy = user.silver_coins // weapon_price
+
         total_price = weapon_price * weapons_amount_to_buy
         if weapons_amount_to_buy < 1:
             return Response(INVALID_WEAPONS_AMOUNT)
-        
+
         if user.silver_coins < total_price:
             return Response(NOT_ENOUGH_COINS)
 
@@ -588,15 +614,9 @@ class ShopViewSet(ViewSet):
 
         user_weapons.weapon_amount += weapons_amount_to_buy
         user.silver_coins -= total_price
-
-        try:
-            user_weapons.full_clean()
-            user.full_clean()
-        except ValidationError:
-            return Response()
         
-        user_weapons.save()
         user.save()
+        user_weapons.save()
 
         return Response({
             "weapon_name": weapon_name,
@@ -639,12 +659,6 @@ class ShopViewSet(ViewSet):
                 "weapon_y_range": weapon_type.weapon_y_range
             })
 
-        data["user_weapons"].append({
-            "weapon_name": "1",
-            "weapon_amount": "2",
-            "weapon_sell_price": "3"
-        })
-
         return Response(data)
         
     @action(detail=False, methods=["post"])
@@ -652,7 +666,8 @@ class ShopViewSet(ViewSet):
         try:
             user_id = int(request.data["user_id"])
             weapon_name = request.data["weapon_name"]
-            weapons_amount_to_sell = int(request.data["weapons_amount"])
+            sell_all = int(request.data["sell_all"])
+            weapons_amount_to_sell = int(request.data["weapon_amount"])
         except KeyError:
             return Response(NOT_ENOUGH_ARGUMENTS_JSON)
         except ValueError:
@@ -674,6 +689,9 @@ class ShopViewSet(ViewSet):
         except Weapon.DoesNotExist:
             return Response(NOT_ENOUGH_WEAPONS_IN_STOCK)
         
+        if sell_all:
+            weapons_amount_to_sell = user_weapons.weapon_amount
+
         user_weapons_amount = user_weapons.weapon_amount
         if weapons_amount_to_sell > user_weapons_amount:
             return Response(NOT_ENOUGH_WEAPONS_IN_STOCK)
@@ -683,10 +701,32 @@ class ShopViewSet(ViewSet):
         user.save()
 
         user_weapons.weapon_amount = user_weapons_amount - weapons_amount_to_sell
-        user_weapons.save()
+        if user_weapons.weapon_amount == 0:
+            user_weapons.delete()
+        else:
+            user_weapons.save()
 
         return Response({
             "weapon_name": weapon_name,
             "weapon_amount_left": user_weapons.weapon_amount,
+            "silver_coins_left": user.silver_coins
+        })
+
+    @action(detail=False, methods=["post"])
+    def get_user_coins(self, request):
+        try:
+            user_id = int(request.data["user_id"])
+        except KeyError:
+            return Response(NOT_ENOUGH_ARGUMENTS_JSON)
+        except ValueError:
+            return Response(INVALID_ARGUMENTS_TYPE_JSON)
+
+
+        try:
+            user = User.objects.get(user_id=user_id)
+        except User.DoesNotExist:
+            return Response(USER_DOES_NOT_EXIST_JSON)
+
+        return Response({
             "silver_coins_left": user.silver_coins
         })

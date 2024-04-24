@@ -6,7 +6,7 @@ import copy
 
 from WebsocketRequests.JSON_RESPONSES import (NOT_ENOUGH_ARGUMENTS_JSON, INVALID_ARGUMENTS_TYPE_JSON,
                             INVALID_ACTION_TYPE_JSON, USER_DOES_NOT_EXIST_JSON, USER_IS_ALREADY_IN_GAME,
-                            GAME_DOES_NOT_EXIST, NOT_YOUR_TURN)
+                            GAME_DOES_NOT_EXIST, NOT_YOUR_TURN, NOT_ENOUGH_WEAPONS_IN_STOCK)
 
 from WebsocketRequests.DatabaseAccessors.ShipDatabaseAccessor import ShipDatabaseAccessor
 from WebsocketRequests.DatabaseAccessors.UserDatabaseAccessor import UserDatabaseAccessor
@@ -59,7 +59,6 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         })
 
     async def generateField(self, json_object: dict):
-        print("generateField")
         user_id = int(json_object["user_id"])
         game_id = json_object["game_id"]
 
@@ -75,10 +74,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         for ship_length, ship_amount in ships_amounts.items():
             for _ in range(ship_amount):
                 cells = await ShipDatabaseAccessor.generateShip(user_id, ship_length)
-                if cells == None:
-                    return await self.send_json({
-                        "action_type": "*DEBUG"
-                    })
+
                 copy_ships_amount[ship_length] = copy_ships_amount[ship_length] - 1
                 await self.send_json({
                     "action_type": "ship_placed",
@@ -203,10 +199,13 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
         except ValueError:
             return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
-
-        # Проверяем осталось ли у пользователя это оружие
-        if not weapon_name == "single_shoot":
-            ...
+        
+        if weapon_name:
+            # Проверяем осталось ли у пользователя это оружие
+            weapon_amount_left = await WeaponDatabaseAccessor.getWeaponAmountLeft(user_id, weapon_name)
+            if weapon_amount_left < 1:
+                return await self.send_json(NOT_ENOUGH_WEAPONS_IN_STOCK)
+        massive_damage = await WeaponDatabaseAccessor.hasMassiveDamageProperty(weapon_name)
 
         # Проверяем существует ли такая игра и такой пользователь
         user = await UserDatabaseAccessor.getUserById(user_id)
@@ -225,9 +224,10 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
 
         opponent_field = await FieldDatabaseAccessor.getField(opponent_id)
         x_range, y_range = await WeaponTypeDatabaseAccessor.getWeaponRange(weapon_name)
+        
 
         missed_cells, damaged_cells, dead_cells = await ShipDatabaseAccessor.\
-                markShipsCells(opponent_field, x_pos, x_pos+x_range, y_pos, y_pos+y_range)
+                markShipsCells(opponent_field, x_pos, x_pos+x_range, y_pos, y_pos+y_range, massive_damage)
         
         await FieldDatabaseAccessor.createMissedCells(opponent_field, missed_cells)
         if dead_cells:
@@ -259,6 +259,8 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             all_ships_are_dead = await ShipDatabaseAccessor.allShipsAreDead(opponent_field)
             if all_ships_are_dead:
                 await GameDatabaseAccessor.setWinner(user_id)
+                await UserDatabaseAccessor.awardSilverCoins(user_id)
+                await UserDatabaseAccessor.resetWinStreak(opponent_id)
 
                 if opponent_id in self.listeners.keys():
                     await self.listeners[opponent_id].send_json({
@@ -369,7 +371,11 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         # Если победителя нет(игра не закончена по количеству кораблей)
         if not game.game_is_over:
             # Устанавливаем победителем оппонента
-            await GameDatabaseAccessor.setWinner(user_id)
+            if opponent_id:
+                await GameDatabaseAccessor.setWinner(opponent_id)
+                await UserDatabaseAccessor.awardSilverCoins(opponent_id)
+                await UserDatabaseAccessor.resetWinStreak(user_id)
+
             # Оппоненту отправляется сообщение, что игра закончена из-за выхода из игры
             if opponent_id in self.listeners.keys():
                 await self.listeners[opponent_id].send_json({
@@ -377,8 +383,6 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                     "game_over_cause": "opponent_disconnected",
                     "winner_id": opponent_id
                 })
-            # else:
-            #     await GameDatabaseAccessor.deleteGame(game)
 
         self.listeners.pop(user_id)
         self.reversed_listeners.pop(self)

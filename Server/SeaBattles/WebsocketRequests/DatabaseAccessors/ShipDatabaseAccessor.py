@@ -114,11 +114,11 @@ class ShipDatabaseAccessor:
             cells = await generateCoordinates(ship_length)
             if not await ShipDatabaseAccessor.hasCollisions(ships, cells):
                 await FieldDatabaseAccessor.decreaseShipsAmount(field, SHIP_LENGTHS_NAMES[ship_length])
+                ship = await sync_to_async(Ship.objects.create)(
+                    ship_length=ship_length,
+                    field=field
+                )
                 for cell in cells:
-                    ship = await sync_to_async(Ship.objects.create)(
-                        ship_length=ship_length,
-                        field=field
-                    )
                     await sync_to_async(ShipPart.objects.create)(
                         x_pos=cell[0],
                         y_pos=cell[1],
@@ -215,42 +215,44 @@ class ShipDatabaseAccessor:
     @staticmethod
     async def markShipsCells(field: Field, 
                              x_start: int, x_end: int, 
-                             y_start: int, y_end: int) -> \
+                             y_start: int, y_end: int,
+                             massive_damage: bool) -> \
                                 Tuple[List[int], List[int], List[int]]:
         missed_cells = []
         dead_cells = []
         damaged_cells = []
-        x, y = x_start, y_start
-        # for x in range(x_start, x_end):
-        #     for y in range(y_start, y_end):
-        try:
-            ship_part = await sync_to_async(ShipPart.objects.get)(
-                ship__field=field,
-                x_pos=x,
-                y_pos=y,
-                is_damaged=False
-            )
-            ship_part.is_damaged = True
-            await sync_to_async(ship_part.save)()
+        for x in range(x_start, x_end):
+            for y in range(y_start, y_end):
+                try:
+                    ship_part = await sync_to_async(ShipPart.objects.get)(
+                        ship__field=field,
+                        x_pos=x,
+                        y_pos=y,
+                        is_damaged=False
+                    )
+                    ship_part.is_damaged = True
+                    await sync_to_async(ship_part.save)()
 
-            ship: Ship = await sync_to_async(getattr)(ship_part, "ship")
-            dead_ship_parts = await sync_to_async(ShipPart.objects.filter)(
-                ship=ship,
-                is_damaged=True
-            )
+                    ship: Ship = await sync_to_async(getattr)(ship_part, "ship")
+                    dead_ship_parts = await sync_to_async(ShipPart.objects.filter)(
+                        ship=ship,
+                        is_damaged=True
+                    )
 
-            if (await sync_to_async(len)(dead_ship_parts)) == ship.ship_length:
-                ship.is_dead = True
-                await sync_to_async(ship.save)()
+                    if (await sync_to_async(len)(dead_ship_parts)) == ship.ship_length:
+                        ship.is_dead = True
+                        await sync_to_async(ship.save)()
 
-                dead_ship_parts = await sync_to_async(ShipPart.objects.filter)(
-                    ship=ship
-                )
-                async for dead_ship_part in dead_ship_parts:
-                    dead_cells.append([dead_ship_part.x_pos, dead_ship_part.y_pos])
-            else:
-                damaged_cells.append([x, y])
-        except ShipPart.DoesNotExist:
-            missed_cells.append([x, y])               
+                        dead_ship_parts = await sync_to_async(ShipPart.objects.filter)(
+                            ship=ship
+                        )
+                        async for dead_ship_part in dead_ship_parts:
+                            dead_cells.append([dead_ship_part.x_pos, dead_ship_part.y_pos])
+                    else:
+                        damaged_cells.append([x, y])
+                    if not massive_damage:
+                        break
+                except ShipPart.DoesNotExist:
+                    missed_cells.append([x, y])               
 
         return missed_cells, damaged_cells, dead_cells

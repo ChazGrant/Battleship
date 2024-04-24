@@ -25,7 +25,7 @@ class ShipSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('user_id', 'user_name','user_password')
+        fields = '__all__'
 
 
 class FriendRequestSerializer(serializers.ModelSerializer):
@@ -45,4 +45,4 @@ class FriendsSerializer(serializers.ModelSerializer):
 class WeaponTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = WeaponType
-        fields = ('weapon_type_name', 'weapon_x_range', 'weapon_y_range', 'weapon_price')
+        fields = ('__all__')

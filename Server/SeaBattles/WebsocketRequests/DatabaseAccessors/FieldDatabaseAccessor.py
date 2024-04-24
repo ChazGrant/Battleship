@@ -65,6 +65,7 @@ class FieldDatabaseAccessor:
 
     @staticmethod
     async def createMissedCells(field: Field, missed_cells: List[int]) -> None:
+        return
         for x, y in missed_cells:
             try:
                 await sync_to_async(MissedCell.objects.get)(field=field, x_pos=x, y_pos=y)

@@ -62,19 +62,6 @@
       </rect>
      </property>
     </widget>
-    <widget class="QPushButton" name="activateWeaponButton">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>90</y>
-       <width>171</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Использовать</string>
-     </property>
-    </widget>
     <widget class="QPushButton" name="getWeaponInfoButton">
      <property name="geometry">
       <rect>
@@ -101,19 +88,19 @@
       <string/>
      </property>
     </widget>
-   </widget>
-   <widget class="QLabel" name="gameIdLabel">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>10</y>
-      <width>331</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>ID игры: </string>
-    </property>
+    <widget class="QCheckBox" name="activateWeaponCheckBox">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>90</y>
+       <width>171</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Использовать</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QTableWidget" name="opponentField">
     <property name="geometry">
@@ -151,19 +138,6 @@
      <string>Сделать ход</string>
     </property>
    </widget>
-   <widget class="QLabel" name="userIdLabel">
-    <property name="geometry">
-     <rect>
-      <x>410</x>
-      <y>20</y>
-      <width>331</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Ваше ID: </string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="autoPlaceShipsButton">
     <property name="geometry">
      <rect>
@@ -177,6 +151,32 @@
      <string>Разместить корабли</string>
     </property>
    </widget>
+   <widget class="QLabel" name="opponentWaitingRemainingTimeLabel">
+    <property name="geometry">
+     <rect>
+      <x>440</x>
+      <y>20</y>
+      <width>421</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="yourTurnTimeRemainLabel">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>421</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -184,7 +184,7 @@
      <x>0</x>
      <y>0</y>
      <width>879</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

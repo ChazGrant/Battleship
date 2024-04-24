@@ -3,7 +3,6 @@ Lib/
 Scripts/
 pyvenv.cfg
 __pycache__
-migrations
 *.pro.user
 *.pro.user.*
 Include/

@@ -2,13 +2,6 @@
 #include "ui_mainwindow.h"
 
 
-const QColor WHITE = QColor("white");
-const QColor GREEN = QColor("darkgreen");
-const QColor YELLOW = QColor("yellow");
-const QColor RED = QColor("darkred");
-const QColor GRAY = QColor("darkgray");
-const QColor ORANGE = QColor("orange");
-
 const QMap<QString, QStringList> GAME_OVER_CLAUSES = {
     {"opponent_disconnected", {"", "Противник покинул игру"}},
     {"all_ships_are_dead", {"Ваши корабли были уничтожены", "Вы уничтожили все корабли"}}
@@ -36,19 +29,16 @@ MainWindow::MainWindow(const QString t_gameId, const int t_userId,
     , m_userId(t_userId)
     , m_gameInviteId(t_gameInviteId)
 {
-    this->m_closeEventIsAccepted = false;
+    m_closeEventIsAccepted = false;
 
     ui->setupUi(this);
-
-    ui->gameIdLabel->setText("ID игры: " + m_gameId);
-    ui->userIdLabel->setText("Ваш ID: " + QString::number(m_userId));
 
     connect(ui->makeTurnButton, &QPushButton::clicked, this, &MainWindow::makeTurn);
 
     ui->makeTurnButton->hide();
     ui->opponentField->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
 
-    m_oponnentConnectionTimer = new QTimer();
+    m_opponentConnectionTimer = new QTimer();
     m_userTurnTimer = new QTimer();
     m_manager = new QNetworkAccessManager(this);
 
@@ -58,10 +48,11 @@ MainWindow::MainWindow(const QString t_gameId, const int t_userId,
     connect(ui->opponentField, &QTableWidget::itemEntered, this, &MainWindow::highlightOpponentCell);
     connect(ui->opponentField, &QTableWidget::itemClicked, this, &MainWindow::setFirePosition);
     connect(ui->weaponsComboBox, &QComboBox::currentTextChanged,
-            this, &MainWindow::setWeaponsUsesLeftLabel);
-    connect(ui->activateWeaponButton, &QPushButton::clicked, this, [=]() {
-        m_weaponActivated = !m_weaponActivated;
+            this, &MainWindow::onCurrentWeaponChange);
+    connect(ui->activateWeaponCheckBox, &QCheckBox::stateChanged, this, [=]() {
+        m_weaponActivated = ui->activateWeaponCheckBox->isChecked();
     });
+
     connect(ui->autoPlaceShipsButton, &QPushButton::clicked, this, &MainWindow::autoPlaceShips);
 
     m_gameStarted = false;
@@ -69,9 +60,15 @@ MainWindow::MainWindow(const QString t_gameId, const int t_userId,
     createTablesWidgets();
     initSockets();
 
-    setEnabled(false);
+    secondsToConnectPassed = 0;
+    secondsToMakeTurnPassed = 0;
+    connect(m_opponentConnectionTimer, &QTimer::timeout, this, [=]() {
+        onTimeOut(m_opponentConnectionTimer);
+    });
+    m_opponentConnectionTimer->setInterval(1000);
+    m_opponentConnectionTimer->start();
 
-    // this->getShipsAmountResponse();
+    setEnabled(false);
 }
 
 /*! @brief Закрытие главного окна
@@ -97,10 +94,11 @@ void MainWindow::acceptCloseEvent(QNetworkReply *t_reply)
  *
  *  @return void
 */
-void MainWindow::setWeaponsUsesLeftLabel(QString t_currentWeaponText)
+void MainWindow::onCurrentWeaponChange(QString t_currentWeaponText)
 {
     ui->weaponUsesLeftLabel->setText("Осталось применений: " +
                                      QString::number(m_availableWeapons[t_currentWeaponText]));
+    clearHighlightedCells();
 }
 
 /*! @brief Обработчик подключения сокета к серверу
@@ -236,6 +234,37 @@ void MainWindow::onChatSocketErrorOccurred(QAbstractSocket::SocketError t_socket
 
 }
 
+/*! @brief Обновление оставшегося времени для подключения или совершения хода
+ *
+ *  @param *t_timer Указатель на таймер, на котором прошло определённое время
+ *
+ *  @return void
+*/
+void MainWindow::onTimeOut(QTimer *t_timer)
+{
+    int timeRemain;
+    if (t_timer == m_opponentConnectionTimer) {
+        ++secondsToConnectPassed;
+        timeRemain = 60 - secondsToConnectPassed;
+        ui->opponentWaitingRemainingTimeLabel->setText("Осталось времени для подключения: " + \
+            QString("0:%1%2").arg((QString::number(timeRemain).size() > 1) ? "" : "0", QString::number(timeRemain)));
+    } else if (t_timer == m_userTurnTimer) {
+        ++secondsToMakeTurnPassed;
+        timeRemain = 60 - secondsToConnectPassed;
+        ui->yourTurnTimeRemainLabel->setText("Осталось времени на ход: " + \
+            QString("0:%1%2").arg((QString::number(timeRemain).size() > 1) ? "" : "0", timeRemain));
+    }
+
+    if (timeRemain == 0) {
+        if (t_timer == m_opponentConnectionTimer) {
+            showMessage("Игрок не подключился", QMessageBox::Icon::Critical);
+        } else if (t_timer == m_userTurnTimer) {
+            showMessage("Ваше время на ход истекло", QMessageBox::Icon::Critical);
+        }
+        close();
+    }
+}
+
 /*! @brief Инициалиализация сокетов
  *
  *  @return void
@@ -324,33 +353,41 @@ void MainWindow::connectToGame()
 */
 void MainWindow::highlightOpponentCell(QTableWidgetItem *t_item)
 {
-    // DEBUG
-    clearHighlightedCells();
+    clearHighlightedCells(GREEN);
     m_lastHighlightedItem = t_item;
     if (t_item->backgroundColor() != WHITE ||
         t_item->backgroundColor() == ORANGE ||
         t_item->backgroundColor() == GRAY ||
-        t_item->backgroundColor() == RED) return;
-//    if (m_weaponActivated) {
-//        int xOffset = m_weaponSelection[ui->weaponsComboBox->currentText()]["x"];
-//        int yOffset = m_weaponSelection[ui->weaponsComboBox->currentText()]["y"];
+        t_item->backgroundColor() == RED) {
+        return;
+    }
 
+    paintOpponentCells(t_item->row(), t_item->column(), YELLOW);
+}
 
-//        int y = t_item->column();
+void MainWindow::paintOpponentCells(int t_xStart, int t_yStart, QColor t_color) {
+    int xRange, yRange;
+    if (m_weaponActivated) {
+        xRange = m_weaponRange[ui->weaponsComboBox->currentText()][0];
+        yRange = m_weaponRange[ui->weaponsComboBox->currentText()][1];
+    } else {
+        xRange = 1;
+        yRange = 1;
+    }
 
-//        for (int x = 0; x < 0 + xOffset; ++x) {
-//            QTableWidgetItem *itemToHighlight = ui->opponentField->itemAt(x, y);
-//            if (itemToHighlight != nullptr)
-//                itemToHighlight->setBackgroundColor(YELLOW);
-//        }
-//        for (; x < x + xOffset; ++x) {
-//            for (; y < y + yOffset; ++y) {
-//                QTableWidgetItem *itemToHighlight = ui->opponentField->itemAt(x, y);
-//                if (itemToHighlight != nullptr)
-//                    itemToHighlight->setBackgroundColor(YELLOW);
-//            }
-//        }
-    t_item->setBackgroundColor(YELLOW);
+    for (int x = t_xStart; x < t_xStart + xRange; ++x) {
+        for (int y = t_yStart; y < t_yStart + yRange; ++ y) {
+            QTableWidgetItem *item = ui->opponentField->item(x, y);
+            if (item == nullptr) {
+                continue;
+            }
+
+            QColor currentItemColor = item->background().color();
+            if (currentItemColor == WHITE || currentItemColor == YELLOW) {
+                item->setBackgroundColor(t_color);
+            }
+        }
+    }
 }
 
 /*! @brief Пометка ячейки для выстрела
@@ -366,34 +403,36 @@ void MainWindow::setFirePosition(QTableWidgetItem *t_item)
         m_lastMarkedItem->setBackgroundColor(WHITE);
     }
 
-    qDebug() << m_firePosition;
-
     if (t_item->backgroundColor() == YELLOW) {
-        t_item->setBackgroundColor(GREEN);
         m_lastMarkedItem = t_item;
         m_firePosition = { t_item->column(), t_item->row() };
     }
 
+    clearHighlightedCells(YELLOW);
+    paintOpponentCells(t_item->row(), t_item->column(), GREEN);
+
 }
 
-void MainWindow::clearHighlightedCells()
+/*! @brief Удаление цвета с помеченных клеток
+ *
+ *  @details Меняет цвет всех жёлтых клеток на белый
+ *
+ *  @return void
+*/
+void MainWindow::clearHighlightedCells(QColor t_avoidColor)
 {
-//    for (int x = 0; x < FIELD_ROW_COUNT; ++x) {
-//        for (int y = 0; y < FIELD_COLUMN_COUNT; ++y) {
-//            if (ui->opponentField->itemAt(x, y)->backgroundColor() == ORANGE ||
-//                ui->opponentField->itemAt(x, y)->backgroundColor() == GRAY ||
-//                ui->opponentField->itemAt(x, y)->backgroundColor() == RED) {
-//                continue;
-//            }
-//            ui->opponentField->itemAt(x, y)->setBackgroundColor(WHITE);
-//        }
-//    }
-    if (m_lastHighlightedItem != nullptr) {
-        if (m_lastHighlightedItem->backgroundColor() != GREEN &&
-            m_lastHighlightedItem->backgroundColor() != ORANGE &&
-            m_lastHighlightedItem->backgroundColor() != GRAY &&
-            m_lastHighlightedItem->backgroundColor() != RED) {
-                m_lastHighlightedItem->setBackgroundColor(WHITE);
+    for (int x = 0; x < FIELD_ROW_COUNT; ++x) {
+        for (int y = 0; y < FIELD_COLUMN_COUNT; ++y) {
+            if (ui->opponentField->item(x, y)->backgroundColor() == ORANGE ||
+                ui->opponentField->item(x, y)->backgroundColor() == GRAY ||
+                ui->opponentField->item(x, y)->backgroundColor() == RED ||
+                ui->opponentField->item(x, y)->backgroundColor() == t_avoidColor) {
+                continue;
+            }
+            QTableWidgetItem *currentItem = ui->opponentField->item(x, y);
+            if (currentItem != nullptr) {
+                currentItem->setBackgroundColor(WHITE);
+            }
         }
     }
 }
@@ -557,8 +596,12 @@ void MainWindow::fillWeaponsComboBox(QJsonObject jsonObj)
 {
     QJsonObject availableWeapons = jsonObj["available_weapons"].toObject();
     foreach(const QString& weaponName, availableWeapons.keys()) {
-        m_availableWeapons[weaponName] = availableWeapons[weaponName].toInt();
+        QJsonObject availableWeapon = availableWeapons[weaponName].toObject();
+        m_availableWeapons[weaponName] = availableWeapon["weapon_amount"].toInt();
         ui->weaponsComboBox->addItem(weaponName);
+        int xRange = availableWeapon["weapon_x_range"].toInt();
+        int yRange = availableWeapon["weapon_y_range"].toInt();
+        m_weaponRange[weaponName] = {xRange, yRange};
     }
 }
 
@@ -659,7 +702,7 @@ void MainWindow::makeTurn()
     jsonObj["weapon_type"] = ui->weaponsComboBox->currentText();
     jsonObj["shoot_position"] = m_firePosition;
 
-    clearHighlightedCells();
+    clearHighlightedCells(GREEN);
     m_lastHighlightedItem = nullptr;
     m_lastMarkedItem = nullptr;
     m_firePosition = {};
