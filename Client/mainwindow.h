@@ -56,7 +56,7 @@ private slots:
 
     void acceptCloseEvent(QNetworkReply* t_reply);
 
-    void onCurrentWeaponChange(QString t_currentWeaponText);
+    void setCurrentWeaponAmount(QString t_currentWeaponText);
     // Слоты сокетов
     void onGameSocketConnected();
     void onGameSocketDisconnected();

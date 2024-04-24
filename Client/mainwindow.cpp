@@ -48,9 +48,11 @@ MainWindow::MainWindow(const QString t_gameId, const int t_userId,
     connect(ui->opponentField, &QTableWidget::itemEntered, this, &MainWindow::highlightOpponentCell);
     connect(ui->opponentField, &QTableWidget::itemClicked, this, &MainWindow::setFirePosition);
     connect(ui->weaponsComboBox, &QComboBox::currentTextChanged,
-            this, &MainWindow::onCurrentWeaponChange);
+            this, &MainWindow::setCurrentWeaponAmount);
     connect(ui->activateWeaponCheckBox, &QCheckBox::stateChanged, this, [=]() {
         m_weaponActivated = ui->activateWeaponCheckBox->isChecked();
+        clearHighlightedCells();
+        m_firePosition = {};
     });
 
     connect(ui->autoPlaceShipsButton, &QPushButton::clicked, this, &MainWindow::autoPlaceShips);
@@ -66,7 +68,7 @@ MainWindow::MainWindow(const QString t_gameId, const int t_userId,
         onTimeOut(m_opponentConnectionTimer);
     });
     m_opponentConnectionTimer->setInterval(1000);
-    m_opponentConnectionTimer->start();
+    // m_opponentConnectionTimer->start();
 
     setEnabled(false);
 }
@@ -94,7 +96,7 @@ void MainWindow::acceptCloseEvent(QNetworkReply *t_reply)
  *
  *  @return void
 */
-void MainWindow::onCurrentWeaponChange(QString t_currentWeaponText)
+void MainWindow::setCurrentWeaponAmount(QString t_currentWeaponText)
 {
     ui->weaponUsesLeftLabel->setText("Осталось применений: " +
                                      QString::number(m_availableWeapons[t_currentWeaponText]));
@@ -368,16 +370,17 @@ void MainWindow::highlightOpponentCell(QTableWidgetItem *t_item)
 void MainWindow::paintOpponentCells(int t_xStart, int t_yStart, QColor t_color) {
     int xRange, yRange;
     if (m_weaponActivated) {
-        xRange = m_weaponRange[ui->weaponsComboBox->currentText()][0];
-        yRange = m_weaponRange[ui->weaponsComboBox->currentText()][1];
+        xRange = m_weaponRange[ui->weaponsComboBox->currentText()][1];
+        yRange = m_weaponRange[ui->weaponsComboBox->currentText()][0];
+        qDebug() << xRange << yRange;
     } else {
         xRange = 1;
         yRange = 1;
     }
 
-    for (int x = t_xStart; x < t_xStart + xRange; ++x) {
-        for (int y = t_yStart; y < t_yStart + yRange; ++ y) {
-            QTableWidgetItem *item = ui->opponentField->item(x, y);
+    for (int row = t_yStart; row < t_yStart + yRange; ++row) {
+        for (int column = t_xStart; column < t_xStart + xRange; ++column) {
+            QTableWidgetItem *item = ui->opponentField->item(column, row);
             if (item == nullptr) {
                 continue;
             }
@@ -399,6 +402,7 @@ void MainWindow::paintOpponentCells(int t_xStart, int t_yStart, QColor t_color) 
 void MainWindow::setFirePosition(QTableWidgetItem *t_item)
 {
     if (m_lastMarkedItem == t_item) return;
+    clearHighlightedCells(YELLOW);
     if (m_lastMarkedItem != nullptr) {
         m_lastMarkedItem->setBackgroundColor(WHITE);
     }
@@ -408,7 +412,6 @@ void MainWindow::setFirePosition(QTableWidgetItem *t_item)
         m_firePosition = { t_item->column(), t_item->row() };
     }
 
-    clearHighlightedCells(YELLOW);
     paintOpponentCells(t_item->row(), t_item->column(), GREEN);
 
 }
@@ -434,6 +437,10 @@ void MainWindow::clearHighlightedCells(QColor t_avoidColor)
                 currentItem->setBackgroundColor(WHITE);
             }
         }
+    }
+    if (t_avoidColor == YELLOW) {
+        m_lastMarkedItem = nullptr;
+        m_firePosition = {};
     }
 }
 
@@ -699,10 +706,12 @@ void MainWindow::makeTurn()
     jsonObj["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::MAKE_TURN];
     jsonObj["user_id"] = QString::number(m_userId);
     jsonObj["game_id"] = m_gameId;
-    jsonObj["weapon_type"] = ui->weaponsComboBox->currentText();
+    if (m_weaponActivated) {
+        jsonObj["weapon_name"] = ui->weaponsComboBox->currentText();
+    }
     jsonObj["shoot_position"] = m_firePosition;
 
-    clearHighlightedCells(GREEN);
+    clearHighlightedCells();
     m_lastHighlightedItem = nullptr;
     m_lastMarkedItem = nullptr;
     m_firePosition = {};
@@ -750,6 +759,14 @@ void MainWindow::markOpponentField(QJsonObject t_jsonObj)
 
     if (deadCells.size() || damagedCells.size()) {
         setDisabled(false);
+    }
+
+    if (t_jsonObj.contains("weapon_name")) {
+        QString weaponName = t_jsonObj["weapon_name"].toString();
+        int weaponAmountLeft = t_jsonObj["weapon_amount_left"].toInt();
+
+        m_availableWeapons[weaponName] = weaponAmountLeft;
+        setCurrentWeaponAmount(ui->weaponsComboBox->currentText());
     }
 }
 

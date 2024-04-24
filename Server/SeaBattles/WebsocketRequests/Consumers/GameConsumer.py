@@ -44,6 +44,14 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         }
 
     async def getWeapons(self, json_object: dict) -> None:
+        """
+            Получение оружий, которые в наличии у игрока
+
+            Аргументы:
+
+            Возвращает:
+            
+        """
         try:
             user_id = int(json_object["user_id"])
         except KeyError:
@@ -222,9 +230,8 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         
         opponent_id = await FieldDatabaseAccessor.getOpponentId(game, user_id)
 
-        opponent_field = await FieldDatabaseAccessor.getField(opponent_id)
+        opponent_field = await FieldDatabaseAccessor.getField(user_id)
         x_range, y_range = await WeaponTypeDatabaseAccessor.getWeaponRange(weapon_name)
-        
 
         missed_cells, damaged_cells, dead_cells = await ShipDatabaseAccessor.\
                 markShipsCells(opponent_field, x_pos, x_pos+x_range, y_pos, y_pos+y_range, massive_damage)
@@ -234,17 +241,23 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             for x, y in await FieldDatabaseAccessor.createMissedCellsAroundDeadCells(
                 opponent_field, dead_cells):
                 missed_cells.append([x, y])
-
+        if weapon_name:
+            weapon_amount_left = await WeaponDatabaseAccessor.decreaseWeaponAmount(user_id, weapon_name)
         # Если есть мёртвые корабли и нет повреждённых кораблей
-        await self.send_json({
+        data = {
             "action_type": "turn_made",
             "damaged_cells": damaged_cells,
             "dead_cells": dead_cells,
-            "missed_cells": missed_cells
-        })
+            "missed_cells": missed_cells,
+        }
 
-        if not damaged_cells and not dead_cells:
-            await GameDatabaseAccessor.switchCurrentTurn(game_id)
+        if weapon_name:
+            data["weapon_name"] = weapon_name
+            data["weapon_amount_left"] = weapon_amount_left
+        await self.send_json(data)
+
+        # if not damaged_cells and not dead_cells:
+            # await GameDatabaseAccessor.switchCurrentTurn(game_id)
             
         if opponent_id in self.listeners.keys():
             await self.listeners[opponent_id].send_json({

@@ -75,6 +75,7 @@ class GameCreatorConsumer(AsyncJsonWebsocketConsumer):
         try:
             user_id = int(json_object["user_id"])
             to_user_id = 0
+            opponent_is_ai = int(json_object["opponent_is_ai"])
         except KeyError:       
             return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
         except ValueError:
@@ -99,7 +100,7 @@ class GameCreatorConsumer(AsyncJsonWebsocketConsumer):
             await GameDatabaseAccessor.deleteGames()
             # return await self.send_json(USER_IS_ALREADY_IN_GAME)
         
-        game_id, game_invite_id, error  = await GameDatabaseAccessor.createGame(user_id, to_user_id)
+        game_id, game_invite_id, error  = await GameDatabaseAccessor.createGame(user_id, opponent_is_ai, to_user_id)
         if not (game_id):
             return await self.send_json({
                 "error": error

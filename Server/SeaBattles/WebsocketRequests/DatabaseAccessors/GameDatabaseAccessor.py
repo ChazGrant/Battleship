@@ -64,7 +64,7 @@ class GameDatabaseAccessor:
             return None
     
     @staticmethod
-    async def createGame(creator_id: int, another_user_id:int=0) -> Tuple[str, str, str]:
+    async def createGame(creator_id: int, opponent_is_ai: bool, another_user_id:int=0) -> Tuple[str, str, str]:
         field = await FieldDatabaseAccessor.getField(creator_id)
         if field:
             return "", "", "Игрок уже находится в игре"
@@ -80,7 +80,8 @@ class GameDatabaseAccessor:
                 game_id=await Generator.generateGameId(),
                 user_id_turn=creator_id,
                 is_friendly=is_friendly,
-                game_invite_id=game_invite_id
+                game_invite_id=game_invite_id,
+                opponent_is_ai=opponent_is_ai
             )
         except ValidationError as val_error:
             error_message = str(val_error).replace("'", "\"")

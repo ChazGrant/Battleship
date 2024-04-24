@@ -92,7 +92,7 @@ private:
     void deleteFriend(int t_userId, QString t_friendUserName);
     void openFriendAdder();
 
-    void createGame();
+    void createGame(bool t_opponentIsAI=false);
     void inputExistingGameId();
     void connectToRandomGame();
 

@@ -221,8 +221,10 @@ class ShipDatabaseAccessor:
         missed_cells = []
         dead_cells = []
         damaged_cells = []
-        for x in range(x_start, x_end):
-            for y in range(y_start, y_end):
+
+        for x in range(x_start, x_end - (x_end // 10 * x_end % 10)):
+            cell_damaged = False
+            for y in range(y_start, y_end - (y_end // 10 * y_end % 10)):
                 try:
                     ship_part = await sync_to_async(ShipPart.objects.get)(
                         ship__field=field,
@@ -230,6 +232,7 @@ class ShipDatabaseAccessor:
                         y_pos=y,
                         is_damaged=False
                     )
+                    cell_damaged = True
                     ship_part.is_damaged = True
                     await sync_to_async(ship_part.save)()
 
@@ -250,9 +253,13 @@ class ShipDatabaseAccessor:
                             dead_cells.append([dead_ship_part.x_pos, dead_ship_part.y_pos])
                     else:
                         damaged_cells.append([x, y])
-                    if not massive_damage:
-                        break
                 except ShipPart.DoesNotExist:
-                    missed_cells.append([x, y])               
+                    missed_cells.append([x, y])
 
+                if not massive_damage and cell_damaged \
+                    and x_end < y_end:
+                    break
+            if not massive_damage and cell_damaged \
+                and x_end > y_end:
+                break
         return missed_cells, damaged_cells, dead_cells

@@ -72,7 +72,7 @@
      <property name="geometry">
       <rect>
        <x>170</x>
-       <y>90</y>
+       <y>140</y>
        <width>151</width>
        <height>41</height>
       </rect>
@@ -183,13 +183,26 @@
      <property name="geometry">
       <rect>
        <x>170</x>
-       <y>140</y>
+       <y>190</y>
        <width>151</width>
        <height>41</height>
       </rect>
      </property>
      <property name="text">
       <string>Открыть магазин</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="startGameWithAIButton">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>90</y>
+       <width>151</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Игра с ботом</string>
      </property>
     </widget>
    </widget>

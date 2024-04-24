@@ -34,6 +34,8 @@ class Game(models.Model):
     is_friendly = models.BooleanField(default=False)
     game_invite_id = models.CharField(max_length=30, default="")
 
+    opponent_is_ai = models.BooleanField(default=False)
+
     class Meta:
         verbose_name = "Game"
         verbose_name_plural = "Games"

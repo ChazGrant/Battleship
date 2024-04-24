@@ -27,6 +27,9 @@ MainMenu::MainMenu(int t_userId, QWidget *parent) :
     ui->tabWidget->setStyleSheet("QTabWidget::pane { border: 0; }");
 
     connect(ui->createNewGameButton, &QPushButton::clicked, this, &MainMenu::createGame);
+    connect(ui->startGameWithAIButton, &QPushButton::clicked, this, [this]() {
+        createGame(true);
+    });
     connect(ui->findGameButton, &QPushButton::clicked, this, &MainMenu::connectToRandomGame);
 
     connect(ui->openShopButton, &QPushButton::clicked, this, &MainMenu::openShopWidget);
@@ -327,11 +330,12 @@ void MainMenu::openFriendAdder()
     });
 }
 
-void MainMenu::createGame()
+void MainMenu::createGame(bool t_opponentIsAI)
 {
     QJsonObject jsonObj;
     jsonObj["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::CREATE_GAME];
     jsonObj["user_id"] = QString::number(m_userId);
+    jsonObj["opponent_is_ai"] = QString::number(t_opponentIsAI);
     m_gameCreatorSocket->sendTextMessage(convertJsonObjectToString(jsonObj));
 }
 

@@ -1,5 +1,5 @@
 from asgiref.sync import sync_to_async
-from typing import Dict
+from typing import Dict, Tuple
 
 from os import environ
 from django import setup
@@ -28,6 +28,19 @@ class WeaponDatabaseAccessor:
 
         return available_weapons
 
+    @staticmethod
+    async def decreaseWeaponAmount(user_id: int, weapon_name: str) -> int:
+        user = await UserDatabaseAccessor.getUserById(user_id)
+        weapon = await sync_to_async(Weapon.objects.get)(
+            weapon_owner=user, 
+            weapon_type__weapon_type_name=weapon_name
+        )
+        weapon.weapon_amount -= 1
+        await sync_to_async(weapon.full_clean)()
+        await sync_to_async(weapon.save)()
+
+        return weapon.weapon_amount
+    
     @staticmethod
     async def hasMassiveDamageProperty(weapon_name: str) -> bool:
         try:
