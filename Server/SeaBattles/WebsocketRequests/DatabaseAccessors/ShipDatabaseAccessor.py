@@ -84,34 +84,36 @@ class ShipDatabaseAccessor:
         return False
 
     @staticmethod
-    async def generateShip(user_id: int, ship_length: int) -> List[int]:      
-        async def generateCoordinates(ship_length: int):
-            cells = []
-            orientation = random.choice(['horizontal', 'vertical'])
+    async def deleteShips(user_id: int):
+        field = await FieldDatabaseAccessor.getField(user_id)
+        await sync_to_async((await sync_to_async(Ship.objects.filter)(field=field)).delete)()
 
+    @staticmethod
+    async def generateShip(user_id: int, ship_length: int) -> List[int]:
+        async def generateCells(orientation: str) -> List[List[int]]:
+            cells = []
             if orientation == 'horizontal':
                 x = random.randint(0, 9 - ship_length)
-                y = random.randint(0, 9 - 1)
+                y = random.randint(0, 9)
                 for i in range(ship_length):
                     cells.append([x + i, y])
             else:
-                x = random.randint(0, 9 - 1)
+                x = random.randint(0, 9)
                 y = random.randint(0, 9 - ship_length)
                 for i in range(ship_length):
                     cells.append([x, y + i])
-                
+            
             return cells
 
         field = await FieldDatabaseAccessor.getField(user_id)
         ships = await sync_to_async(Ship.objects.filter)(field=field)
 
-        MAX_ITERATIONS = 30
-        i = 0
+        orientations = ['horizontal', 'vertical']
+        orientation = random.choice(orientations)
+        orientation_changed = False
+        cells = await generateCells(orientation)
+        
         while True:
-            if i > MAX_ITERATIONS:
-                return None
-            i += 1
-            cells = await generateCoordinates(ship_length)
             if not await ShipDatabaseAccessor.hasCollisions(ships, cells):
                 await FieldDatabaseAccessor.decreaseShipsAmount(field, SHIP_LENGTHS_NAMES[ship_length])
                 ship = await sync_to_async(Ship.objects.create)(
@@ -125,6 +127,13 @@ class ShipDatabaseAccessor:
                         ship=ship
                     )
                 return cells
+            else:
+                if not orientation_changed:
+                    orientation = orientations[not orientations.index(orientation)]
+                    orientation_changed = True
+                else:
+                    cells = await generateCells(orientation)
+                    orientation_changed = False
                 
     @staticmethod
     async def getShips(field: Field):

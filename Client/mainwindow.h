@@ -144,6 +144,7 @@ private:
     void autoPlaceShips();
 
     bool m_weaponActivated = false;
+    bool m_shipsAutoPlacing = false;
 
     void makeTurn();
     void markOpponentField(QJsonObject t_jsonObj);

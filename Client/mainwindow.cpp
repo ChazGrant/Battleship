@@ -136,6 +136,7 @@ void MainWindow::onGameSocketDisconnected()
 */
 void MainWindow::onGameSocketMessageReceived(QString t_textMessage)
 {
+    qDebug() << t_textMessage;
     QJsonObject jsonResponse = QJsonDocument::fromJson(t_textMessage.toUtf8()).object();
     if (jsonResponse.contains("error")) {
         return showMessage(jsonResponse["error"].toString(), QMessageBox::Icon::Critical);
@@ -145,7 +146,6 @@ void MainWindow::onGameSocketMessageReceived(QString t_textMessage)
         close();
         return;
     }
-
 
     QString actionType = jsonResponse["action_type"].toString();
     if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::SHIP_PLACED]) {
@@ -157,13 +157,13 @@ void MainWindow::onGameSocketMessageReceived(QString t_textMessage)
     } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::CONNECTED_TO_GAME]) {
         setShipsAmountLabel(jsonResponse);
     } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::ALL_SHIPS_PLACED]) {
-        // if (!m_gameStarted) setDisabled(true);
+        if (!m_gameStarted) setDisabled(true);
         ui->placeShipButton->hide();
         ui->makeTurnButton->show();
-        showMessage("Все корабли были установлены, ожидаем оппонента", QMessageBox::Information);
+        showMessage("Все корабли были установлены, ожидаем оппонента", QMessageBox::Icon::Information);
     } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::GAME_STARTED]) {
         int userIdTurn = jsonResponse["user_id_turn"].toInt();
-
+        getAvailableWeapons();
         m_gameStarted = true;
         // setDisabled(true);
         if (userIdTurn == m_userId) {
@@ -528,8 +528,6 @@ void MainWindow::setShipsAmountLabel(QJsonObject t_jsonResponse)
 
     ui->shipsAmountLabel->setText(totalShipsLeft);
     this->setDisabled(false);
-
-    getAvailableWeapons();
 }
 
 /*! @brief Создание пустого поля пользователя
@@ -586,6 +584,7 @@ void MainWindow::createOpponentTable()
 
 void MainWindow::getAvailableWeapons()
 {
+    qDebug() << "getAvailableWeapons";
     QJsonObject jsonObj;
     jsonObj["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::GET_WEAPONS];
     jsonObj["user_id"] = QString::number(m_userId);
@@ -614,6 +613,10 @@ void MainWindow::fillWeaponsComboBox(QJsonObject jsonObj)
 
 void MainWindow::autoPlaceShips()
 {
+    setDisabled(true);
+    m_shipsAutoPlacing = true;
+
+    ui->ownerField->clear();
     QJsonObject jsonObj;
     jsonObj["action_type"] = "generate_field";
     jsonObj["user_id"] = QString::number(m_userId);
@@ -643,8 +646,9 @@ void MainWindow::placeShip(QJsonArray t_cells)
         ui->ownerField->setItem(currentCell[1].toInt(), currentCell[0].toInt(), item);
         item->setSelected(false);
     }
-
-    this->setDisabled(false);
+    if (!m_shipsAutoPlacing) {
+        setDisabled(false);
+    }
 }
 
 /*! @brief Обработка события на кнопке "Установить корабль"

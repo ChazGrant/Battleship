@@ -24,6 +24,19 @@ class FieldDatabaseAccessor:
             return 0, "Данного поля не существует"
         
     @staticmethod
+    async def resetField(user_id: int) -> None:
+        try:
+            field = await FieldDatabaseAccessor.getField(user_id)
+
+            field.one_deck = 4
+            field.three_deck = 3
+            field.two_deck = 2
+            field.four_deck = 1
+            await sync_to_async(field.save)()
+        except Field.DoesNotExist:
+            return
+
+    @staticmethod
     async def getFieldsParents() -> List[Tuple[int]]:
         return await sync_to_async((await sync_to_async(Field.objects.annotate)(
             article_count=Count('game_id')
@@ -65,7 +78,6 @@ class FieldDatabaseAccessor:
 
     @staticmethod
     async def createMissedCells(field: Field, missed_cells: List[int]) -> None:
-        return
         for x, y in missed_cells:
             try:
                 await sync_to_async(MissedCell.objects.get)(field=field, x_pos=x, y_pos=y)

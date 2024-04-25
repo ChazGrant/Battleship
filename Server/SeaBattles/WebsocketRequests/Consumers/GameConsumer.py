@@ -65,39 +65,47 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             "action_type": "available_weapons",
             "available_weapons": available_weapons
         })
-
-    async def generateField(self, json_object: dict):
-        user_id = int(json_object["user_id"])
-        game_id = json_object["game_id"]
+    # БОТ
+    async def generateField(self, json_object: dict, bot_requested:bool=False):
+        try:
+            user_id = int(json_object["user_id"])
+            game_id = json_object["game_id"]
+        except KeyError:
+            return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
+        except ValueError:
+            return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
 
         ships_amounts = {
-            1: 4,
-            2: 3,
+            4: 1,
             3: 2,
-            4: 1
+            2: 3,
+            1: 4
         }
 
         copy_ships_amount = copy.deepcopy(ships_amounts)
+        await ShipDatabaseAccessor.deleteShips(user_id)
+        await FieldDatabaseAccessor.resetField(user_id)
 
         for ship_length, ship_amount in ships_amounts.items():
             for _ in range(ship_amount):
                 cells = await ShipDatabaseAccessor.generateShip(user_id, ship_length)
 
                 copy_ships_amount[ship_length] = copy_ships_amount[ship_length] - 1
-                await self.send_json({
-                    "action_type": "ship_placed",
-                    "ship_parts_pos": cells,
-                    "one_deck_left": copy_ships_amount[1],
-                    "two_deck_left": copy_ships_amount[2],
-                    "three_deck_left": copy_ships_amount[3],
-                    "four_deck_left": copy_ships_amount[4]
-                })
+                if not bot_requested:
+                    await self.send_json({
+                        "action_type": "ship_placed",
+                        "ship_parts_pos": cells,
+                        "one_deck_left": copy_ships_amount[1],
+                        "two_deck_left": copy_ships_amount[2],
+                        "three_deck_left": copy_ships_amount[3],
+                        "four_deck_left": copy_ships_amount[4]
+                    })
                 # await sleep(1)
 
         await self.send_json({
             "action_type": "all_ships_are_placed"
         })
-        
+
         if await GameDatabaseAccessor.opponentPlacedAllShips(game_id, user_id):
             game = await GameDatabaseAccessor.getGameByPlayerId(user_id)
             opponent_id = await FieldDatabaseAccessor.getOpponentId(game, user_id)
@@ -111,8 +119,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                 "action_type": "game_started",
                 "user_id_turn": game.user_id_turn
                 })
-
-
+    # БОТ
     async def placeShip(self, json_object: dict) -> None:
         """
             Устанавливает корабль в заданных координатах
@@ -180,7 +187,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                     "action_type": "game_started",
                     "user_id_turn": game.user_id_turn
                 })
-
+    # БОТ
     async def makeTurn(self, json_object: dict) -> None:
         """
             Делает ход игрока
@@ -328,7 +335,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             return await self._available_actions[action_type](json_object)
         
         await self.send_json(INVALID_ACTION_TYPE_JSON)
-
+    # БОТ
     async def connectToGame(self, json_object: dict) -> None:
         """
             Подключает к игре
