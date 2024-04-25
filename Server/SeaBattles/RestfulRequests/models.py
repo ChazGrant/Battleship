@@ -14,8 +14,11 @@ class User(models.Model):
     user_password = models.CharField(max_length=25, validators=[MinLengthValidator(8)])
     user_id = models.IntegerField(unique=True)
     user_email = models.CharField(max_length=40, validators=[MinLengthValidator(5), validate_email], unique=True)
+
     silver_coins = models.FloatField(default=0, validators=[MinValueValidator(0)])
     win_streak = models.IntegerField(default=0, validators=[MinValueValidator(0)])
+
+    is_temporary = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "User"

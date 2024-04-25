@@ -19,6 +19,29 @@ class UserDatabaseAccessor:
             return 0
 
     @staticmethod
+    async def getLastUserId() -> int:
+        try:
+            return (await sync_to_async(User.objects.latest)("user_id")).user_id
+        except User.DoesNotExist:
+            return 0
+
+    @staticmethod
+    async def createUser(user_name: str, 
+                         user_id: int, 
+                         clean_password: str, 
+                         user_email: str,
+                         is_temporary:bool=False) -> User:
+        await sync_to_async(User.objects.create)()            
+        hashed_password = hashPassword(email, user_name, clean_password)
+        created_user = User(user_name=user_name, 
+                            user_password=password, 
+                            user_email=email,
+                            user_id=last_user_id + 1)
+        created_user.full_clean()
+        created_user.user_password = hashed_password
+        created_user.save()
+
+    @staticmethod
     async def getUserById(user_id: int) -> Union[User, None]:
         try:
             return await sync_to_async(User.objects.get)(user_id=user_id)

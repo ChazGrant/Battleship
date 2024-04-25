@@ -303,7 +303,7 @@ class UserViewSet(ViewSet):
             })
         
         try:
-            last_user_id = int(User.objects.latest("user_id").user_id)
+            last_user_id = User.objects.latest("user_id").user_id
         except User.DoesNotExist:
             last_user_id = 0
 

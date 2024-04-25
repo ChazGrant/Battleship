@@ -15,6 +15,8 @@ from WebsocketRequests.DatabaseAccessors.GameDatabaseAccessor import GameDatabas
 from WebsocketRequests.DatabaseAccessors.WeaponDatabaseAccessor import WeaponDatabaseAccessor
 from WebsocketRequests.DatabaseAccessors.WeaponTypeDatabaseAccessor import WeaponTypeDatabaseAccessor
 
+from WebsocketRequests.AIOpponent import AIOpponent
+
 
 class GameConsumer(AsyncJsonWebsocketConsumer):
     """
@@ -372,7 +374,11 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             return await self.send_json({
                 "error": error
             })
-        
+
+        last_user_id = await UserDatabaseAccessor.getLastUserId()
+        await UserDatabaseAccessor.createUser()
+        self.ai_opponent = AIOpponent()
+
         return await self.send_json({
             "action_type": "connected_to_game",
             "one_deck_left": field.one_deck,
