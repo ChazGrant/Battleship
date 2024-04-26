@@ -215,10 +215,15 @@ class ShipDatabaseAccessor:
 
     @staticmethod
     async def allShipsAreDead(field: Field) -> bool:
+        print("============allShipsAreDead============")
+        owner = await sync_to_async(getattr)(field, "owner")
+        print(owner.user_id)
         alive_ships = await sync_to_async(Ship.objects.filter)(
             field=field,
             is_dead=False
         )
+        print(await sync_to_async(len)(alive_ships))
+        print("============allShipsAreDead============")
         return await sync_to_async(len)(alive_ships) == 0
 
     @staticmethod
@@ -260,6 +265,7 @@ class ShipDatabaseAccessor:
                         )
                         async for dead_ship_part in dead_ship_parts:
                             dead_cells.append([dead_ship_part.x_pos, dead_ship_part.y_pos])
+                        damaged_cells = []
                     else:
                         damaged_cells.append([x, y])
                 except ShipPart.DoesNotExist:

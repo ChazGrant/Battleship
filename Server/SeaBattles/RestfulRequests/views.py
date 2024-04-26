@@ -17,7 +17,7 @@ from .serializers import (GameSerializer, ShipSerializer, UserSerializer,
 from WebsocketRequests.JSON_RESPONSES import (
     USER_DOES_NOT_EXIST_JSON, NOT_ENOUGH_ARGUMENTS_JSON, INVALID_ARGUMENTS_TYPE_JSON, 
     NOT_ENOUGH_WEAPONS_IN_STOCK, WEAPON_TYPE_DOES_NOT_EXIST_JSON, NOT_ENOUGH_COINS, 
-    INVALID_WEAPONS_AMOUNT)
+    INVALID_WEAPONS_AMOUNT, INVALID_USER_NAME)
 
 from typing import List
 
@@ -224,7 +224,19 @@ class UserViewSet(ViewSet):
         """
         User.objects.all().delete()
         return Response({
-            "status": "ok"
+            "deleted": "ok"
+        })
+
+    @action(detail=False, methods=["get"])
+    def delete_bots(self, request) -> Response:
+        """
+            Удаляет всех временных пользователей
+
+            *DEBUG
+        """
+        User.objects.filter(is_temporary=True).delete()
+        return Response({
+            "deleted": "ok"
         })
 
     @action(detail=False, methods=["post"])
@@ -293,15 +305,18 @@ class UserViewSet(ViewSet):
         
         # known_ips.append(ip)
         try:
-            user_name = request.data["user_name"]
-            password = request.data["password"]
-            email = request.data["email"]
+            user_name: str = request.data["user_name"]
+            password: str = request.data["password"]
+            email: str = request.data["email"]
         except KeyError:
             return Response({
                 "registration_successful": False,
                 "error": "Недостаточно параметров"
             })
         
+        if user_name.lower().startswith("bot"):
+            return Response(INVALID_USER_NAME)
+
         try:
             last_user_id = User.objects.latest("user_id").user_id
         except User.DoesNotExist:

@@ -1,8 +1,9 @@
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
-from typing import Dict, List, Callable
-from asyncio import sleep
+from typing import Dict, Callable, Tuple, List
+import random
 import copy
+
 
 from WebsocketRequests.JSON_RESPONSES import (NOT_ENOUGH_ARGUMENTS_JSON, INVALID_ARGUMENTS_TYPE_JSON,
                             INVALID_ACTION_TYPE_JSON, USER_DOES_NOT_EXIST_JSON, USER_IS_ALREADY_IN_GAME,
@@ -17,6 +18,18 @@ from WebsocketRequests.DatabaseAccessors.WeaponTypeDatabaseAccessor import Weapo
 
 from WebsocketRequests.AIOpponent import AIOpponent
 
+from RestfulRequests.models import Field
+
+
+CHARS = "+-/*!&$#?=@<>abcdefghijklnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+
+async def generatePassword() -> str:
+    password = ""
+    for _ in range(24):
+        password += random.choice(CHARS)
+
+    return password
+
 
 class GameConsumer(AsyncJsonWebsocketConsumer):
     """
@@ -30,6 +43,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
     groups = []
     listeners: Dict[int, AsyncJsonWebsocketConsumer] = dict()
     reversed_listeners: Dict[AsyncJsonWebsocketConsumer, int] = dict()
+    ai_opponents: Dict[str, AIOpponent] = dict()
     def __init__(self):
         """
             Конструктор класса
@@ -102,26 +116,28 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                         "three_deck_left": copy_ships_amount[3],
                         "four_deck_left": copy_ships_amount[4]
                     })
-                # await sleep(1)
 
-        await self.send_json({
-            "action_type": "all_ships_are_placed"
-        })
+        if not bot_requested:
+            await self.send_json({
+                "action_type": "all_ships_are_placed"
+            })
 
         if await GameDatabaseAccessor.opponentPlacedAllShips(game_id, user_id):
             game = await GameDatabaseAccessor.getGameByPlayerId(user_id)
             opponent_id = await FieldDatabaseAccessor.getOpponentId(game, user_id)
-            await self.send_json({
-                "action_type": "game_started",
-                "user_id_turn": game.user_id_turn
-            })
 
-            if opponent_id in self.listeners:
+            if not bot_requested:
+                await self.send_json({
+                    "action_type": "game_started",
+                    "user_id_turn": game.user_id_turn
+                })
+
+            if opponent_id in self.listeners.keys():
                 await self.listeners[opponent_id].send_json({
                 "action_type": "game_started",
                 "user_id_turn": game.user_id_turn
                 })
-    # БОТ
+
     async def placeShip(self, json_object: dict) -> None:
         """
             Устанавливает корабль в заданных координатах
@@ -189,6 +205,44 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                     "action_type": "game_started",
                     "user_id_turn": game.user_id_turn
                 })
+    
+    async def _makeTurn(self,
+                        opponent_field: Field,
+                        x_pos: int, y_pos: int, 
+                        weapon_name:str="", massive_damage:bool=False) \
+        -> Tuple[List[int], List[int], List[int]]:
+        x_range, y_range = await WeaponTypeDatabaseAccessor.getWeaponRange(weapon_name)
+
+        missed_cells, damaged_cells, dead_cells = await ShipDatabaseAccessor.\
+                markShipsCells(opponent_field, x_pos, x_pos+x_range, y_pos, y_pos+y_range, massive_damage)
+        
+        await FieldDatabaseAccessor.createMissedCells(opponent_field, missed_cells)
+        if dead_cells:
+            for x, y in await FieldDatabaseAccessor.createMissedCellsAroundDeadCells(
+                opponent_field, dead_cells):
+                missed_cells.append([x, y])
+
+        return missed_cells, damaged_cells, dead_cells
+
+    async def _makeBotTurn(self, opponent_id: int) -> Tuple[List[int], List[int], List[int]]:
+        """
+            Делает ход бота
+
+            Аргументы:
+                game - Игра, к которой относится бот
+                opponent_id - Идентификатор игрока, с которым играет бот
+            
+                Возвращает:
+                    Кортеж из списков, содержащих ячейки по которым не попали, 
+                    ячейки по которым попали 
+                    и уничтоженные ячейки
+        """
+        opponent_field = await FieldDatabaseAccessor.getField(opponent_id)
+        x_pos, y_pos = await self.ai_opponents[opponent_id].makeNextTurn()
+        missed_cells, damaged_cells, dead_cells = await self._makeTurn(opponent_field, x_pos, y_pos)
+
+        await self.ai_opponents[opponent_id].updateDamagedCells(missed_cells, damaged_cells, dead_cells)
+        return missed_cells, damaged_cells, dead_cells
     # БОТ
     async def makeTurn(self, json_object: dict) -> None:
         """
@@ -216,6 +270,8 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
         except ValueError:
             return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
+        except TypeError:
+            return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
         
         if weapon_name:
             # Проверяем осталось ли у пользователя это оружие
@@ -238,20 +294,14 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             return await self.send_json(NOT_YOUR_TURN)
         
         opponent_id = await FieldDatabaseAccessor.getOpponentId(game, user_id)
-
-        opponent_field = await FieldDatabaseAccessor.getField(user_id)
-        x_range, y_range = await WeaponTypeDatabaseAccessor.getWeaponRange(weapon_name)
-
-        missed_cells, damaged_cells, dead_cells = await ShipDatabaseAccessor.\
-                markShipsCells(opponent_field, x_pos, x_pos+x_range, y_pos, y_pos+y_range, massive_damage)
-        
-        await FieldDatabaseAccessor.createMissedCells(opponent_field, missed_cells)
-        if dead_cells:
-            for x, y in await FieldDatabaseAccessor.createMissedCellsAroundDeadCells(
-                opponent_field, dead_cells):
-                missed_cells.append([x, y])
-        if weapon_name:
-            weapon_amount_left = await WeaponDatabaseAccessor.decreaseWeaponAmount(user_id, weapon_name)
+        opponent_field = await FieldDatabaseAccessor.getField(opponent_id)
+        missed_cells, damaged_cells, dead_cells = await self._makeTurn(
+            opponent_field,
+            x_pos,
+            y_pos,
+            weapon_name,
+            massive_damage
+        )
         # Если есть мёртвые корабли и нет повреждённых кораблей
         data = {
             "action_type": "turn_made",
@@ -259,27 +309,52 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             "dead_cells": dead_cells,
             "missed_cells": missed_cells,
         }
-
         if weapon_name:
+            weapon_amount_left = await WeaponDatabaseAccessor.decreaseWeaponAmount(user_id, weapon_name)
             data["weapon_name"] = weapon_name
             data["weapon_amount_left"] = weapon_amount_left
+        
         await self.send_json(data)
 
-        # if not damaged_cells and not dead_cells:
-            # await GameDatabaseAccessor.switchCurrentTurn(game_id)
+        if not damaged_cells and not dead_cells:
+            await GameDatabaseAccessor.switchCurrentTurn(game)
             
+            if game.opponent_is_ai:
+                opponent_id = user_id
+                missed_cells, damaged_cells, dead_cells = [], [], []
+                while True:
+                    additional_missed_cells, additional_damaged_cells, additional_dead_cells = \
+                        await self._makeBotTurn(user_id)
+                    
+                    missed_cells += additional_missed_cells
+                    damaged_cells += additional_damaged_cells
+                    dead_cells += additional_dead_cells
+                    if additional_dead_cells and not additional_damaged_cells:
+                        # Проверяем если все корабли закончились то игрок проебал
+                        opponent_field = await FieldDatabaseAccessor.getField(user_id)
+                        if await ShipDatabaseAccessor.allShipsAreDead(opponent_field):
+                            return await self.send_json({
+                                "action_type": "game_over",
+                                "action_type": "game_over",
+                                "game_over_cause": "all_ships_are_dead",
+                                "winner_id": self.ai_opponents[user_id].user_id
+                            })
+
+                    if not additional_damaged_cells and not additional_dead_cells:
+                        break
+                await GameDatabaseAccessor.switchCurrentTurn(game)
+                        
         if opponent_id in self.listeners.keys():
             await self.listeners[opponent_id].send_json({
                 "action_type": "opponent_made_turn",
-                "user_id_turn": await GameDatabaseAccessor.getUserIdTurn(game_id),
+                "user_id_turn": game.user_id_turn,
                 "damaged_cells": damaged_cells,
                 "dead_cells": dead_cells,
                 "missed_cells": missed_cells
             })
 
         if dead_cells and not damaged_cells:
-            all_ships_are_dead = await ShipDatabaseAccessor.allShipsAreDead(opponent_field)
-            if all_ships_are_dead:
+            if await ShipDatabaseAccessor.allShipsAreDead(opponent_field):
                 await GameDatabaseAccessor.setWinner(user_id)
                 await UserDatabaseAccessor.awardSilverCoins(user_id)
                 await UserDatabaseAccessor.resetWinStreak(opponent_id)
@@ -296,7 +371,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                     "game_over_cause": "all_ships_are_dead",
                     "winner_id": user_id
                 })       
-        
+
     async def subscribe(self, json_object: dict) -> None:
         """
             Обрабатывает поведение при отключении сокета от сервера
@@ -374,18 +449,43 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             return await self.send_json({
                 "error": error
             })
-
-        last_user_id = await UserDatabaseAccessor.getLastUserId()
-        await UserDatabaseAccessor.createUser()
-        self.ai_opponent = AIOpponent()
-
-        return await self.send_json({
+            
+        await self.send_json({
             "action_type": "connected_to_game",
             "one_deck_left": field.one_deck,
             "two_deck_left": field.two_deck,
             "three_deck_left": field.three_deck,
             "four_deck_left": field.four_deck
         })
+
+        if game.opponent_is_ai:
+            last_user_id = await UserDatabaseAccessor.getLastUserId()
+            await UserDatabaseAccessor.createTemporaryUser(
+                user_name="bot" + str(user_id),
+                user_id=last_user_id+1,
+                clean_password=await generatePassword(),
+                user_email="bot{}@bot.bot".format(user_id)
+            )
+            ai_opponent = AIOpponent(last_user_id+1, game_id)
+            self.ai_opponents[user_id] = ai_opponent
+
+            _, error = await FieldDatabaseAccessor.createField(ai_opponent.user_id, game)
+            if error:
+                return await self.send_json({
+                    "error": error
+                })
+            user_id = ai_opponent.user_id
+            bot_json_object = {
+                "user_id": ai_opponent.user_id,
+                "game_id": ai_opponent.game_id
+            }
+            await self.generateField(bot_json_object, True)
+
+        opponent_id = await FieldDatabaseAccessor.getOpponentId(game, user_id)
+        if opponent_id in self.listeners.keys():
+            await self.listeners[opponent_id].send_json({
+                "action_type": "opponent_connected"
+            })
 
     async def disconnect(self, event) -> None:
         """
@@ -395,8 +495,10 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         game = await GameDatabaseAccessor.getGameByPlayerId(user_id)
         opponent_id = await FieldDatabaseAccessor.getOpponentId(game, user_id)
         # Если победителя нет(игра не закончена по количеству кораблей)
-        if not game.game_is_over:
-            # Устанавливаем победителем оппонента
+        if game.opponent_is_ai:
+            await UserDatabaseAccessor.deleteTemporaryUser(opponent_id)
+        elif not game.game_is_over:
+            # Устанавливаем победителем оппонента               
             if opponent_id:
                 await GameDatabaseAccessor.setWinner(opponent_id)
                 await UserDatabaseAccessor.awardSilverCoins(opponent_id)

@@ -17,13 +17,6 @@ from WebsocketRequests.DatabaseAccessors.UserDatabaseAccessor import UserDatabas
 
 class FieldDatabaseAccessor:
     @staticmethod
-    async def getFieldOwnerId(game: Game) -> Tuple[int, str]:
-        try:
-            return (await sync_to_async(Field.objects.get)(game=game)).owner.user_id, ""
-        except Field.DoesNotExist:
-            return 0, "Данного поля не существует"
-        
-    @staticmethod
     async def resetField(user_id: int) -> None:
         try:
             field = await FieldDatabaseAccessor.getField(user_id)
@@ -122,8 +115,11 @@ class FieldDatabaseAccessor:
         except ValidationError as val_error:
             error_message = str(val_error).replace("'", "\"")
             error_json = loads(error_message)
-
-            return None, error_json["title"][0]
+            
+            try:
+                return None, error_json["title"][0]
+            except KeyError:
+                return None, error_json[list(error_json.keys())[0]][0]
 
     @staticmethod
     async def decreaseShipsAmount(field: Field, ship_length_str: str):

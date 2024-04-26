@@ -177,6 +177,19 @@
      <string/>
     </property>
    </widget>
+   <widget class="QLabel" name="currentGameStatelabel">
+    <property name="geometry">
+     <rect>
+      <x>440</x>
+      <y>320</y>
+      <width>411</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Текущее состояние игры</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

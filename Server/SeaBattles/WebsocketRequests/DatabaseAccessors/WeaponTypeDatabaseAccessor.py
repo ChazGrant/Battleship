@@ -15,5 +15,6 @@ class WeaponTypeDatabaseAccessor:
     async def getWeaponRange(weapon_name: str) -> Tuple[int]:
         if weapon_name == "":
             return 1, 1
+        print(weapon_name)
         weapon_type = await sync_to_async(WeaponType.objects.get)(weapon_type_name=weapon_name)
         return weapon_type.weapon_x_range, weapon_type.weapon_y_range

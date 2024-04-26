@@ -74,6 +74,7 @@ private:
     //! Указатель на обработчик запросов
     QNetworkAccessManager* m_manager;
 
+    void setCurrentGameState(QString t_gameState);
     void setShipsAmountLabel(QJsonObject t_jsonResponse);
     void placeShip(QJsonArray t_cells);
 

@@ -71,6 +71,7 @@ MainWindow::MainWindow(const QString t_gameId, const int t_userId,
     // m_opponentConnectionTimer->start();
 
     setEnabled(false);
+    setCurrentGameState("Ожидание оппонента");
 }
 
 /*! @brief Закрытие главного окна
@@ -136,8 +137,8 @@ void MainWindow::onGameSocketDisconnected()
 */
 void MainWindow::onGameSocketMessageReceived(QString t_textMessage)
 {
-    qDebug() << t_textMessage;
     QJsonObject jsonResponse = QJsonDocument::fromJson(t_textMessage.toUtf8()).object();
+    qDebug() << jsonResponse;
     if (jsonResponse.contains("error")) {
         return showMessage(jsonResponse["error"].toString(), QMessageBox::Icon::Critical);
     }
@@ -160,17 +161,15 @@ void MainWindow::onGameSocketMessageReceived(QString t_textMessage)
         if (!m_gameStarted) setDisabled(true);
         ui->placeShipButton->hide();
         ui->makeTurnButton->show();
-        showMessage("Все корабли были установлены, ожидаем оппонента", QMessageBox::Icon::Information);
     } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::GAME_STARTED]) {
         int userIdTurn = jsonResponse["user_id_turn"].toInt();
         getAvailableWeapons();
-        m_gameStarted = true;
-        // setDisabled(true);
-        if (userIdTurn == m_userId) {
+        if (userIdTurn == m_userId && !m_gameStarted) {
+            m_gameStarted = true;
             setDisabled(false);
             ui->makeTurnButton->setVisible(true);
             ui->placeShipButton->setVisible(false);
-            showMessage("Вы начинаете игру", QMessageBox::Icon::Information);
+            setCurrentGameState("Ваш ход");
         }
     } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::AVAILABLE_WEAPONS]) {
         fillWeaponsComboBox(jsonResponse);
@@ -186,6 +185,10 @@ void MainWindow::onGameSocketMessageReceived(QString t_textMessage)
         close();
     } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::OPPONENT_MADE_TURN]) {
         markOwnerField(jsonResponse);
+    } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::OPPONENT_CONNECTED]) {
+        m_opponentConnectionTimer->stop();
+        ui->opponentWaitingRemainingTimeLabel->clear();
+        setCurrentGameState("Заполнение полей");
     }
 }
 
@@ -265,6 +268,11 @@ void MainWindow::onTimeOut(QTimer *t_timer)
         }
         close();
     }
+}
+
+void MainWindow::setCurrentGameState(QString t_gameState)
+{
+    ui->currentGameStatelabel->setText("Текущее состояние игры: " + t_gameState);
 }
 
 /*! @brief Инициалиализация сокетов
@@ -762,6 +770,7 @@ void MainWindow::markOpponentField(QJsonObject t_jsonObj)
     }
 
     if (deadCells.size() || damagedCells.size()) {
+        setCurrentGameState("Ход оппонента");
         setDisabled(false);
     }
 

@@ -92,14 +92,6 @@ class GameDatabaseAccessor:
         return created_game.game_id, created_game.game_invite_id, ""
 
     @staticmethod
-    async def getGameCreatorId(game_id: int) -> int:
-        try:
-            game = await sync_to_async(Game.objects.get)(game_id=game_id)
-            return await FieldDatabaseAccessor.getFieldOwnerId(game)
-        except Game.DoesNotExist:
-            return 0
-
-    @staticmethod
     async def getGameByPlayerId(player_id: int) -> Union[Game, None]:
         field = await FieldDatabaseAccessor.getField(player_id)
         try:
@@ -118,14 +110,8 @@ class GameDatabaseAccessor:
         return await FieldDatabaseAccessor.allShipsArePlaced(opponent_id)
 
     @staticmethod
-    async def switchCurrentTurn(game_id: int) -> None:
-        game = await GameDatabaseAccessor.getGame(game_id)
+    async def switchCurrentTurn(game: Game) -> None:
         opponent_id = await FieldDatabaseAccessor.getOpponentId(game, game.user_id_turn)
 
         game.user_id_turn = opponent_id
         await sync_to_async(game.save)()
-
-    @staticmethod
-    async def getUserIdTurn(game_id: int) -> int:
-        game = await GameDatabaseAccessor.getGame(game_id)
-        return game.user_id_turn

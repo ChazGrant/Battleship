@@ -1,5 +1,6 @@
 from asgiref.sync import sync_to_async
 from typing import Union
+import hashlib
 
 from os import environ
 from django import setup
@@ -8,6 +9,16 @@ environ.setdefault('DJANGO_SETTINGS_MODULE', 'SeaBattles.settings')
 setup()
 
 from RestfulRequests.models import User
+
+async def hashPassword(email: str, username: str, password: str) -> str:
+    salt = ""
+
+    for part in range(0, len(email), 2):
+        salt += email[part]
+    for part in range(0, len(username), 2):
+        salt += username[part]
+    
+    return hashlib.md5((password + salt).encode()).hexdigest()
 
 
 class UserDatabaseAccessor:
@@ -19,6 +30,15 @@ class UserDatabaseAccessor:
             return 0
 
     @staticmethod
+    async def deleteTemporaryUser(user_id: int) -> None:
+        try:
+            await sync_to_async(
+                (await sync_to_async(User.objects.get)(user_id=user_id, is_temporary=True))
+            .delete)()
+        except User.DoesNotExist:
+            ...
+
+    @staticmethod
     async def getLastUserId() -> int:
         try:
             return (await sync_to_async(User.objects.latest)("user_id")).user_id
@@ -26,20 +46,30 @@ class UserDatabaseAccessor:
             return 0
 
     @staticmethod
-    async def createUser(user_name: str, 
+    async def createTemporaryUser(user_name: str, 
                          user_id: int, 
                          clean_password: str, 
-                         user_email: str,
-                         is_temporary:bool=False) -> User:
-        await sync_to_async(User.objects.create)()            
-        hashed_password = hashPassword(email, user_name, clean_password)
-        created_user = User(user_name=user_name, 
-                            user_password=password, 
-                            user_email=email,
-                            user_id=last_user_id + 1)
-        created_user.full_clean()
+                         user_email: str) -> User:
+        try:
+            await sync_to_async((await sync_to_async(User.objects.get)(
+                user_name=user_name,
+                user_email=user_email,
+                is_temporary=True)).delete)()
+        except User.DoesNotExist:
+            ...
+        
+        hashed_password = await hashPassword(user_email, user_name, clean_password)
+        created_user = await sync_to_async(User)(user_name=user_name, 
+                            user_password=clean_password, 
+                            user_email=user_email,
+                            user_id=user_id,
+                            is_temporary=True)
+        
+        await sync_to_async(created_user.full_clean)()
         created_user.user_password = hashed_password
-        created_user.save()
+        await sync_to_async(created_user.save)()
+
+        return created_user
 
     @staticmethod
     async def getUserById(user_id: int) -> Union[User, None]:

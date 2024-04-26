@@ -40,3 +40,6 @@ NOT_ENOUGH_COINS = {
 INVALID_WEAPONS_AMOUNT = {
     "error": "Невозможно купить 0 оружий данного типа"
 }
+INVALID_USER_NAME = {
+    "error": "Данное имя пользователя занято"
+}
