@@ -43,3 +43,6 @@ INVALID_WEAPONS_AMOUNT = {
 INVALID_USER_NAME = {
     "error": "Данное имя пользователя занято"
 }
+INVALID_TOP_LENGTH = {
+    "error": "Неверная длина топа"
+}

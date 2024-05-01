@@ -4,20 +4,22 @@ from rest_framework.decorators import action
 
 from django.db.models import Q
 from django.db.utils import IntegrityError
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError 
+
+from random import randint
 
 import json
 import hashlib
 from typing import Any, Dict
 
-from .models import Game, Field, Ship, User, FriendRequest, Friends, Weapon, WeaponType
-from .serializers import (GameSerializer, ShipSerializer, UserSerializer, 
-                          FriendRequestSerializer, FriendsSerializer, WeaponTypeSerializer)
+from .models import Game, Field, Ship, User, FriendRequest, Friends, Weapon, WeaponType, PlayerLeague
+from .serializers import (GameSerializer, ShipSerializer, UserSerializer, FriendRequestSerializer, 
+                          FriendsSerializer, WeaponTypeSerializer, LeagueSerializer)
 
 from WebsocketRequests.JSON_RESPONSES import (
     USER_DOES_NOT_EXIST_JSON, NOT_ENOUGH_ARGUMENTS_JSON, INVALID_ARGUMENTS_TYPE_JSON, 
     NOT_ENOUGH_WEAPONS_IN_STOCK, WEAPON_TYPE_DOES_NOT_EXIST_JSON, NOT_ENOUGH_COINS, 
-    INVALID_WEAPONS_AMOUNT, INVALID_USER_NAME)
+    INVALID_WEAPONS_AMOUNT, INVALID_USER_NAME, INVALID_TOP_LENGTH)
 
 from typing import List
 
@@ -29,6 +31,8 @@ TRASNSLATED_COLUMN_NAMES = {
     "user_password": "Пароль",
     "user_email": "Электронная почта"
 }
+
+AVAILABLE_TOP_LENGTH = [3, 5, 10, 25]
 
 # DEBUG
 known_ips = list()
@@ -204,6 +208,42 @@ class UserViewSet(ViewSet):
         return hashlib.md5((password + salt).encode()).hexdigest()
 
     @action(detail=False, methods=["get"])
+    def get_top_cups_users(self, request) -> Response:
+        # try:
+        #     top_limit = int(request.data["top_limit"])
+        # except ValueError:
+        #     return Response(INVALID_ARGUMENTS_TYPE_JSON)
+        # except KeyError:
+        #     return Response(NOT_ENOUGH_ARGUMENTS_JSON)
+
+
+
+        top_limit = 50
+        all_users = User.objects.filter(is_temporary=False).order_by("-cups")
+        return Response({
+            "top_users": {user.user_name: user.cups for user in all_users[:top_limit]}
+        })
+
+    @action(detail=False, methods=["get"])
+    def create_test_users(self, request) -> Response:
+        for i in range(100):
+            last_user_id = User.objects.all().last().user_id
+            User.objects.create(
+                user_name="test_user#" + str(i + 1),
+                user_id=last_user_id+1,
+                user_password="test_user_password",
+                user_email="test_email#" + str(i + 1) + "@mail.ru",
+                cups=randint(0, 300)
+            )
+
+        serializer = UserSerializer(User.objects.all(), many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["get"])
+    def delete_test_users(self, request) -> Response:
+        ...
+
+    @action(detail=False, methods=["get"])
     def get_users(self, request) -> Response:
         """
             Возвращает всех пользователей
@@ -255,15 +295,9 @@ class UserViewSet(ViewSet):
             user_id = int(request.data["user_id"])
             password = request.data["password"]
         except ValueError:
-            return Response({
-                "login_successful": False,
-                "error": "Неверный тип идентификатора пользователя(ожидается целочисленное число)"
-            })
+            return Response(INVALID_ARGUMENTS_TYPE_JSON)
         except KeyError:
-            return Response({
-                "login_successful": False,
-                "error": "Недостаточно аргументов"
-            }) 
+            return Response(NOT_ENOUGH_ARGUMENTS_JSON) 
 
         try:
             user = User.objects.get(user_id=user_id)
@@ -276,7 +310,8 @@ class UserViewSet(ViewSet):
 
         return Response({
                 "login_successful": True,
-                "user_id": int(user.user_id)
+                "user_id": user.user_id,
+                "user_name": user.user_name
             })
 
     @action(detail=False, methods=["post"])
@@ -354,7 +389,8 @@ class UserViewSet(ViewSet):
 
         return Response({
             "registration_successful": True,
-            "user_id": created_user.user_id
+            "user_id": created_user.user_id,
+            "user_name": created_user.user_name
         })
 
 
@@ -550,6 +586,67 @@ class WeaponTypeViewSet(ViewSet):
         serializer = WeaponTypeSerializer(weapon_types, many=True)
         return Response(serializer.data)
 
+
+class LegaueViewSet(ViewSet):
+    @action(detail=False, methods=["get"])
+    def init_leagues(self, request) -> Response:
+        for league_name in PlayerLeague.LeagueCriteria.league_criteria.keys():
+            min_cups, max_cups = PlayerLeague.LeagueCriteria.league_criteria[league_name]
+            PlayerLeague.objects.create(
+                league_name=league_name,
+                min_cups_required=min_cups,
+                max_cups_required=max_cups
+            )
+
+        return Response({"inited": True})
+
+    @action(detail=False, methods=["get"])
+    def delete_leagues(self, request) -> Response:
+        PlayerLeague.objects.all().delete()
+        return Response({"deleted": True})
+
+    @action(detail=False, methods=["get"])
+    def get_leagues(self, request) -> Response:
+        serializer = LeagueSerializer(PlayerLeague.objects.all(), many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["post"])
+    def get_all_players_by_league(self, request) -> Response:
+        all_users = User.objects.filter(is_temporary=False)
+        players_by_league: Dict[str, List[Dict[str, int]]] = {}
+        leagues = [league.league_name for league in PlayerLeague.objects.all().
+                   order_by("min_cups_required")]
+        
+        usernames = [user.user_name for user in all_users]
+        print(len(usernames) == len(set(usernames)))
+        for user in all_users:
+            league_name = PlayerLeague.objects.get(
+                min_cups_required__lte=user.cups,
+                max_cups_required__gt=user.cups).league_name
+            if league_name in players_by_league.keys():
+                players_by_league[league_name].append({
+                    "player_name": user.user_name,
+                    "player_cups": user.cups,
+                    "player_winstreak": user.win_streak,
+                    "player_silver_coins": user.silver_coins
+                })
+            else:
+                players_by_league[league_name] = [{
+                    "player_name": user.user_name,
+                    "player_cups": user.cups,
+                    "player_winstreak": user.win_streak,
+                    "player_silver_coins": user.silver_coins
+                }]
+
+        return Response({
+            "leagues": leagues,
+            "players_by_league": players_by_league,
+            "sorting_keys": {
+                "Топ по кубкам": "player_cups",
+                "Топ по монетам": "player_silver_coins",
+                "Топ по количеству побед подряд": "player_winstreak"
+            }
+        })
 
 
 class WeaponViewSet(ViewSet):

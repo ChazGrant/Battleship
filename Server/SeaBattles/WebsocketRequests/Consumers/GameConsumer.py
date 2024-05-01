@@ -356,7 +356,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         if dead_cells and not damaged_cells:
             if await ShipDatabaseAccessor.allShipsAreDead(opponent_field):
                 await GameDatabaseAccessor.setWinner(user_id)
-                await UserDatabaseAccessor.awardSilverCoins(user_id)
+                await UserDatabaseAccessor.awardWinner(user_id)
                 await UserDatabaseAccessor.resetWinStreak(opponent_id)
 
                 if opponent_id in self.listeners.keys():
@@ -501,7 +501,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             # Устанавливаем победителем оппонента               
             if opponent_id:
                 await GameDatabaseAccessor.setWinner(opponent_id)
-                await UserDatabaseAccessor.awardSilverCoins(opponent_id)
+                await UserDatabaseAccessor.awardWinner(opponent_id)
                 await UserDatabaseAccessor.resetWinStreak(user_id)
 
             # Оппоненту отправляется сообщение, что игра закончена из-за выхода из игры

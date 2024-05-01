@@ -20,6 +20,8 @@ class User(models.Model):
 
     is_temporary = models.BooleanField(default=False)
 
+    cups = models.IntegerField(default=0, validators=[MinValueValidator(0)])
+
     class Meta:
         verbose_name = "User"
         verbose_name_plural = "Users"
@@ -27,6 +29,23 @@ class User(models.Model):
     def __str__(self):
         return f"{self.user_name} {self.user_id} {self.user_password} {self.user_email}"
 
+
+class PlayerLeague(models.Model):
+    class LeagueCriteria:
+        league_criteria = {
+            "Бронзовая лига": [0, 50],
+            "Серебряная лига": [50, 150],
+            "Золотая лига": [150, 300],
+            "Алмазная лига": [300, 9999],
+        }
+    league_name = models.CharField(max_length=15, validators=[MinLengthValidator(4)])
+
+    min_cups_required = models.IntegerField(validators=[MinValueValidator(0)])
+    max_cups_required = models.IntegerField(validators=[MinValueValidator(0)])
+
+    def __str__(self):
+        return f"Лига {self.league_name}: ({self.min_cups_required} - {self.max_cups_required})"
+    
 
 class Game(models.Model):
     game_id = models.CharField(max_length=30, unique=True)

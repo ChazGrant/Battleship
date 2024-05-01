@@ -24,10 +24,12 @@
 #include "ACTIONS_ENUMS.cpp"
 
 #include "additionalfunctions.h"
+
 #include "mainwindow.h"
 #include "friendadder.h"
 #include "shop.h"
 #include "gameinvitenotifier.h"
+#include "topplayers.h"
 
 
 enum FriendRequestAction {
@@ -49,7 +51,7 @@ class MainMenu : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainMenu(int t_userId, QWidget *parent = nullptr);
+    explicit MainMenu(int t_userId, QString t_userName, QWidget *parent = nullptr);
     ~MainMenu();
 
 signals:
@@ -79,6 +81,7 @@ private slots:
 
     void fillFriendsTab(QNetworkReply *t_reply);
     void fillFriendsRequestsTab(QNetworkReply *t_reply);
+    void openTopPlayersWidget(QNetworkReply *t_reply);
 private:
     //! Точка на экране
     QPoint m_mouse_point;
@@ -92,9 +95,13 @@ private:
     void deleteFriend(int t_userId, QString t_friendUserName);
     void openFriendAdder();
 
+    void getTopPlayers();
+
     void createGame(bool t_opponentIsAI=false);
     void inputExistingGameId();
     void connectToRandomGame();
+
+    void showNotImplementedFeature();
 
     //! Указатель на виджет класса
     Ui::MainMenu *ui;
@@ -108,8 +115,11 @@ private:
     Shop *m_shopWindow;
     //! Указатель на класс GameInviteNotifier
     GameInviteNotifier *m_gameInviteNotifier;
+    //! Указатель на класс TopPlayers
+    TopPlayers *m_topPlayersWidget;
     //! Идентификатор пользователя
     const int m_userId;
+    const QString m_userName;
 
     // Сокеты
     QWebSocket *m_friendsUpdateSocket;

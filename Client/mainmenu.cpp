@@ -13,33 +13,35 @@
  *
  *  @return MainMenu
 */
-MainMenu::MainMenu(int t_userId, QWidget *parent) :
+MainMenu::MainMenu(int t_userId, QString t_userName, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainMenu),
-    m_userId(t_userId)
+    m_userId(t_userId),
+    m_userName(t_userName)
 {
     ui->setupUi(this);
 
     this->setWindowFlags(Qt::FramelessWindowHint);
 
-    ui->userIDLabel->setText("Ваш ID: " + QString::number(t_userId));
-
+    ui->userDataLabel->setText(QString("Ваш ID:%1 \nВаше имя пользователя: %2").
+                               arg(QString::number(m_userId), m_userName));
     ui->tabWidget->setStyleSheet("QTabWidget::pane { border: 0; }");
 
     connect(ui->createNewGameButton, &QPushButton::clicked, this, &MainMenu::createGame);
-    connect(ui->startGameWithAIButton, &QPushButton::clicked, this, [this]() {
-        createGame(true);
-    });
+    connect(ui->startGameWithAIButton, &QPushButton::clicked, this, [this]() { createGame(true); });
     connect(ui->findGameButton, &QPushButton::clicked, this, &MainMenu::connectToRandomGame);
 
     connect(ui->openShopButton, &QPushButton::clicked, this, &MainMenu::openShopWidget);
 
     connect(ui->addFriendButton, &QPushButton::clicked, this, &MainMenu::openFriendAdder);
-    connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(updateFriendsTab(int)));
-    connect(ui->friendRequestsListWidget, SIGNAL(customContextMenuRequested(QPoint)),
-            this, SLOT(showFriendRequestsContextMenu(QPoint)));
-    connect(ui->friendsListWidget, SIGNAL(customContextMenuRequested(QPoint)),
-            this, SLOT(showFriendsContextMenu(QPoint)));
+    connect(ui->tabWidget, &QTabWidget::currentChanged, this, &MainMenu::updateFriendsTab);
+    connect(ui->friendRequestsListWidget, &QListWidget::customContextMenuRequested, this, &MainMenu::showFriendRequestsContextMenu);
+    connect(ui->friendsListWidget, &QListWidget::customContextMenuRequested, this, &MainMenu::showFriendsContextMenu);
+    connect(ui->openTopPlayersWidget, &QPushButton::clicked, this, &MainMenu::getTopPlayers);
+
+    connect(ui->showClansButton, &QPushButton::clicked, this, &MainMenu::showNotImplementedFeature);
+    connect(ui->createClanButton, &QPushButton::clicked, this, &MainMenu::showNotImplementedFeature);
+    connect(ui->createTournamentButton, &QPushButton::clicked, this, &MainMenu::showNotImplementedFeature);
 
     connect(ui->exitButton, &QPushButton::clicked, this, &MainMenu::close);
 
@@ -330,6 +332,14 @@ void MainMenu::openFriendAdder()
     });
 }
 
+void MainMenu::getTopPlayers()
+{
+    QMap<QString, QString> queryParams;
+
+    sendServerRequest("http://127.0.0.1:8000/leagues/get_all_players_by_league/", queryParams, m_manager);
+    connect(m_manager, &QNetworkAccessManager::finished, this, &MainMenu::openTopPlayersWidget);
+}
+
 void MainMenu::createGame(bool t_opponentIsAI)
 {
     QJsonObject jsonObj;
@@ -344,6 +354,15 @@ void MainMenu::connectToRandomGame()
     QJsonObject jsonObj;
     jsonObj["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::FIND_GAME];
     m_gameCreatorSocket->sendTextMessage(convertJsonObjectToString(jsonObj));
+}
+
+/*! @brief Вывод сообщения о том, что функция будет в будущих обновлениях
+ *
+ *  @return void
+*/
+void MainMenu::showNotImplementedFeature()
+{
+    return showMessage("В будущих обновлениях...", QMessageBox::Icon::Information);
 }
 
 /*! @brief Инициалиализация сокетов
@@ -474,7 +493,6 @@ void MainMenu::onFriendsUpdateSocketMessageReceived(QString t_textMessage)
 */
 void MainMenu::onFriendsUpdateSocketErrorOccurred(QAbstractSocket::SocketError t_socketError)
 {
-    qDebug() << t_socketError;
     showMessage("Возникла ошибка при подключении к серверу", QMessageBox::Icon::Critical);
     close();
 }
@@ -547,8 +565,6 @@ void MainMenu::fillFriendsTab(QNetworkReply *t_reply)
     disconnect(m_manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(fillFriendsTab(QNetworkReply*)));
     QJsonObject jsonResponse = QJsonDocument::fromJson(QString(t_reply->readAll()).toUtf8()).object();
 
-    qDebug() << "fillFriendsTab";
-    qDebug() << jsonResponse;
     if (jsonResponse.isEmpty()) {
         showMessage("Сервер недоступен", QMessageBox::Icon::Critical);
         close();
@@ -599,4 +615,24 @@ void MainMenu::fillFriendsRequestsTab(QNetworkReply *t_reply)
     for (int i = 0; i < jsonArray.size(); ++i) {
         ui->friendRequestsListWidget->addItem(jsonArray[i].toString());
     }
+}
+
+void MainMenu::openTopPlayersWidget(QNetworkReply *t_reply)
+{
+    disconnect(m_manager, &QNetworkAccessManager::finished, this, &MainMenu::openTopPlayersWidget);
+
+    QJsonObject jsonResponse = QJsonDocument::fromJson(QString(t_reply->readAll()).toUtf8()).object();
+    if (jsonResponse.contains("error")) {
+        QString error_message = jsonResponse["error"].toString();
+        return showMessage(error_message, QMessageBox::Icon::Critical);
+    }
+
+    QJsonObject playersByLeague = jsonResponse["players_by_league"].toObject();
+    QJsonArray leagues = jsonResponse["leagues"].toArray();
+    QJsonObject sortingKeys = jsonResponse["sorting_keys"].toObject();
+    m_topPlayersWidget = new TopPlayers(playersByLeague, leagues, sortingKeys);
+    hide();
+    connect(m_topPlayersWidget, &QWidget::destroyed, this, &MainMenu::show);
+
+    m_topPlayersWidget->show();
 }

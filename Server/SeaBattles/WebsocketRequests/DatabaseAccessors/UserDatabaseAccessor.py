@@ -1,6 +1,7 @@
 from asgiref.sync import sync_to_async
 from typing import Union
-import hashlib
+from hashlib import md5
+from random import randint
 
 from os import environ
 from django import setup
@@ -10,6 +11,7 @@ setup()
 
 from RestfulRequests.models import User
 
+
 async def hashPassword(email: str, username: str, password: str) -> str:
     salt = ""
 
@@ -18,7 +20,7 @@ async def hashPassword(email: str, username: str, password: str) -> str:
     for part in range(0, len(username), 2):
         salt += username[part]
     
-    return hashlib.md5((password + salt).encode()).hexdigest()
+    return md5((password + salt).encode()).hexdigest()
 
 
 class UserDatabaseAccessor:
@@ -79,11 +81,12 @@ class UserDatabaseAccessor:
             return None
 
     @staticmethod
-    async def awardSilverCoins(user_id: int) -> None:
+    async def awardWinner(user_id: int) -> None:
         user = await UserDatabaseAccessor.getUserById(user_id)
         if not (user == None):
             user.silver_coins += 50
             user.win_streak += 1
+            user.cups += randint(5, 8)
             await sync_to_async(user.save)()
 
     @staticmethod
@@ -91,6 +94,9 @@ class UserDatabaseAccessor:
         user = await UserDatabaseAccessor.getUserById(user_id)
         if not(user == None):
             user.win_streak = 0
+            user.cups -= randint(5, 8)
+            if user.cups < 0:
+                user.cups = 0
             await sync_to_async(user.save)()
 
     @staticmethod

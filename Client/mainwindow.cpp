@@ -68,7 +68,7 @@ MainWindow::MainWindow(const QString t_gameId, const int t_userId,
         onTimeOut(m_opponentConnectionTimer);
     });
     m_opponentConnectionTimer->setInterval(1000);
-    // m_opponentConnectionTimer->start();
+    m_opponentConnectionTimer->start();
 
     setEnabled(false);
     setCurrentGameState("Ожидание оппонента");
@@ -138,7 +138,6 @@ void MainWindow::onGameSocketDisconnected()
 void MainWindow::onGameSocketMessageReceived(QString t_textMessage)
 {
     QJsonObject jsonResponse = QJsonDocument::fromJson(t_textMessage.toUtf8()).object();
-    qDebug() << jsonResponse;
     if (jsonResponse.contains("error")) {
         return showMessage(jsonResponse["error"].toString(), QMessageBox::Icon::Critical);
     }
@@ -380,7 +379,6 @@ void MainWindow::paintOpponentCells(int t_xStart, int t_yStart, QColor t_color) 
     if (m_weaponActivated) {
         xRange = m_weaponRange[ui->weaponsComboBox->currentText()][1];
         yRange = m_weaponRange[ui->weaponsComboBox->currentText()][0];
-        qDebug() << xRange << yRange;
     } else {
         xRange = 1;
         yRange = 1;
@@ -592,7 +590,6 @@ void MainWindow::createOpponentTable()
 
 void MainWindow::getAvailableWeapons()
 {
-    qDebug() << "getAvailableWeapons";
     QJsonObject jsonObj;
     jsonObj["action_type"] = OUTGOING_ACTIONS[OUTGOING_ACTIONS_NAMES::GET_WEAPONS];
     jsonObj["user_id"] = QString::number(m_userId);

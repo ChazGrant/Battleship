@@ -8,11 +8,15 @@
  *
  *  @return void
 */
-inline void showMessage(QString t_messageText, QMessageBox::Icon t_messageIcon) {
+inline void showMessage(const QString t_messageText, const QMessageBox::Icon t_messageIcon) {
     QMessageBox msgbox;
-    msgbox.setWindowTitle("Ошибка");
     msgbox.setText(t_messageText);
     msgbox.setIcon(t_messageIcon);
+    if (t_messageIcon == QMessageBox::Icon::Critical) {
+        msgbox.setWindowTitle("Ошибка");
+    } else if (t_messageIcon == QMessageBox::Icon::Information) {
+        msgbox.setWindowTitle("Информация");
+    }
     msgbox.exec();
 }
 

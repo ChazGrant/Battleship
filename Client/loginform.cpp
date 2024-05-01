@@ -21,7 +21,7 @@ LoginForm::LoginForm(QWidget *parent) :
 
     m_manager = new QNetworkAccessManager(this);
 
-    this->setWindowFlags(Qt::FramelessWindowHint);
+    setWindowFlags(Qt::FramelessWindowHint);
 
     connect(ui->loginButton, &QPushButton::clicked, this, &LoginForm::login);
     connect(ui->registrateButton, &QPushButton::clicked, this, &LoginForm::registrate);
@@ -143,8 +143,9 @@ void LoginForm::getLoginStatus(QNetworkReply *reply)
     bool login_successful = jsonObj["login_successful"].toBool();
     if (login_successful) {
         int userId = jsonObj["user_id"].toInt();
+        QString userName = jsonObj["user_name"].toString();
 
-        window = new MainMenu(userId);
+        window = new MainMenu(userId, userName);
         window->show();
         close();
     } else {
@@ -179,8 +180,10 @@ void LoginForm::getRegistrateStatus(QNetworkReply *reply)
 
     bool registrate_successful = jsonObj["registration_successful"].toBool();
     if (registrate_successful) {
-        int userId = jsonObj["user_id"].toInt();
-        window = new MainMenu(userId);
+        const int userId = jsonObj["user_id"].toInt();
+        const QString userName = jsonObj["user_name"].toString();
+
+        window = new MainMenu(userId, userName);
         window->show();
         close();
     } else {

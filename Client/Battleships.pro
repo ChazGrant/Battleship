@@ -27,7 +27,8 @@ SOURCES += \
     main.cpp \
     mainmenu.cpp \
     mainwindow.cpp \
-    shop.cpp
+    shop.cpp \
+    topplayers.cpp
 
 HEADERS += \
     additionalfunctions.h \
@@ -36,7 +37,8 @@ HEADERS += \
     loginform.h \
     mainmenu.h \
     mainwindow.h \
-    shop.h
+    shop.h \
+    topplayers.h
 
 FORMS += \
     friendadder.ui \
@@ -44,7 +46,8 @@ FORMS += \
     loginform.ui \
     mainmenu.ui \
     mainwindow.ui \
-    shop.ui
+    shop.ui \
+    topplayers.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
