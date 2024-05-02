@@ -18,31 +18,29 @@ class TopPlayers : public QWidget
     Q_OBJECT
 
 public:
-    explicit TopPlayers(QJsonObject t_topPlayersByLeague,
-                        QJsonArray t_leagues,
-                        QJsonObject t_sortingKeys,
+    explicit TopPlayers(QJsonArray t_leagues,
+                        QJsonObject t_playersByCups,
+                        QJsonObject t_playersBySilverCoins,
+                        QJsonObject t_playersByWinstreak,
                         QWidget *parent = nullptr);
     ~TopPlayers();
 
 private slots:
-    void onFilterCriteriaChanged();
+    void onSortingCriteriaChanged();
+    void initTopPlayersTable(const QString t_leagueName);
 
 private:
     Ui::TopPlayers *ui;
 
-    void initTopPlayersTable(const QString t_leagueName);
 
-    QJsonObject m_playersByLeague;
-    QJsonObject m_sortingKeys;
+    QJsonObject m_playersByCups;
+    QJsonObject m_playersBySilverCoins;
+    QJsonObject m_playersByWinstreak;
 
-    void sortPlayers();
-    QJsonArray m_sortedPlayers;
-    QString m_currentSortingKey;
+    QJsonObject m_selectedPlayers;
 
     void getTopPlayers();
     void showTopPlayers();
-
-    void initTopPlayersTable();
 
     void fillAllLeagues(QJsonArray t_leagues);
 

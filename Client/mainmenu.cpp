@@ -627,10 +627,11 @@ void MainMenu::openTopPlayersWidget(QNetworkReply *t_reply)
         return showMessage(error_message, QMessageBox::Icon::Critical);
     }
 
-    QJsonObject playersByLeague = jsonResponse["players_by_league"].toObject();
     QJsonArray leagues = jsonResponse["leagues"].toArray();
-    QJsonObject sortingKeys = jsonResponse["sorting_keys"].toObject();
-    m_topPlayersWidget = new TopPlayers(playersByLeague, leagues, sortingKeys);
+    QJsonObject playersByCups = jsonResponse["players_by_cups"].toObject();
+    QJsonObject playersBySilverCoins = jsonResponse["players_by_silver_coins"].toObject();
+    QJsonObject playersByWinstreak = jsonResponse["player_by_winstreak"].toObject();
+    m_topPlayersWidget = new TopPlayers(leagues, playersByCups, playersBySilverCoins, playersByWinstreak);
     hide();
     connect(m_topPlayersWidget, &QWidget::destroyed, this, &MainMenu::show);
 

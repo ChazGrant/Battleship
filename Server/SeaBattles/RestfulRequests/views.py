@@ -611,41 +611,61 @@ class LegaueViewSet(ViewSet):
         return Response(serializer.data)
 
     @action(detail=False, methods=["post"])
-    def get_all_players_by_league(self, request) -> Response:
-        all_users = User.objects.filter(is_temporary=False)
-        players_by_league: Dict[str, List[Dict[str, int]]] = {}
-        leagues = [league.league_name for league in PlayerLeague.objects.all().
-                   order_by("min_cups_required")]
+    def get_top_players_by_winstreak(self, request) -> Response:
+        ...
+
+    @action(detail=False, methods=["post"])
+    def get_top_players_by_silver_coins(self, request) -> Response:
+        ...
+
+    @action(detail=False, methods=["post"])
+    def get_top_players_by_cups(self, request) -> Response:
+        ...
+
+    @action(detail=False, methods=["post", "get"])
+    def get_top_players(self, request) -> Response:
+        players_by_cups: Dict[str, List[Dict[str, int]]] = {}
+        players_by_silver_coins: Dict[str, List[Dict[str, int]]] = {}
+        players_by_winstreak: Dict[str, List[Dict[str, int]]] = {}
+        leagues: Dict[str, List[int]] = {}
         
-        usernames = [user.user_name for user in all_users]
-        print(len(usernames) == len(set(usernames)))
-        for user in all_users:
-            league_name = PlayerLeague.objects.get(
-                min_cups_required__lte=user.cups,
-                max_cups_required__gt=user.cups).league_name
-            if league_name in players_by_league.keys():
-                players_by_league[league_name].append({
-                    "player_name": user.user_name,
-                    "player_cups": user.cups,
-                    "player_winstreak": user.win_streak,
-                    "player_silver_coins": user.silver_coins
+        for league in PlayerLeague.objects.all():
+            leagues[league.league_name] = [league.min_cups_required, league.max_cups_required]
+            players_by_cups[league.league_name] = []
+            players_by_silver_coins[league.league_name] = []
+            players_by_winstreak[league.league_name] = []
+        
+        for league_name, (min_cups, max_cups) in leagues.items():
+            users = User.objects.filter(
+                is_temporary=False,
+                cups__gte=min_cups,
+                cups__lt=max_cups)
+            players_by_cups[league_name] = []
+            players_by_winstreak[league_name] = []
+            players_by_silver_coins[league_name] = []
+            for user in users.order_by("-cups"):
+                players_by_cups[league_name].append({
+                    "user_name": user.user_name,
+                    "value": user.cups
                 })
-            else:
-                players_by_league[league_name] = [{
-                    "player_name": user.user_name,
-                    "player_cups": user.cups,
-                    "player_winstreak": user.win_streak,
-                    "player_silver_coins": user.silver_coins
-                }]
+
+            for user in users.order_by("-winstreak"):
+                players_by_winstreak[league_name].append({
+                    "user_name": user.user_name,
+                    "value": user.win_streak
+                })
+
+            for user in users.order_by("-silver_coins"):
+                players_by_silver_coins[league_name].append({
+                    "user_name": user.user_name,
+                    "value": user.silver_coins
+                })
 
         return Response({
             "leagues": leagues,
-            "players_by_league": players_by_league,
-            "sorting_keys": {
-                "Топ по кубкам": "player_cups",
-                "Топ по монетам": "player_silver_coins",
-                "Топ по количеству побед подряд": "player_winstreak"
-            }
+            "players_by_cups": players_by_cups,
+            "players_by_silver_coins": players_by_silver_coins,
+            "player_by_winstreak": players_by_winstreak,
         })
 
 
