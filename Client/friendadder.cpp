@@ -13,7 +13,6 @@ FriendAdder::FriendAdder(QWidget *parent) :
 {
     ui->setupUi(this);
 
-
     connect(ui->addFriendButton, &QPushButton::clicked, this, &FriendAdder::addFriend);
     connect(ui->closeWindowButton, &QPushButton::clicked, this, &FriendAdder::close);
 

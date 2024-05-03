@@ -1,6 +1,13 @@
 #include "gameinvitenotifier.h"
 #include "ui_gameinvitenotifier.h"
 
+
+/*! @brief Конструктор класса
+ *
+ *  @param *parent Указатель на родительский класс виджета
+ *
+ *  @return GameInviteNotifier
+*/
 GameInviteNotifier::GameInviteNotifier(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::GameInviteNotifier)
@@ -17,6 +24,7 @@ GameInviteNotifier::GameInviteNotifier(QWidget *parent) :
     });
 }
 
+//! @brief Деструктор класса
 GameInviteNotifier::~GameInviteNotifier()
 {
     delete ui;

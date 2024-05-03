@@ -1,14 +1,18 @@
 #include "shop.h"
 #include "ui_shop.h"
 
+
 const QColor WHITE = QColor("white");
-//const QColor GREEN = QColor("darkgreen");
 const QColor YELLOW = QColor("yellow");
-//const QColor RED = QColor("darkred");
-//const QColor GRAY = QColor("darkgray");
-//const QColor ORANGE = QColor("orange");
 
 
+/*! @brief Конструктор класса
+ *
+ *  @param *parent Указатель на родительский виджет
+ *  @param t_user_id Идентификатор пользователя
+ *
+ *  @return MainWindow
+*/
 Shop::Shop(int t_userId, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::Shop)
@@ -44,11 +48,18 @@ Shop::Shop(int t_userId, QWidget *parent)
     initShootingRange();
 }
 
+//! @brief Деструктор класса
 Shop::~Shop()
 {
     delete ui;
 }
 
+/*! @brief Заполнение ComboBox купленными оружиями
+ *
+ *  @param t_reply Указатель на ответ от сервера
+ *
+ *  @return void
+*/
 void Shop::fillWeaponsComboBoxes(QNetworkReply *t_reply)
 {
     disconnect(m_manager, &QNetworkAccessManager::finished, this, &Shop::fillWeaponsComboBoxes);
@@ -66,6 +77,12 @@ void Shop::fillWeaponsComboBoxes(QNetworkReply *t_reply)
     getCoinsAmount();
 }
 
+/*! @brief Получение статуса купленного оружия
+ *
+ *  @param t_reply Указатель на ответ от сервера
+ *
+ *  @return void
+*/
 void Shop::getWeaponBoughtStatus(QNetworkReply *t_reply)
 {
     disconnect(m_manager, &QNetworkAccessManager::finished, this, &Shop::getWeaponBoughtStatus);
@@ -120,6 +137,12 @@ void Shop::getWeaponBoughtStatus(QNetworkReply *t_reply)
     renderCoinsAmount(silverCoinsLeft);
 }
 
+/*! @brief Получение статуса проданного оружия
+ *
+ *  @param t_reply Указатель на ответ от сервера
+ *
+ *  @return void
+*/
 void Shop::getWeaponSoldStatus(QNetworkReply *t_reply)
 {
     disconnect(m_manager, &QNetworkAccessManager::finished, this, &Shop::getWeaponSoldStatus);
@@ -148,6 +171,12 @@ void Shop::getWeaponSoldStatus(QNetworkReply *t_reply)
     renderCoinsAmount(silverCoinsLeft);
 }
 
+/*! @brief Установка текущего количество монет пользователя
+ *
+ *  @param t_reply Указатель на ответ от сервера
+ *
+ *  @return void
+*/
 void Shop::setCoinsAmount(QNetworkReply *t_reply)
 {
     disconnect(m_manager, &QNetworkAccessManager::finished, this, &Shop::setCoinsAmount);
@@ -160,6 +189,12 @@ void Shop::setCoinsAmount(QNetworkReply *t_reply)
     renderCoinsAmount(coinsAmount);
 }
 
+/*! @brief Установка общей суммы продажи и покупки
+ *
+ *  @param t_weaponAmount Количество оружий для покупки/продажи
+ *
+ *  @return void
+*/
 void Shop::setTotalPrices(int t_weaponAmount)
 {
     QList<QTableWidgetItem*> selectedShopItems = ui->weaponsShopTableWidget->selectedItems();
@@ -177,6 +212,12 @@ void Shop::setTotalPrices(int t_weaponAmount)
     }
 }
 
+/*! @brief Заполнение оружий в наличии
+ *
+ *  @param t_userWeapons Массив из оружий в наличии
+ *
+ *  @return void
+*/
 void Shop::fillWeaponsInStock(QJsonArray t_userWeapons)
 {
     ui->weaponsInStockTableWidget->setRowCount(t_userWeapons.size());
@@ -200,6 +241,12 @@ void Shop::fillWeaponsInStock(QJsonArray t_userWeapons)
     }
 }
 
+/*! @brief Заполнение оружий в магазине
+ *
+ *  @param t_shopWeapons Массив из оружий в магазине
+ *
+ *  @return void
+*/
 void Shop::fillWeaponsShop(QJsonArray t_shopWeapons)
 {
     ui->weaponsShopTableWidget->setRowCount(t_shopWeapons.size());
@@ -225,6 +272,10 @@ void Shop::fillWeaponsShop(QJsonArray t_shopWeapons)
     }
 }
 
+/*! @brief Получение количества текущих монет пользователя
+ *
+ *  @return void
+*/
 void Shop::getCoinsAmount()
 {
     QMap<QString, QString> queryParams;
@@ -235,6 +286,10 @@ void Shop::getCoinsAmount()
     sendServerRequest("http://127.0.0.1:8000/shop/get_user_coins/", queryParams, m_manager);
 }
 
+/*! @brief Получение оружий
+ *
+ *  @return void
+*/
 void Shop::getWeapons()
 {
     QMap<QString, QString> queryParams;
@@ -245,11 +300,23 @@ void Shop::getWeapons()
     sendServerRequest("http://127.0.0.1:8000/shop/get_weapons/", queryParams, m_manager);
 }
 
+/*! @brief Вывод количества монет на экран
+ *
+ *  @param t_coinsAmount Количество монет
+ *
+ *  @return void
+*/
 void Shop::renderCoinsAmount(double t_coinsAmount)
 {
     ui->userCoinsLabel->setText("На Вашем счету: " + QString::number(t_coinsAmount) + "\nсеребряных монет");
 }
 
+/*! @brief Покупка оружия
+ *
+ *  @param t_buyAll Покупка максимального количества оружия
+ *
+ *  @return void
+*/
 void Shop::buyWeapon(bool t_buyAll)
 {
     QList<QTableWidgetItem*> selectedItems = ui->weaponsShopTableWidget->selectedItems();
@@ -269,6 +336,12 @@ void Shop::buyWeapon(bool t_buyAll)
     sendServerRequest("http://127.0.0.1:8000/shop/buy_weapon/", queryParams, m_manager);
 }
 
+/*! @brief Продажа оружия
+ *
+ *  @param t_sellAll Продажа всего выбранного оружия в наличии
+ *
+ *  @return void
+*/
 void Shop::sellWeapon(bool t_sellAll)
 {
     QList<QTableWidgetItem*> selectedItems = ui->weaponsInStockTableWidget->selectedItems();
@@ -292,6 +365,10 @@ void Shop::sellWeapon(bool t_sellAll)
     sendServerRequest("http://127.0.0.1:8000/shop/sell_weapon/", queryParams, m_manager);
 }
 
+/*! @brief Создание поля для тестирования оружий
+ *
+ *  @return void
+*/
 void Shop::initShootingRange()
 {
     ui->shootingRangeTable->setRowCount(10);
@@ -306,6 +383,10 @@ void Shop::initShootingRange()
     }
 }
 
+/*! @brief Установка текущего радиуса поражения
+ *
+ *  @return void
+*/
 void Shop::setCurrentWeaponRange()
 {
     QList<QTableWidgetItem*> selectedItems = ui->weaponsShopTableWidget->selectedItems();
@@ -320,6 +401,10 @@ void Shop::setCurrentWeaponRange()
     clearHighlightedCells();
 }
 
+/*! @brief Очистка закрашенных ячеек
+ *
+ *  @return void
+*/
 void Shop::clearHighlightedCells()
 {
     for (int i = 0; i < 10; ++i) {
@@ -329,6 +414,12 @@ void Shop::clearHighlightedCells()
     }
 }
 
+/*! @brief Закрашивание ячейки
+ *
+ *  @param t_item Указатель на ячейку, с которой начинать закрашивание
+ *
+ *  @return void
+*/
 void Shop::highlightCell(QTableWidgetItem *t_item)
 {
     clearHighlightedCells();

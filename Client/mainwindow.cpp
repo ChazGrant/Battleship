@@ -2,15 +2,6 @@
 #include "ui_mainwindow.h"
 
 
-const QMap<QString, QStringList> GAME_OVER_CLAUSES = {
-    {"opponent_disconnected", {"", "Противник покинул игру"}},
-    {"all_ships_are_dead", {"Ваши корабли были уничтожены", "Вы уничтожили все корабли"}}
-};
-
-const int FIELD_ROW_COUNT = 10;
-const int FIELD_COLUMN_COUNT = 10;
-
-
 /*! @brief Конструктор класса
  *
  *  @details Создаются 2 таймера для ожидания хода и ожидания начала игры
@@ -71,7 +62,7 @@ MainWindow::MainWindow(const QString t_gameId, const int t_userId,
     m_opponentConnectionTimer->start();
 
     setEnabled(false);
-    setCurrentGameState("Ожидание оппонента");
+    showCurrentStateGame("Ожидание оппонента");
 }
 
 /*! @brief Закрытие главного окна
@@ -168,7 +159,7 @@ void MainWindow::onGameSocketMessageReceived(QString t_textMessage)
             setDisabled(false);
             ui->makeTurnButton->setVisible(true);
             ui->placeShipButton->setVisible(false);
-            setCurrentGameState("Ваш ход");
+            showCurrentStateGame("Ваш ход");
         }
     } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::AVAILABLE_WEAPONS]) {
         fillWeaponsComboBox(jsonResponse);
@@ -187,7 +178,7 @@ void MainWindow::onGameSocketMessageReceived(QString t_textMessage)
     } else if (actionType == INCOMING_ACTIONS[INCOMING_ACTIONS_NAMES::OPPONENT_CONNECTED]) {
         m_opponentConnectionTimer->stop();
         ui->opponentWaitingRemainingTimeLabel->clear();
-        setCurrentGameState("Заполнение полей");
+        showCurrentStateGame("Заполнение полей");
     }
 }
 
@@ -269,7 +260,13 @@ void MainWindow::onTimeOut(QTimer *t_timer)
     }
 }
 
-void MainWindow::setCurrentGameState(QString t_gameState)
+/*! @brief Вывод текущего состояния игры на экран
+ *
+ *  @param t_gameState Состояние игры
+ *
+ *  @return void
+*/
+void MainWindow::showCurrentStateGame(QString t_gameState)
 {
     ui->currentGameStatelabel->setText("Текущее состояние игры: " + t_gameState);
 }
@@ -307,28 +304,12 @@ void MainWindow::initGameSocket()
             this, SLOT(onGameSocketMessageReceived(QString)));
 }
 
-/*! @brief Создание сокета для обновления чата и событий к нему
+/*! @brief Подключение к игре
+ *
+ *  @details Передаёт на сервер данные о идентификаторе игры, пользователя и приглашения
  *
  *  @return void
 */
-void MainWindow::initChatSocket()
-{
-    m_chatSocket = new QWebSocket();
-
-    m_chatSocketUrl.setPort(8080);
-    m_chatSocketUrl.setHost("127.0.0.1");
-    m_chatSocketUrl.setPath("/chat/");
-    m_chatSocketUrl.setScheme("ws");
-
-    m_chatSocket->open(m_chatSocketUrl);
-
-    connect(m_chatSocket, SIGNAL(connected()), this, SLOT(onChatSocketConnected()));
-    connect(m_chatSocket, SIGNAL(error(QAbstractSocket::SocketError)),
-            this, SLOT(onChatSocketErrorOccurred(QAbstractSocket::SocketError)));
-    connect(m_chatSocket, SIGNAL(textMessageReceived(QString)),
-            this, SLOT(onChatSocketMessageReceived(QString)));
-}
-
 void MainWindow::connectToGame()
 {
     QJsonObject jsonObj;
@@ -339,16 +320,6 @@ void MainWindow::connectToGame()
 
     m_gameSocket->sendTextMessage(convertJsonObjectToString(jsonObj));
 }
-
-//void MainWindow::__createField()
-//{
-//    QJsonObject jsonObj;
-//    jsonObj["action_type"] = "create_field";
-//    jsonObj["user_id"] = QString::number(m_userId);
-//    jsonObj["game_id"] = m_gameId;
-
-//    m_gameSocket->sendTextMessage(jsonObjectToQString(jsonObj));
-//}
 
 /*! @brief Выделение ячейки поля оппонента
  *
@@ -374,6 +345,14 @@ void MainWindow::highlightOpponentCell(QTableWidgetItem *t_item)
     paintOpponentCells(t_item->row(), t_item->column(), YELLOW);
 }
 
+/*! @brief Закрашивание клеток оппонента
+ *
+ *  @param t_xStart Начало закрашивания по x
+ *  @param t_yStart Начало закрашивания по y
+ *  @param t_color Цвет закрашивания клеток
+ *
+ *  @return void
+*/
 void MainWindow::paintOpponentCells(int t_xStart, int t_yStart, QColor t_color) {
     int xRange, yRange;
     if (m_weaponActivated) {
@@ -588,6 +567,10 @@ void MainWindow::createOpponentTable()
     ui->opponentField->setEditTriggers(QAbstractItemView::EditTrigger::NoEditTriggers);
 }
 
+/*! @brief Получение купленных оружий с сервера
+ *
+ *  @return void
+*/
 void MainWindow::getAvailableWeapons()
 {
     QJsonObject jsonObj;
@@ -616,6 +599,10 @@ void MainWindow::fillWeaponsComboBox(QJsonObject jsonObj)
     }
 }
 
+/*! @brief Автоматическая расстановка кораблей
+ *
+ *  @return void
+*/
 void MainWindow::autoPlaceShips()
 {
     setDisabled(true);
@@ -698,12 +685,6 @@ void MainWindow::on_placeShipButton_clicked()
 
 /*! @brief Выстрел по клетке
  *
- *  @details Отправляем запрос на сервер, блокируя интерфейс
- *  Если ошибок нет, то проверяем на попадание
- *  Если не попал, то ожидаем своего хода
- *  Если попал, то даём ещё один ход
- *  Если убил, то проверяем на конец игры
- *
  *  @return void
 */
 void MainWindow::makeTurn()
@@ -729,6 +710,14 @@ void MainWindow::makeTurn()
     // setDisabled(true);
 }
 
+/*! @brief Пометка клеток оппонента
+ *
+ *  @details Получаем с сервера информацию о повреждённых клетках и помечаем их на интерфейсе
+ *
+ *  @param t_jsonObj Json-ответ от сервера
+ *
+ *  @return void
+*/
 void MainWindow::markOpponentField(QJsonObject t_jsonObj)
 {
     QJsonArray damagedCells = t_jsonObj["damaged_cells"].toArray();
@@ -767,7 +756,7 @@ void MainWindow::markOpponentField(QJsonObject t_jsonObj)
     }
 
     if (deadCells.size() || damagedCells.size()) {
-        setCurrentGameState("Ход оппонента");
+        showCurrentStateGame("Ход оппонента");
         setDisabled(false);
     }
 
@@ -780,6 +769,14 @@ void MainWindow::markOpponentField(QJsonObject t_jsonObj)
     }
 }
 
+/*! @brief Пометка клеток оппонента
+ *
+ *  @details Получаем с сервера информацию о клетках по которым стрелял оппонент и помечаем их на интерфейсе
+ *
+ *  @param t_jsonObj Json-ответ от сервера
+ *
+ *  @return void
+*/
 void MainWindow::markOwnerField(QJsonObject t_jsonObj)
 {
     QJsonArray damagedCells = t_jsonObj["damaged_cells"].toArray();

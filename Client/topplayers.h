@@ -26,18 +26,18 @@ public:
     ~TopPlayers();
 
 private slots:
-    void onSortingCriteriaChanged();
-    void initTopPlayersTable(const QString t_leagueName);
+    void onFilterChanged();
+    void initTopPlayersTable();
 
 private:
+    //! Указатель на виджет класса
     Ui::TopPlayers *ui;
-
 
     QJsonObject m_playersByCups;
     QJsonObject m_playersBySilverCoins;
     QJsonObject m_playersByWinstreak;
 
-    QJsonObject m_selectedPlayers;
+    QJsonArray m_selectedPlayers;
 
     void getTopPlayers();
     void showTopPlayers();

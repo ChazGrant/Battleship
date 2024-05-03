@@ -32,6 +32,14 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
+const QMap<QString, QStringList> GAME_OVER_CLAUSES = {
+    {"opponent_disconnected", {"", "Противник покинул игру"}},
+    {"all_ships_are_dead", {"Ваши корабли были уничтожены", "Вы уничтожили все корабли"}}
+};
+
+const int FIELD_ROW_COUNT = 10;
+const int FIELD_COLUMN_COUNT = 10;
+
 const QColor WHITE = QColor("white");
 const QColor GREEN = QColor("darkgreen");
 const QColor YELLOW = QColor("yellow");
@@ -74,7 +82,7 @@ private:
     //! Указатель на обработчик запросов
     QNetworkAccessManager* m_manager;
 
-    void setCurrentGameState(QString t_gameState);
+    void showCurrentStateGame(QString t_gameState);
     void setShipsAmountLabel(QJsonObject t_jsonResponse);
     void placeShip(QJsonArray t_cells);
 
@@ -139,12 +147,16 @@ private:
     void getAvailableWeapons();
     void fillWeaponsComboBox(QJsonObject jsonObj);
 
+    //! @brief Оружия, которые в наличии у пользователя
     QMap<QString, int> m_availableWeapons;
+    //! @brief Радиус поражения оружий
     QMap<QString, QList<int>> m_weaponRange;
 
     void autoPlaceShips();
 
+    //! @brief Оружие активировано
     bool m_weaponActivated = false;
+    //! @brief Размещение кораблей автоматически
     bool m_shipsAutoPlacing = false;
 
     void makeTurn();

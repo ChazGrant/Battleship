@@ -1,3 +1,4 @@
+
 #include "mainmenu.h"
 #include "ui_mainmenu.h"
 
@@ -8,7 +9,8 @@
  *
  *  @details Инициализирует свойство класса m_manager
  *
- *  @param t_userId Идентификатор пользователя, который прошёл авторизацию
+ *  @param t_userId Идентификатор пользователя
+ *  @param t_userName Имя пользователя
  *  @param *parent Указатель на родительский виджет
  *
  *  @return MainMenu
@@ -211,6 +213,10 @@ void MainMenu::openMainWindow(QString t_gameId, QString t_gameInviteId)
     close();
 }
 
+/*! @brief Открытие виджета магазина
+ *
+ *  @return void
+*/
 void MainMenu::openShopWidget()
 {
     m_shopWindow = new Shop(m_userId);
@@ -332,14 +338,22 @@ void MainMenu::openFriendAdder()
     });
 }
 
+/*! @brief Получение топа игроков
+ *
+ *  @return void
+*/
 void MainMenu::getTopPlayers()
 {
     QMap<QString, QString> queryParams;
 
-    sendServerRequest("http://127.0.0.1:8000/leagues/get_all_players_by_league/", queryParams, m_manager);
+    sendServerRequest("http://127.0.0.1:8000/leagues/get_top_players/", queryParams, m_manager);
     connect(m_manager, &QNetworkAccessManager::finished, this, &MainMenu::openTopPlayersWidget);
 }
 
+/*! @brief Создание игры
+ *
+ *  @return void
+*/
 void MainMenu::createGame(bool t_opponentIsAI)
 {
     QJsonObject jsonObj;
@@ -349,6 +363,10 @@ void MainMenu::createGame(bool t_opponentIsAI)
     m_gameCreatorSocket->sendTextMessage(convertJsonObjectToString(jsonObj));
 }
 
+/*! @brief Подключение к случайной игре
+ *
+ *  @return void
+*/
 void MainMenu::connectToRandomGame()
 {
     QJsonObject jsonObj;
@@ -511,12 +529,22 @@ void MainMenu::onGameCreatorSocketConnected()
     m_gameCreatorSocket->sendTextMessage(convertJsonObjectToString(jsonObj));
 }
 
+/*! @brief Обработчик отключения сокета от сервера
+ *
+ *  @return void
+*/
 void MainMenu::onGameCreatorSocketDisconnected()
 {
     showMessage("Вы были отключены от сервера", QMessageBox::Icon::Critical);
     close();
 }
 
+/*! @brief Обработчик получения сообщения для сокета GameCreator
+ *
+ *  @param t_textMessage Полученное сообщение
+ *
+ *  @return void
+*/
 void MainMenu::onGameCreatorSocketMessageReceived(QString t_textMessage)
 {
     QJsonObject jsonResponse = QJsonDocument::fromJson(t_textMessage.toUtf8()).object();
@@ -549,6 +577,12 @@ void MainMenu::onGameCreatorSocketMessageReceived(QString t_textMessage)
     }
 }
 
+/*! @brief Обработчик ошибок, полученных при передаче данных на сервер
+ *
+ *  @param t_socketError Тип ошибки
+ *
+ *  @return void
+*/
 void MainMenu::onGameCreatorSocketErrorOccurred(QAbstractSocket::SocketError t_socketError)
 {
 
@@ -617,6 +651,12 @@ void MainMenu::fillFriendsRequestsTab(QNetworkReply *t_reply)
     }
 }
 
+/*! @brief Открытие виджета топа игроков
+ *
+ *  @param *t_reply Указатель на ответ от сервера
+ *
+ *  @return void
+*/
 void MainMenu::openTopPlayersWidget(QNetworkReply *t_reply)
 {
     disconnect(m_manager, &QNetworkAccessManager::finished, this, &MainMenu::openTopPlayersWidget);

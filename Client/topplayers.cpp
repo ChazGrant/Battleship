@@ -23,15 +23,15 @@ TopPlayers::TopPlayers(QJsonArray t_leagues,
 
     setWindowFlags(Qt::FramelessWindowHint);
 
+    connect(ui->availableTopSortingComboBox, &QComboBox::currentTextChanged,
+            this, &TopPlayers::onFilterChanged);
+    connect(ui->leagueComboBox, &QComboBox::currentTextChanged, this, &TopPlayers::onFilterChanged);
+
+    fillAvailableTopSorting();
     fillAllLeagues(t_leagues);
 
-    initTopPlayersTable(ui->leagueComboBox->currentText());
-
+    initTopPlayersTable();
     showTopPlayers();
-
-    connect(ui->availableTopSortingComboBox, &QComboBox::currentTextChanged,
-            this, &TopPlayers::onSortingCriteriaChanged);
-    connect(ui->leagueComboBox, &QComboBox::currentTextChanged, this, &TopPlayers::initTopPlayersTable);
 }
 
 TopPlayers::~TopPlayers()
@@ -39,25 +39,28 @@ TopPlayers::~TopPlayers()
     delete ui;
 }
 
-void TopPlayers::onSortingCriteriaChanged() {
-    QString selectedCriteria = ui->availableTopSortingComboBox->currentText();
-    QString selectedLeague = ui->leagueComboBox->currentText();
+void TopPlayers::onFilterChanged()
+{
+    const QString selectedCriteria = ui->availableTopSortingComboBox->currentText();
+    const QString selectedLeague = ui->leagueComboBox->currentText();
+
     if (selectedCriteria == "Топ по кубкам") {
-        m_selectedPlayers = m_playersByCups[selectedLeague].toObject();
+        m_selectedPlayers = m_playersByCups[selectedLeague].toArray();
     } else if (selectedCriteria == "Топ по монетам") {
-        m_selectedPlayers = m_playersBySilverCoins[selectedLeague].toObject();
+        m_selectedPlayers = m_playersBySilverCoins[selectedLeague].toArray();
     } else if (selectedCriteria == "Топ по количеству побед подряд") {
-        m_selectedPlayers = m_playersByWinstreak[selectedLeague].toObject();
+        m_selectedPlayers = m_playersByWinstreak[selectedLeague].toArray();
     }
 
+    initTopPlayersTable();
     showTopPlayers();
 }
 
-void TopPlayers::initTopPlayersTable(const QString t_selectedLeague)
+void TopPlayers::initTopPlayersTable()
 {
     ui->topPlayersTableWidget->clear();
 
-    int totalRows = m_playersByCups[t_selectedLeague].toArray().size();
+    int totalRows = m_selectedPlayers.size();
     ui->topPlayersTableWidget->setRowCount(totalRows);
     ui->topPlayersTableWidget->setColumnCount(2);
     ui->topPlayersTableWidget->setHorizontalHeaderLabels(QStringList() << "Имя игрока" << "Значение");

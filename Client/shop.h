@@ -36,6 +36,7 @@ private slots:
     void setTotalPrices(int);
 
 private:
+    //! Указатель на виджет класса
     Ui::Shop *ui;
 
     void fillWeaponsInStock(QJsonArray t_userWeapons);
@@ -56,9 +57,13 @@ private:
 
     void rearrangeWeaponsInStockTable(int t_fromRow);
 
+    //! Идентификатор пользователя
     int m_userId;
+    //! Радиус поражения оружий
     QMap<QString, QList<int>> m_weaponsRange;
+    //! Текущий радиус поражения
     QList<int> m_currentRange = {1, 1};
+    //! Обработчик запросов
     QNetworkAccessManager *m_manager;
 };
 

@@ -119,13 +119,18 @@ private:
     TopPlayers *m_topPlayersWidget;
     //! Идентификатор пользователя
     const int m_userId;
+    //! Имя пользователя
     const QString m_userName;
 
     // Сокеты
+    //! Сокет обновления друзей
     QWebSocket *m_friendsUpdateSocket;
+    //! Сокет создания игр
     QWebSocket *m_gameCreatorSocket;
 
+    //! Адрес, обрабатывающий обновления друзей
     QUrl m_friendsUpdateSocketUrl;
+    //! Адрес, обрабатывающий создание игр
     QUrl m_gameCreatorSocketUrl;
 
     void initSockets();

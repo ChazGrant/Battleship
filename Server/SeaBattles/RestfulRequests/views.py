@@ -208,23 +208,6 @@ class UserViewSet(ViewSet):
         return hashlib.md5((password + salt).encode()).hexdigest()
 
     @action(detail=False, methods=["get"])
-    def get_top_cups_users(self, request) -> Response:
-        # try:
-        #     top_limit = int(request.data["top_limit"])
-        # except ValueError:
-        #     return Response(INVALID_ARGUMENTS_TYPE_JSON)
-        # except KeyError:
-        #     return Response(NOT_ENOUGH_ARGUMENTS_JSON)
-
-
-
-        top_limit = 50
-        all_users = User.objects.filter(is_temporary=False).order_by("-cups")
-        return Response({
-            "top_users": {user.user_name: user.cups for user in all_users[:top_limit]}
-        })
-
-    @action(detail=False, methods=["get"])
     def create_test_users(self, request) -> Response:
         for i in range(100):
             last_user_id = User.objects.all().last().user_id
@@ -610,18 +593,6 @@ class LegaueViewSet(ViewSet):
         serializer = LeagueSerializer(PlayerLeague.objects.all(), many=True)
         return Response(serializer.data)
 
-    @action(detail=False, methods=["post"])
-    def get_top_players_by_winstreak(self, request) -> Response:
-        ...
-
-    @action(detail=False, methods=["post"])
-    def get_top_players_by_silver_coins(self, request) -> Response:
-        ...
-
-    @action(detail=False, methods=["post"])
-    def get_top_players_by_cups(self, request) -> Response:
-        ...
-
     @action(detail=False, methods=["post", "get"])
     def get_top_players(self, request) -> Response:
         players_by_cups: Dict[str, List[Dict[str, int]]] = {}
@@ -649,7 +620,7 @@ class LegaueViewSet(ViewSet):
                     "value": user.cups
                 })
 
-            for user in users.order_by("-winstreak"):
+            for user in users.order_by("-win_streak"):
                 players_by_winstreak[league_name].append({
                     "user_name": user.user_name,
                     "value": user.win_streak
@@ -662,7 +633,7 @@ class LegaueViewSet(ViewSet):
                 })
 
         return Response({
-            "leagues": leagues,
+            "leagues": list(leagues.keys()),
             "players_by_cups": players_by_cups,
             "players_by_silver_coins": players_by_silver_coins,
             "player_by_winstreak": players_by_winstreak,
