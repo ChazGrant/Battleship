@@ -209,6 +209,12 @@ class UserViewSet(ViewSet):
 
     @action(detail=False, methods=["get"])
     def create_test_users(self, request) -> Response:
+        """
+            Создаёт тестовых пользователей
+            
+            Возвращает:
+                Созданных пользователей
+        """
         for i in range(100):
             last_user_id = User.objects.all().last().user_id
             User.objects.create(
@@ -216,7 +222,9 @@ class UserViewSet(ViewSet):
                 user_id=last_user_id+1,
                 user_password="test_user_password",
                 user_email="test_email#" + str(i + 1) + "@mail.ru",
-                cups=randint(0, 300)
+                cups=randint(0, 300),
+                silver_coins=randint(50, 350000),
+                win_streak=randint(0, 10)
             )
 
         serializer = UserSerializer(User.objects.all(), many=True)
@@ -224,7 +232,14 @@ class UserViewSet(ViewSet):
 
     @action(detail=False, methods=["get"])
     def delete_test_users(self, request) -> Response:
-        ...
+        """
+            Удаляет тестовых пользователей
+            
+            Возвращает:
+                Результат удаления
+        """
+        test_users = User.objects.filter(user_name__startswith="test").delete()
+        return Response({"deleted": True})
 
     @action(detail=False, methods=["get"])
     def get_users(self, request) -> Response:

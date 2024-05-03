@@ -9,6 +9,7 @@
  *  @param *parent Указатель на родительский виджет
  *  @param t_game_id Идентификатор игры
  *  @param t_user_id Идентификатор пользователя
+ *  @param t_gameInviteId Идентификатор приглашения в игру
  *
  *  @return MainWindow
 */
