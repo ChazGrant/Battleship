@@ -2,7 +2,6 @@ Django
 djangorestframework
 psycopg2-binary
 pdoc3
-djangochannelsrestframework
 uvicorn
 channels
 websockets

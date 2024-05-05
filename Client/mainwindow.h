@@ -60,7 +60,7 @@ public:
     virtual void closeEvent(QCloseEvent *event) override;
 
 private slots:
-    void on_placeShipButton_clicked();
+    void sendPlaceShipRequest();
 
     void acceptCloseEvent(QNetworkReply* t_reply);
 
@@ -70,10 +70,6 @@ private slots:
     void onGameSocketDisconnected();
     void onGameSocketMessageReceived(QString t_textMessage);
     void onGameSocketErrorOccurred(QAbstractSocket::SocketError t_socketError);
-
-    void onChatSocketConnected();
-    void onChatSocketMessageReceived(QString t_textMessage);
-    void onChatSocketErrorOccurred(QAbstractSocket::SocketError t_socketError);
 
     void onTimeOut(QTimer *t_timer);
 private:
@@ -86,7 +82,6 @@ private:
     void setShipsAmountLabel(QJsonObject t_jsonResponse);
     void placeShip(QJsonArray t_cells);
 
-    // Параметры подключения к игре
     //! Идентификатор игры
     const QString m_gameId;
     //! Идентификатор пользователя
@@ -112,7 +107,6 @@ private:
 
     void initSockets();
     void initGameSocket();
-    void initChatSocket();
 
     void connectToGame();
 
@@ -137,8 +131,6 @@ private:
     //! Указатель на таймер ожидания хода противника
     QTimer *m_userTurnTimer;
 
-    bool getErrorMessage(QJsonObject t_jsonObj);
-
     // Устанавливает количество рядов и колонок
     void createTablesWidgets();
     void createUserTable();
@@ -147,16 +139,16 @@ private:
     void getAvailableWeapons();
     void fillWeaponsComboBox(QJsonObject jsonObj);
 
-    //! @brief Оружия, которые в наличии у пользователя
+    //! Оружия, которые в наличии у пользователя
     QMap<QString, int> m_availableWeapons;
-    //! @brief Радиус поражения оружий
+    //! Радиус поражения оружий
     QMap<QString, QList<int>> m_weaponRange;
 
     void autoPlaceShips();
 
-    //! @brief Оружие активировано
+    //! Оружие активировано
     bool m_weaponActivated = false;
-    //! @brief Размещение кораблей автоматически
+    //! Размещение кораблей автоматически
     bool m_shipsAutoPlacing = false;
 
     void makeTurn();

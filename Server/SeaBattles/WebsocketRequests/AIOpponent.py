@@ -13,13 +13,9 @@ class AIOpponent:
         self._unknown_cells = [[0 for _ in range(10)] for _ in range(10)]
 
     async def _getFirstUnknownCell(self):
-        print("===========_getFirstUnknownCell===========")
-        print(self._unknown_cells)
         for row in range(len(self._unknown_cells)):
             for column in range(len(self._unknown_cells[row])):
                 if self._unknown_cells[column][row] == 0:
-                    print([column, row])
-                    print("===========_getFirstUnknownCell===========")
                     return [column, row]
 
     async def _getNextPotentionalCell(self) -> List[List[int]]:
@@ -54,9 +50,6 @@ class AIOpponent:
     async def makeNextTurn(self) -> List[int]:
         if self._damaged_ship_parts:
             x_pos, y_pos = await self._getNextPotentionalCell()
-            print("============_getNextPotentionalCell============")
-            print([x_pos, y_pos])
-            print("============_getNextPotentionalCell============")
         else:
             i = 0
             while True:
@@ -69,9 +62,6 @@ class AIOpponent:
                 y_pos = random.randint(0, 9)
                 if [x_pos, y_pos] not in self._damaged_cells:
                     break
-            print("============randomPosition============")
-            print([x_pos, y_pos])
-            print("============randomPosition============")
         
         return [x_pos, y_pos]
     
@@ -95,19 +85,5 @@ class AIOpponent:
             self._damaged_ship_parts = []
             for killed_ship_cell in killed_ship_cells:
                 if killed_ship_cell not in self._damaged_cells:
-                    print("============updateKilledCells============")
-                    print(killed_ship_cell)
-                    print("============updateKilledCells============")
                     self._unknown_cells[killed_ship_cell[0]][killed_ship_cell[1]] = 1
                     self._damaged_cells.append(killed_ship_cell)
-
-        print("============updateDamagedCells============")
-        print(new_damaged_cell)
-        print(new_damaged_ship_part)
-        print(killed_ship_cells)
-        print("============updateDamagedCells============")
-
-        print("============currentCellsValues============")
-        print(self._damaged_cells)
-        print(self._damaged_ship_parts)
-        print("============currentCellsValues============")

@@ -26,6 +26,7 @@ MainWindow::MainWindow(const QString t_gameId, const int t_userId,
     ui->setupUi(this);
 
     connect(ui->makeTurnButton, &QPushButton::clicked, this, &MainWindow::makeTurn);
+    connect(ui->placeShipButton, &QPushButton::clicked, this, &MainWindow::sendPlaceShipRequest);
 
     ui->makeTurnButton->hide();
     ui->opponentField->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
@@ -79,7 +80,9 @@ void MainWindow::acceptCloseEvent(QNetworkReply *t_reply)
 
     QJsonObject jsonObj = QJsonDocument::fromJson(replyStr.toUtf8()).object();
 
-    getErrorMessage(jsonObj);
+    if (jsonObj.contains("error")) {
+        showMessage(jsonObj["error"].toString(), QMessageBox::Icon::Critical);
+    }
     close();
 }
 
@@ -197,39 +200,6 @@ void MainWindow::onGameSocketErrorOccurred(QAbstractSocket::SocketError t_socket
     }
 }
 
-/*! @brief Обработчик подключения сокета к серверу
- *
- *  @details Отправляет серверу идентификатор пользователя чтоб подписаться на события
- *
- *  @return void
-*/
-void MainWindow::onChatSocketConnected()
-{
-
-}
-
-/*! @brief Обработчик получения информации с сервера через сокет
- *
- *  @param t_textMessage Текст полученного сообщения
- *
- *  @return void
-*/
-void MainWindow::onChatSocketMessageReceived(QString t_textMessage)
-{
-
-}
-
-/*! @brief Обработчик ошибки, полученной во время отправки запроса на сервер через сокет
- *
- *  @param t_socketError Вид ошибки, полученной при передачи данных
- *
- *  @return void
-*/
-void MainWindow::onChatSocketErrorOccurred(QAbstractSocket::SocketError t_socketError)
-{
-
-}
-
 /*! @brief Обновление оставшегося времени для подключения или совершения хода
  *
  *  @param *t_timer Указатель на таймер, на котором прошло определённое время
@@ -238,7 +208,7 @@ void MainWindow::onChatSocketErrorOccurred(QAbstractSocket::SocketError t_socket
 */
 void MainWindow::onTimeOut(QTimer *t_timer)
 {
-    int timeRemain;
+    int timeRemain = 0;
     if (t_timer == m_opponentConnectionTimer) {
         ++secondsToConnectPassed;
         timeRemain = 60 - secondsToConnectPassed;
@@ -279,7 +249,6 @@ void MainWindow::showCurrentStateGame(QString t_gameState)
 void MainWindow::initSockets()
 {
     initGameSocket();
-    // initChatSocket();
 }
 
 /*! @brief Создание сокета для обновления состояний игры и событий к нему
@@ -466,28 +435,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
     event->ignore();
 }
 
-/*! @brief Получение текста ошибки из json object'а
- *
- *  @param t_json_obj Сам объект, который может содержать текст ошибки
- *
- *  @return bool
-*/
-bool MainWindow::getErrorMessage(QJsonObject t_json_obj)
-{
-    if (t_json_obj.contains("Error")) {
-        showMessage(t_json_obj["Error"].toString(), QMessageBox::Icon::Critical);
-        return true;
-    }
-    if (t_json_obj.contains("Critical Error")) {
-        // m_timerForUserTurn->stop();
-        showMessage(t_json_obj["Critical Error"].toString(), QMessageBox::Icon::Critical);
-        this->close();
-        return true;
-    }
-
-    return false;
-}
-
 /*! @brief Создание пол пользователя и оппонента
  *
  *  @return void
@@ -653,7 +600,7 @@ void MainWindow::placeShip(QJsonArray t_cells)
  *
  *  @return void
 */
-void MainWindow::on_placeShipButton_clicked()
+void MainWindow::sendPlaceShipRequest()
 {
     if (ui->ownerField->selectedItems().isEmpty()) {
         return showMessage("Ячейки не выбраны", QMessageBox::Icon::Critical);
