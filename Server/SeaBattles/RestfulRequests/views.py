@@ -262,51 +262,7 @@ class FriendsViewSet(ViewSet):
         @author     ChazGrant
         @version    1.0
     """
-    @action(detail=False, methods=["post"])
-    def process_friend_request(self, request) -> Response:
-        """
-            Принимает входящий запрос в друзья
-
-            Аргументы:
-                user_id - Идентификатор пользователя, которому поступил запрос
-                friend_username - Имя пользователя, который подал заявку
-                process_status - Статус обработки заявки(1 - подтверждён, 0 - отклонён)
-            
-            Возвращает:
-                True если запрос подтверждён, иначе False и текст ошибки
-        """
-        try:
-            user_id = request.data["user_id"]
-            friend_username = request.data["friend_username"]
-            process_status = int(request.data["process_status"])
-        except KeyError:
-            return Response({
-                "error": "Недостаточно параметров"
-            })
-        except ValueError:
-            return Response({
-                "error": "Неверный формат статуса обработки"
-            })
-
-        try:
-            friend_request = FriendRequest.objects.get(from_user__user_name=friend_username, 
-                                                       to_user__user_id=user_id)
-        except FriendRequest.DoesNotExist:
-            return Response({
-                "error": "Данной заявки не существует"
-            })
-        
-        friend_request.delete()
-        if not (process_status == 0):
-            first_user = User.objects.get(user_id=user_id)
-            second_user = User.objects.get(user_name=friend_username)
-            Friends.objects.create(first_friend=first_user, second_friend=second_user)
-
-        return Response({
-            "request_processed": True
-        })
-
-    @action(detail=False, methods=["post", "get"])
+    @action(detail=False, methods=["get"])
     def get_incoming_friend_requests(self, request) -> Response:
         """
             Получает входящие запросы в друзья
@@ -317,7 +273,6 @@ class FriendsViewSet(ViewSet):
             Возвращает:
                 Список имён пользователей, которые отправили запрос на друзья
         """
-        print("get_incoming_friend_requests accessed")
         try:
             user_id = int(request.data["user_id"])
         except KeyError:
@@ -333,7 +288,7 @@ class FriendsViewSet(ViewSet):
             "friend_requests": friend_requests
         })
 
-    @action(detail=False, methods=["post"])
+    @action(detail=False, methods=["get"])
     def get_friends(self, request) -> Response:
         """
             Получает друзей

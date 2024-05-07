@@ -42,15 +42,6 @@ class WeaponDatabaseAccessor:
         return weapon.weapon_amount
     
     @staticmethod
-    async def hasMassiveDamageProperty(weapon_name: str) -> bool:
-        try:
-            weapon_type = await sync_to_async(WeaponType.objects.get)(weapon_type_name=weapon_name)
-        except WeaponType.DoesNotExist:
-            return False
-        
-        return weapon_type.massive_damage
-
-    @staticmethod
     async def getWeaponAmountLeft(user_id: int, weapon_name: str) -> int:
         user = await UserDatabaseAccessor.getUserById(user_id)
         try:
