@@ -6,7 +6,7 @@ import copy
 
 
 from WebsocketRequests.JSON_RESPONSES import (NOT_ENOUGH_ARGUMENTS_JSON, INVALID_ARGUMENTS_TYPE_JSON,
-                            INVALID_ACTION_TYPE_JSON, USER_DOES_NOT_EXIST_JSON, USER_IS_ALREADY_IN_GAME,
+                            INVALID_ACTION_TYPE_JSON, USER_DOES_NOT_EXIST_JSON,
                             GAME_DOES_NOT_EXIST, NOT_YOUR_TURN, NOT_ENOUGH_WEAPONS_IN_STOCK)
 
 from WebsocketRequests.DatabaseAccessors.ShipDatabaseAccessor import ShipDatabaseAccessor

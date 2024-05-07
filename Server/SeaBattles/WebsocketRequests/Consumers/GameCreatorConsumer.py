@@ -96,9 +96,7 @@ class GameCreatorConsumer(AsyncJsonWebsocketConsumer):
 
         if await FieldDatabaseAccessor.getField(user_id) or \
             await FieldDatabaseAccessor.getField(to_user_id):
-            # *DEBUG
-            await GameDatabaseAccessor.deleteGames()
-            # return await self.send_json(USER_IS_ALREADY_IN_GAME)
+            return await self.send_json(USER_IS_ALREADY_IN_GAME)
         
         game_id, game_invite_id, error  = await GameDatabaseAccessor.createGame(user_id, opponent_is_ai, to_user_id)
         if not (game_id):
@@ -119,7 +117,7 @@ class GameCreatorConsumer(AsyncJsonWebsocketConsumer):
             "game_id": game_id
         })
 
-    async def findGame(self, *args) -> None:
+    async def findGame(self) -> None:
         game_id = await GameDatabaseAccessor.getRandomWaitingGameId()
         if game_id == None:
             return await self.send_json(NO_AVAILABLE_GAMES)
@@ -166,4 +164,7 @@ class GameCreatorConsumer(AsyncJsonWebsocketConsumer):
         """
             Обрабатывает поведение при отключении сокета от сервера
         """
-        ...
+        user_id = self.reversed_listeners[self]
+
+        self.listeners.pop(user_id)
+        self.reversed_listeners.pop(self)

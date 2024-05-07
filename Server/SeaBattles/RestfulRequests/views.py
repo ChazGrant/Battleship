@@ -78,31 +78,6 @@ class ShipViewSet(ViewSet):
 
         return Response(serialzer.data)
 
-    @action(detail=False, methods=["get"])
-    def delete_ships(self, request) -> Response:
-        """
-            Удаляет все корабли
-
-            *DEBUG
-
-            Возвращает:
-                Результат удаления
-        """
-        Field.objects.all().update(
-            one_deck=4,
-            two_deck=3,
-            three_deck=2,
-            four_deck=1
-        )
-        Ship.objects.all().delete()
-        # Field.objects.all().delete()
-        # Game.objects.all().delete()
-
-        return Response({
-            "deleted": True
-        })
-
-
 
 class GameViewSet(ViewSet):
     """
@@ -113,24 +88,7 @@ class GameViewSet(ViewSet):
         @author     ChazGrant
         @version    1.0
     """
-    def deleteGame(self, game_id: str) -> None:
-        """
-            Удаляет игру с заданным идентификатором
-
-            Аргументы:
-                game_id - Строка, содержащая в себе идентификатор игры
-
-            Возвращает:
-                True если игра удалена, иначе False
-        """
-        try:
-            Game.objects.filter(game_id=game_id).delete()
-        except Exception as e:
-            return False
-        
-        return True
-
-    @action(detail=False, methods=["get", "post"])
+    @action(detail=False, methods=["get"])
     def get_games(self, request) -> Response:
         """
             Возвращает все игры
@@ -141,39 +99,6 @@ class GameViewSet(ViewSet):
         serialzer = GameSerializer(queryset, many=True)
 
         return Response(serialzer.data)
-
-    @action(detail=False, methods=["get"])
-    def delete_game(self, request) -> Response:
-        """
-            Удаляет игру с заданным идентификатором
-
-            *DEBUG
-        """
-        try:
-            game_id = request.data["game_id"]
-        except KeyError:
-            return Response({
-                "error": "Not enough arguments"
-            })
-
-        self.deleteGame(game_id)
-
-        return Response({
-            "deleted": True
-        })
-
-    @action(detail=False, methods=["get"])
-    def delete_games(self, request) -> Response:
-        """
-            Удаляет все игры
-
-            *DEBUG
-        """
-        Game.objects.all().delete()
-
-        return Response({
-            "deleted": True
-        })
 
 
 class UserViewSet(ViewSet):
@@ -254,13 +179,20 @@ class UserViewSet(ViewSet):
         return Response(serializer.data)
 
     @action(detail=False, methods=["get"])
-    def delete_users(self, request) -> Response:
+    def delete_user(self, request) -> Response:
         """
             Удаляет пользователей
 
             *DEBUG
         """
-        User.objects.all().delete()
+        try:
+            user_id = int(request.data["user_id"])
+            User.objects.get(user_id=user_id).delete()
+        except KeyError:
+            User.objects.all().delete()
+        except ValueError:
+            return INVALID_ARGUMENTS_TYPE_JSON
+        
         return Response({
             "deleted": "ok"
         })
@@ -330,12 +262,12 @@ class UserViewSet(ViewSet):
         #     ip = x_forwarded_for.split(",")[0]
         # else:
         #     ip = request.META.get("REMOTE_ADDR")
-        
+
         # if ip in known_ips:
         #     return Response({
         #         "registration_successful": False
         #     })
-        
+
         # known_ips.append(ip)
         try:
             user_name: str = request.data["user_name"]
@@ -445,12 +377,6 @@ class FriendsViewSet(ViewSet):
             "request_processed": True
         })
 
-    @action(detail=False, methods=["get"])
-    def get_friend_reqeusts(self, request) -> Response:
-        requests = FriendRequest.objects.all()
-        serializer = FriendRequestSerializer(requests, many=True)
-        return Response(serializer.data)
-
     @action(detail=False, methods=["post", "get"])
     def get_incoming_friend_requests(self, request) -> Response:
         """
@@ -478,14 +404,7 @@ class FriendsViewSet(ViewSet):
             "friend_requests": friend_requests
         })
 
-    """
-{
-"user_id": 2,
-"friend_username": "user"
-}
-    """
-
-    @action(detail=False, methods=["post", "get"])
+    @action(detail=False, methods=["post"])
     def get_friends(self, request) -> Response:
         """
             Получает друзей
@@ -495,14 +414,7 @@ class FriendsViewSet(ViewSet):
             
             Возвращает:
                 Список имён пользователей, которые в друзьях у запрошенного пользователя
-        """
-        
-        # *DEBUG
-        if request.method == "GET":
-            friends = Friends.objects.all()
-            serializer = FriendsSerializer(friends, many=True)
-            return Response(serializer.data)
-    
+        """    
         try:
             user_id = request.data["user_id"]
         except KeyError:
@@ -530,85 +442,8 @@ class FriendsViewSet(ViewSet):
         })
 
 
-class WeaponTypeViewSet(ViewSet):
-    """
-        ViewSet типов оружий
-
-        Описывает поведение при запросе на адрес адрес_сервера/weapontypes/имя_метода
-
-        @author     ChazGrant
-        @version    1.0
-    """
-    def _deleteWeaponTypes(self):
-        WeaponType.objects.all().delete()
-        return Response({"deleted": "ok"})
-
-    @action(detail=False, methods=["get"])
-    def init_weapon_types(self, request):
-        self._deleteWeaponTypes()
-        WeaponType.objects.create(
-            weapon_type_name="Ядерная бомба",
-            weapon_x_range=3,
-            weapon_y_range=3,
-            weapon_price=150.0,
-            massive_damage=True
-        )
-        WeaponType.objects.create(
-            weapon_type_name="Бомба",
-            weapon_x_range=2,
-            weapon_y_range=2,
-            weapon_price=100.0,
-            massive_damage=True
-        )
-        WeaponType.objects.create(
-            weapon_type_name="Самолёт",
-            weapon_x_range=2,
-            weapon_y_range=10,
-            weapon_price=200.0,
-            massive_damage=False
-        )
-        WeaponType.objects.create(
-            weapon_type_name="Торпеда",
-            weapon_x_range=10,
-            weapon_y_range=1,
-            weapon_price=75.0,
-            massive_damage=False
-        )
-
-        return Response({"inited": True})
-
-    @action(detail=False, methods=["get"])
-    def get_weapon_types(self, request):
-        weapon_types = WeaponType.objects.all()
-
-        serializer = WeaponTypeSerializer(weapon_types, many=True)
-        return Response(serializer.data)
-
-
 class LegaueViewSet(ViewSet):
-    @action(detail=False, methods=["get"])
-    def init_leagues(self, request) -> Response:
-        for league_name in PlayerLeague.LeagueCriteria.league_criteria.keys():
-            min_cups, max_cups = PlayerLeague.LeagueCriteria.league_criteria[league_name]
-            PlayerLeague.objects.create(
-                league_name=league_name,
-                min_cups_required=min_cups,
-                max_cups_required=max_cups
-            )
-
-        return Response({"inited": True})
-
-    @action(detail=False, methods=["get"])
-    def delete_leagues(self, request) -> Response:
-        PlayerLeague.objects.all().delete()
-        return Response({"deleted": True})
-
-    @action(detail=False, methods=["get"])
-    def get_leagues(self, request) -> Response:
-        serializer = LeagueSerializer(PlayerLeague.objects.all(), many=True)
-        return Response(serializer.data)
-
-    @action(detail=False, methods=["post", "get"])
+    @action(detail=False, methods=["post"])
     def get_top_players(self, request) -> Response:
         players_by_cups: Dict[str, List[Dict[str, int]]] = {}
         players_by_silver_coins: Dict[str, List[Dict[str, int]]] = {}
@@ -653,26 +488,6 @@ class LegaueViewSet(ViewSet):
             "players_by_silver_coins": players_by_silver_coins,
             "player_by_winstreak": players_by_winstreak,
         })
-
-
-class WeaponViewSet(ViewSet):
-    """
-        ViewSet оружий
-
-        Описывает поведение при запросе на адрес адрес_сервера/weapons/имя_метода
-
-        @author     ChazGrant
-        @version    1.0
-    """
-    @action(detail=False, methods=["get"])
-    def init_weapons(self, request):
-        users = User.objects.all()
-        for user in users:
-            for weapon_type in WeaponType.objects.all():
-                Weapon.objects.create(
-                    weapon_amount=0,
-                    weapon_type=weapon_type,
-                    weapon_owner=user)
 
 
 class ShopViewSet(ViewSet):
@@ -838,7 +653,6 @@ class ShopViewSet(ViewSet):
             return Response(NOT_ENOUGH_ARGUMENTS_JSON)
         except ValueError:
             return Response(INVALID_ARGUMENTS_TYPE_JSON)
-
 
         try:
             user = User.objects.get(user_id=user_id)

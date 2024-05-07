@@ -113,12 +113,3 @@ class UserDatabaseAccessor:
             return True
         except User.DoesNotExist:
             return False
-
-
-    @staticmethod
-    async def userExists(user_id: int) -> bool:
-        try:
-            await sync_to_async(User.objects.get)(user_id=user_id)
-            return True
-        except User.DoesNotExist:
-            return False

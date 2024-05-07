@@ -17,11 +17,6 @@ from WebsocketRequests.DatabaseAccessors.FieldDatabaseAccessor import FieldDatab
 
 
 class GameDatabaseAccessor:
-    # *DEBUG
-    @staticmethod
-    async def deleteGames():
-       await sync_to_async((await sync_to_async(Game.objects.all)()).delete)()
-
     @staticmethod
     async def deleteGame(game: Game) -> None:
         print(game)

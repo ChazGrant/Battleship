@@ -9,8 +9,6 @@ from WebsocketRequests.DatabaseAccessors.UserDatabaseAccessor import UserDatabas
 from WebsocketRequests.DatabaseAccessors.FriendRequestDatabaseAccessor import FriendRequestDatabaseAccessor
 from WebsocketRequests.DatabaseAccessors.FriendDatabaseAccessor import FriendDatabaseAccessor
 
-from json import loads
-
 
 class FriendsUpdateConsumer(AsyncJsonWebsocketConsumer):
     """
