@@ -75,8 +75,8 @@ class Field(models.Model):
 
 # Повреждённая клетка поля, которая не является часть корабля
 class MissedCell(models.Model):
-    x_pos = models.IntegerField()
-    y_pos = models.IntegerField()
+    x_pos = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(9)])
+    y_pos = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(9)])
 
     field = models.ForeignKey(Field, on_delete=models.CASCADE)
 
@@ -93,8 +93,8 @@ class Ship(models.Model):
 
 
 class ShipPart(models.Model):
-    x_pos = models.IntegerField()
-    y_pos = models.IntegerField()
+    x_pos = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(9)])
+    y_pos = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(9)])
     is_damaged = models.BooleanField(default=False)
 
     ship = models.ForeignKey(Ship, on_delete=models.CASCADE)

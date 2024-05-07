@@ -18,7 +18,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from RestfulRequests.views import (GameViewSet, ShopViewSet, ShipViewSet, UserViewSet, 
-                                   FriendsViewSet, WeaponTypeViewSet, WeaponViewSet, LegaueViewSet)
+                                   FriendsViewSet, LegaueViewSet)
 
 
 router = DefaultRouter()
@@ -26,9 +26,7 @@ router.register(r"games", GameViewSet, basename="game")
 router.register(r"ships", ShipViewSet, basename="ship")
 router.register(r"users", UserViewSet, basename="user")
 router.register(r"friends", FriendsViewSet, basename="friends")
-router.register(r"weapontypes", WeaponTypeViewSet, basename="weapontype")
 router.register(r"shop", ShopViewSet, basename="shop")
-router.register(r"weapons", WeaponViewSet, basename="weapon")
 router.register(r"leagues", LegaueViewSet, basename="league")
 
 

@@ -12,14 +12,13 @@ import json
 import hashlib
 from typing import Any, Dict
 
-from .models import Game, Field, Ship, User, FriendRequest, Friends, Weapon, WeaponType, PlayerLeague
-from .serializers import (GameSerializer, ShipSerializer, UserSerializer, FriendRequestSerializer, 
-                          FriendsSerializer, WeaponTypeSerializer, LeagueSerializer)
+from .models import Game, Ship, User, FriendRequest, Friends, Weapon, WeaponType, PlayerLeague
+from .serializers import GameSerializer, ShipSerializer, UserSerializer
 
 from WebsocketRequests.JSON_RESPONSES import (
     USER_DOES_NOT_EXIST_JSON, NOT_ENOUGH_ARGUMENTS_JSON, INVALID_ARGUMENTS_TYPE_JSON, 
     NOT_ENOUGH_WEAPONS_IN_STOCK, WEAPON_TYPE_DOES_NOT_EXIST_JSON, NOT_ENOUGH_COINS, 
-    INVALID_WEAPONS_AMOUNT, INVALID_USER_NAME, INVALID_TOP_LENGTH)
+    INVALID_WEAPONS_AMOUNT, INVALID_USER_NAME)
 
 from typing import List
 
@@ -36,22 +35,6 @@ AVAILABLE_TOP_LENGTH = [3, 5, 10, 25]
 
 # DEBUG
 known_ips = list()
-
-
-"""
-    1) Игрок подключается к игре, получая её id
-    2) Игрок ставит все свои корабли и ожидает пока не подключиться другой игрок или другой игрок не выставит
-    все корабли
-    3) Игрок получает информацию о том, чей сейчас ход
-    4) Игрок стреляет по кораблям, при промахе ход меняется, при попадании сервер возвращает поля,
-    по которым попал игрок
-    5) Второй игрок получает информацию о том, по каким клеткам попал первый игрок
-    6) Когда все корабли уничтожены, игрок получает информацию об этом и на основе этого узнаёт кто победил
-    7) Игра заканчивается и удаляется вместе с полями, кораблями и частями кораблей при следующих условиях:
-        - Один из игроков покинул игру, т.е. закрыл окно с игрой
-        - Корабли одного из игроков были полностью уничтожены
-        - Один из игроков не сделал ничего в течении минуты, из-за чего был кикнут с игры
-"""
 
 
 """
@@ -154,60 +137,6 @@ class UserViewSet(ViewSet):
 
         serializer = UserSerializer(User.objects.all(), many=True)
         return Response(serializer.data)
-
-    @action(detail=False, methods=["get"])
-    def delete_test_users(self, request) -> Response:
-        """
-            Удаляет тестовых пользователей
-            
-            Возвращает:
-                Результат удаления
-        """
-        test_users = User.objects.filter(user_name__startswith="test").delete()
-        return Response({"deleted": True})
-
-    @action(detail=False, methods=["get"])
-    def get_users(self, request) -> Response:
-        """
-            Возвращает всех пользователей
-
-            *DEBUG
-        """
-        users = User.objects.all()
-        serializer = UserSerializer(users, many=True)
-
-        return Response(serializer.data)
-
-    @action(detail=False, methods=["get"])
-    def delete_user(self, request) -> Response:
-        """
-            Удаляет пользователей
-
-            *DEBUG
-        """
-        try:
-            user_id = int(request.data["user_id"])
-            User.objects.get(user_id=user_id).delete()
-        except KeyError:
-            User.objects.all().delete()
-        except ValueError:
-            return INVALID_ARGUMENTS_TYPE_JSON
-        
-        return Response({
-            "deleted": "ok"
-        })
-
-    @action(detail=False, methods=["get"])
-    def delete_bots(self, request) -> Response:
-        """
-            Удаляет всех временных пользователей
-
-            *DEBUG
-        """
-        User.objects.filter(is_temporary=True).delete()
-        return Response({
-            "deleted": "ok"
-        })
 
     @action(detail=False, methods=["post"])
     def login(self, request) -> Response:
