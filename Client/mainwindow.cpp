@@ -505,7 +505,7 @@ void MainWindow::createOpponentTable()
     for (int y = 0; y < FIELD_ROW_COUNT; ++y) {
         for (int x = 0;x < FIELD_COLUMN_COUNT; ++x) {
             QTableWidgetItem *item = new QTableWidgetItem();
-            item->setText(QString::number(x + y));
+            item->setText("");
 
             item->setBackground(WHITE);
             ui->opponentField->setItem(y, x, item);

@@ -23,7 +23,13 @@
     </rect>
    </property>
    <property name="text">
-    <string/>
+    <string>Пользователь с ником user2 вызвал Вас на дуэль</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+   <property name="wordWrap">
+    <bool>true</bool>
    </property>
   </widget>
   <widget class="QPushButton" name="acceptGameInviteButton">
