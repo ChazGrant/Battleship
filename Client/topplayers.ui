@@ -7,17 +7,29 @@
     <x>0</x>
     <y>0</y>
     <width>465</width>
-    <height>300</height>
+    <height>321</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>465</width>
+    <height>321</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>465</width>
+    <height>321</height>
+   </size>
+  </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>ТОП игроков</string>
   </property>
   <widget class="QFrame" name="frame">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>10</y>
+     <y>30</y>
      <width>451</width>
      <height>281</height>
     </rect>
@@ -115,6 +127,59 @@
       <string>Выберите вид топа</string>
      </property>
     </widget>
+   </widget>
+  </widget>
+  <widget class="QFrame" name="frame_4">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>461</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background:black</string>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Raised</enum>
+   </property>
+   <widget class="QToolButton" name="exitButton">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>0</y>
+      <width>31</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: white;
+background: red;</string>
+    </property>
+    <property name="text">
+     <string>×</string>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="hideButton">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>0</y>
+      <width>31</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: white;
+background: lightblue;</string>
+    </property>
+    <property name="text">
+     <string>-</string>
+    </property>
    </widget>
   </widget>
  </widget>

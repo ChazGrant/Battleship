@@ -16,6 +16,9 @@ FriendAdder::FriendAdder(QWidget *parent) :
     connect(ui->addFriendButton, &QPushButton::clicked, this, &FriendAdder::addFriend);
     connect(ui->closeWindowButton, &QPushButton::clicked, this, &FriendAdder::close);
 
+    connect(ui->hideButton, &QPushButton::clicked, this, &FriendAdder::showMinimized);
+    connect(ui->closeButton, &QPushButton::clicked, this, &FriendAdder::close);
+
     setWindowFlags(Qt::FramelessWindowHint);
     setAttribute(Qt::WA_DeleteOnClose);
 }

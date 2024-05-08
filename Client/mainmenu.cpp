@@ -23,7 +23,7 @@ MainMenu::MainMenu(int t_userId, QString t_userName, QWidget *parent) :
 {
     ui->setupUi(this);
 
-    this->setWindowFlags(Qt::FramelessWindowHint);
+    setWindowFlags(Qt::FramelessWindowHint);
 
     ui->userDataLabel->setText(QString("Ваш ID:%1 \nВаше имя пользователя: %2").
                                arg(QString::number(m_userId), m_userName));
@@ -45,6 +45,7 @@ MainMenu::MainMenu(int t_userId, QString t_userName, QWidget *parent) :
     connect(ui->createClanButton, &QPushButton::clicked, this, &MainMenu::showNotImplementedFeature);
     connect(ui->createTournamentButton, &QPushButton::clicked, this, &MainMenu::showNotImplementedFeature);
 
+    connect(ui->hideButton, &QPushButton::clicked, this, &MainMenu::showMinimized);
     connect(ui->exitButton, &QPushButton::clicked, this, &MainMenu::close);
 
     ui->friendRequestsListWidget->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -57,8 +58,6 @@ MainMenu::MainMenu(int t_userId, QString t_userName, QWidget *parent) :
     setActionsLists();
 
     updateFriendsTab(ui->tabWidget->currentIndex());
-
-    setAttribute(Qt::WA_DeleteOnClose);
 }
 
 //! @brief Деструктор класса

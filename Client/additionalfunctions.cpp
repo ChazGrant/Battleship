@@ -8,7 +8,7 @@
  *
  *  @return void
 */
-inline void showMessage(const QString t_messageText, const QMessageBox::Icon t_messageIcon) {
+void showMessage(const QString t_messageText, const QMessageBox::Icon t_messageIcon) {
     QMessageBox msgbox;
     msgbox.setText(t_messageText);
     msgbox.setIcon(t_messageIcon);
@@ -28,7 +28,7 @@ inline void showMessage(const QString t_messageText, const QMessageBox::Icon t_m
  *
  *  @return void
 */
-inline void sendServerRequest(const QString t_requestUrl,
+void sendServerRequest(const QString t_requestUrl,
                               QMap<QString, QString> t_queryParams,
                               QNetworkAccessManager *t_manager)
 {

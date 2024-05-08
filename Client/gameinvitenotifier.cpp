@@ -14,6 +14,9 @@ GameInviteNotifier::GameInviteNotifier(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    connect(ui->hideButton, &QPushButton::clicked, this, &GameInviteNotifier::showMinimized);
+    connect(ui->closeButton, &QPushButton::clicked, this, &GameInviteNotifier::close);
+
     connect(ui->acceptGameInviteButton, &QPushButton::clicked, this, [=] {
         emit gameInviteAccepted();
         close();

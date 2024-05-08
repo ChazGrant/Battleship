@@ -27,6 +27,8 @@ MainWindow::MainWindow(const QString t_gameId, const int t_userId,
 
     connect(ui->makeTurnButton, &QPushButton::clicked, this, &MainWindow::makeTurn);
     connect(ui->placeShipButton, &QPushButton::clicked, this, &MainWindow::sendPlaceShipRequest);
+    connect(ui->hideButton, &QPushButton::clicked, this, &MainWindow::showMinimized);
+    connect(ui->exitButton, &QPushButton::clicked, this, &MainWindow::close);
 
     ui->makeTurnButton->hide();
     ui->opponentField->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
@@ -305,10 +307,10 @@ void MainWindow::highlightOpponentCell(QTableWidgetItem *t_item)
 {
     clearHighlightedCells(GREEN);
     m_lastHighlightedItem = t_item;
-    if (t_item->backgroundColor() != WHITE ||
-        t_item->backgroundColor() == ORANGE ||
-        t_item->backgroundColor() == GRAY ||
-        t_item->backgroundColor() == RED) {
+    if (t_item->background().color() != WHITE ||
+        t_item->background().color() == ORANGE ||
+        t_item->background().color() == GRAY ||
+        t_item->background().color() == RED) {
         return;
     }
 
@@ -342,7 +344,7 @@ void MainWindow::paintOpponentCells(int t_xStart, int t_yStart, QColor t_color) 
 
             QColor currentItemColor = item->background().color();
             if (currentItemColor == WHITE || currentItemColor == YELLOW) {
-                item->setBackgroundColor(t_color);
+                item->setBackground(t_color);
             }
         }
     }
@@ -357,18 +359,18 @@ void MainWindow::paintOpponentCells(int t_xStart, int t_yStart, QColor t_color) 
 void MainWindow::setFirePosition(QTableWidgetItem *t_item)
 {
     if (m_lastMarkedItem == t_item) return;
+
     clearHighlightedCells(YELLOW);
     if (m_lastMarkedItem != nullptr) {
-        m_lastMarkedItem->setBackgroundColor(WHITE);
+        m_lastMarkedItem->setBackground(WHITE);
     }
 
-    if (t_item->backgroundColor() == YELLOW) {
+    if (t_item->background().color() == YELLOW) {
         m_lastMarkedItem = t_item;
         m_firePosition = { t_item->column(), t_item->row() };
     }
 
     paintOpponentCells(t_item->row(), t_item->column(), GREEN);
-
 }
 
 /*! @brief Удаление цвета с помеченных клеток
@@ -381,15 +383,15 @@ void MainWindow::clearHighlightedCells(QColor t_avoidColor)
 {
     for (int x = 0; x < FIELD_ROW_COUNT; ++x) {
         for (int y = 0; y < FIELD_COLUMN_COUNT; ++y) {
-            if (ui->opponentField->item(x, y)->backgroundColor() == ORANGE ||
-                ui->opponentField->item(x, y)->backgroundColor() == GRAY ||
-                ui->opponentField->item(x, y)->backgroundColor() == RED ||
-                ui->opponentField->item(x, y)->backgroundColor() == t_avoidColor) {
+            if (ui->opponentField->item(x, y)->background().color() == ORANGE ||
+                ui->opponentField->item(x, y)->background().color() == GRAY ||
+                ui->opponentField->item(x, y)->background().color() == RED ||
+                ui->opponentField->item(x, y)->background().color() == t_avoidColor) {
                 continue;
             }
             QTableWidgetItem *currentItem = ui->opponentField->item(x, y);
             if (currentItem != nullptr) {
-                currentItem->setBackgroundColor(WHITE);
+                currentItem->setBackground(WHITE);
             }
         }
     }

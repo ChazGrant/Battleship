@@ -486,7 +486,7 @@ class WeaponsTest(TestCase):
             print(weapon_type.weapon_type_name)
 
     def testCreating(self):
-        for type in WeaponType.Types:
+        for type in WeaponType.WeaponTypesNames:
             weapon_type = WeaponType(
                 weapon_type_name=type,
                 weapon_x_range=1,

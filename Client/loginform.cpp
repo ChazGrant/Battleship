@@ -20,12 +20,13 @@ LoginForm::LoginForm(QWidget *parent) :
     m_manager = new QNetworkAccessManager(this);
 
     setWindowFlags(Qt::FramelessWindowHint);
+    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     connect(ui->loginButton, &QPushButton::clicked, this, &LoginForm::login);
     connect(ui->registrateButton, &QPushButton::clicked, this, &LoginForm::registrate);
 
-    connect(ui->exitButton, &QPushButton::clicked, this, &LoginForm::close);
-    connect(ui->exit2Button, &QPushButton::clicked, this, &LoginForm::close);
+    connect(ui->closeButton, &QPushButton::clicked, this, &LoginForm::close);
+    connect(ui->hideButton, &QPushButton::clicked, this, &LoginForm::showMinimized);
 }
 
 //! @brief Дестркутор класса

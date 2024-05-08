@@ -12,6 +12,9 @@
 #include <QTableWidgetItem>
 #include <QSpinBox>
 
+#include <QPoint>
+#include <QMouseEvent>
+
 #include <QJsonObject>
 #include <QJsonArray>
 
@@ -38,6 +41,8 @@ private slots:
 private:
     //! Указатель на виджет класса
     Ui::Shop *ui;
+    //! Точка на экране
+    QPoint m_mouse_point;
 
     void fillWeaponsInStock(QJsonArray t_userWeapons);
     void fillWeaponsShop(QJsonArray t_shopWeapons);
@@ -56,6 +61,9 @@ private:
     void highlightCell(QTableWidgetItem *t_item);
 
     void rearrangeWeaponsInStockTable(int t_fromRow);
+
+    void mouseMoveEvent(QMouseEvent *event);
+    void mousePressEvent(QMouseEvent* event);
 
     //! Идентификатор пользователя
     int m_userId;

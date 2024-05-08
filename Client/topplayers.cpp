@@ -27,6 +27,9 @@ TopPlayers::TopPlayers(QJsonArray t_leagues,
             this, &TopPlayers::onFilterChanged);
     connect(ui->leagueComboBox, &QComboBox::currentTextChanged, this, &TopPlayers::onFilterChanged);
 
+    connect(ui->hideButton, &QToolButton::clicked, this, &TopPlayers::showMinimized);
+    connect(ui->exitButton, &QToolButton::clicked, this, &TopPlayers::close);
+
     fillAvailableTopSorting();
     fillAllLeagues(t_leagues);
 
@@ -64,6 +67,41 @@ void TopPlayers::initTopPlayersTable()
     ui->topPlayersTableWidget->setRowCount(totalRows);
     ui->topPlayersTableWidget->setColumnCount(2);
     ui->topPlayersTableWidget->setHorizontalHeaderLabels(QStringList() << "Имя игрока" << "Значение");
+}
+
+/*! @brief Обработка перемещения мыши
+ *
+ *  @details Меняет переменную delta и перемещает окно к её координатам
+ *
+ *  @param *event Указатель на событие поведения мыши
+ *
+ *  @return void
+*/
+void TopPlayers::mouseMoveEvent(QMouseEvent* event)
+{
+    const QPointF delta = event->globalPos() - m_mouse_point;
+    move(delta.toPoint());
+
+    event->accept();
+}
+
+/*! @brief Обработка нажатия кнопки мыши
+ *
+ *  @details При нажатии на левую, правую или среднюю кнопку мыши
+ *  меняет приватную переменную m_mouse_point
+ *
+ *  @param *event Указатель на событие поведения мыши
+ *
+ *  @return void
+*/
+void TopPlayers::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton ||
+        event->button() == Qt::RightButton ||
+        event->button() == Qt::MiddleButton) {
+        m_mouse_point = event->pos();
+        event->accept();
+    }
 }
 
 void TopPlayers::getTopPlayers()

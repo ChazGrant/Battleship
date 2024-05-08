@@ -82,7 +82,7 @@ class MissedCell(models.Model):
 
 
 class Ship(models.Model):
-    ship_length = models.IntegerField()
+    ship_length = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(4)])
     is_dead = models.BooleanField(default=False)
 
     field = models.ForeignKey(Field, on_delete=models.CASCADE)
@@ -104,21 +104,21 @@ class ShipPart(models.Model):
 
 
 class WeaponType(models.Model):
-    class Types(models.TextChoices):
+    class WeaponTypesNames(models.TextChoices):
         AIRPLANE = "Самолёт"
         NUKE_BOMB = "Ядерная бомба"
         SMALL_BOMB = "Бомба"
         TIN_FISH = "Торпеда"
 
-    weapon_type_name = models.CharField(max_length=30, choices=Types.choices, unique=True)
-    weapon_x_range = models.IntegerField()
-    weapon_y_range = models.IntegerField()
+    weapon_type_name = models.CharField(max_length=30, choices=WeaponTypesNames.choices, unique=True)
+    weapon_x_range = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(9)])
+    weapon_y_range = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(9)])
     weapon_price = models.FloatField(default=0.0)
     massive_damage = models.BooleanField(default=False)
 
 
 class Weapon(models.Model):
-    weapon_amount = models.IntegerField(default=0)
+    weapon_amount = models.IntegerField(default=0, validators=[MinValueValidator(0)])
 
     weapon_type = models.ForeignKey(WeaponType, on_delete=models.CASCADE)
     weapon_owner = models.ForeignKey(User, on_delete=models.CASCADE)

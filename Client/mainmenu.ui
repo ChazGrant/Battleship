@@ -2,16 +2,31 @@
 <ui version="4.0">
  <class>MainMenu</class>
  <widget class="QMainWindow" name="MainMenu">
+  <property name="windowModality">
+   <enum>Qt::NonModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>615</width>
-    <height>322</height>
+    <width>612</width>
+    <height>394</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>612</width>
+    <height>394</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>612</width>
+    <height>394</height>
+   </size>
+  </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Главное меню</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QFrame" name="frame">
@@ -20,7 +35,7 @@
       <x>0</x>
       <y>0</y>
       <width>611</width>
-      <height>301</height>
+      <height>371</height>
      </rect>
     </property>
     <property name="frameShape">
@@ -33,7 +48,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>10</y>
+       <y>40</y>
        <width>321</width>
        <height>41</height>
       </rect>
@@ -46,7 +61,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>60</y>
+       <y>80</y>
        <width>151</width>
        <height>41</height>
       </rect>
@@ -59,7 +74,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>160</y>
+       <y>180</y>
        <width>151</width>
        <height>41</height>
       </rect>
@@ -72,7 +87,7 @@
      <property name="geometry">
       <rect>
        <x>170</x>
-       <y>160</y>
+       <y>180</y>
        <width>151</width>
        <height>41</height>
       </rect>
@@ -85,7 +100,7 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>110</y>
+       <y>130</y>
        <width>151</width>
        <height>41</height>
       </rect>
@@ -98,9 +113,9 @@
      <property name="geometry">
       <rect>
        <x>350</x>
-       <y>10</y>
+       <y>40</y>
        <width>251</width>
-       <height>291</height>
+       <height>281</height>
       </rect>
      </property>
      <property name="styleSheet">
@@ -119,7 +134,7 @@
          <x>0</x>
          <y>0</y>
          <width>241</width>
-         <height>261</height>
+         <height>241</height>
         </rect>
        </property>
       </widget>
@@ -144,7 +159,7 @@
      <property name="geometry">
       <rect>
        <x>170</x>
-       <y>60</y>
+       <y>80</y>
        <width>151</width>
        <height>41</height>
       </rect>
@@ -153,37 +168,11 @@
       <string>Найти игру</string>
      </property>
     </widget>
-    <widget class="QToolButton" name="exitButton">
-     <property name="geometry">
-      <rect>
-       <x>570</x>
-       <y>10</y>
-       <width>23</width>
-       <height>23</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>X</string>
-     </property>
-    </widget>
-    <widget class="QToolButton" name="addFriendButton">
-     <property name="geometry">
-      <rect>
-       <x>540</x>
-       <y>10</y>
-       <width>23</width>
-       <height>23</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>+</string>
-     </property>
-    </widget>
     <widget class="QPushButton" name="openShopButton">
      <property name="geometry">
       <rect>
        <x>170</x>
-       <y>210</y>
+       <y>230</y>
        <width>151</width>
        <height>41</height>
       </rect>
@@ -196,7 +185,7 @@
      <property name="geometry">
       <rect>
        <x>170</x>
-       <y>110</y>
+       <y>130</y>
        <width>151</width>
        <height>41</height>
       </rect>
@@ -209,13 +198,79 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>210</y>
+       <y>230</y>
        <width>151</width>
        <height>41</height>
       </rect>
      </property>
      <property name="text">
       <string>ТОП игроков</string>
+     </property>
+    </widget>
+    <widget class="QFrame" name="frame_3">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>611</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background:black</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <widget class="QToolButton" name="exitButton">
+      <property name="geometry">
+       <rect>
+        <x>580</x>
+        <y>0</y>
+        <width>31</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: white;
+background: red;</string>
+      </property>
+      <property name="text">
+       <string>×</string>
+      </property>
+     </widget>
+     <widget class="QToolButton" name="hideButton">
+      <property name="geometry">
+       <rect>
+        <x>550</x>
+        <y>0</y>
+        <width>31</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: white;
+background: lightblue;</string>
+      </property>
+      <property name="text">
+       <string>-</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QPushButton" name="addFriendButton">
+     <property name="geometry">
+      <rect>
+       <x>350</x>
+       <y>320</y>
+       <width>251</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Добавить друга</string>
      </property>
     </widget>
    </widget>
@@ -225,8 +280,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>615</width>
-     <height>20</height>
+     <width>612</width>
+     <height>21</height>
     </rect>
    </property>
   </widget>

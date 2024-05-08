@@ -22,6 +22,8 @@ Shop::Shop(int t_userId, QWidget *parent)
 
     m_manager = new QNetworkAccessManager();
 
+    setWindowFlags(Qt::FramelessWindowHint);
+
     ui->shootingRangeTable->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
     ui->weaponsShopTableWidget->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
     ui->weaponsInStockTableWidget->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
@@ -32,11 +34,12 @@ Shop::Shop(int t_userId, QWidget *parent)
     connect(ui->buyAllWeaponsButton, &QPushButton::clicked, this, [=]() { buyWeapon(true); });
     connect(ui->sellWeaponButton, &QPushButton::clicked, this, &Shop::sellWeapon);
     connect(ui->sellAllWeaponsButton, &QPushButton::clicked, this, [=]() { sellWeapon(true); });
-    connect(ui->shootingRangeTable, &QTableWidget::itemEntered, this, &Shop::highlightCell);
+    connect(ui->hideButton, &QPushButton::clicked, this, &Shop::showMinimized);
+    connect(ui->exitButton, &QPushButton::clicked, this, &Shop::close);
 
+    connect(ui->shootingRangeTable, &QTableWidget::itemEntered, this, &Shop::highlightCell);
     connect(ui->weaponsShopTableWidget, &QTableWidget::itemSelectionChanged,
             this, &Shop::setCurrentWeaponRange);
-
     connect(ui->weaponsInStockTableWidget, &QTableWidget::itemSelectionChanged,
             this, [=]() { setTotalPrices(ui->weaponAmountSpinBox->value()); });
     connect(ui->weaponsShopTableWidget, &QTableWidget::itemSelectionChanged,
@@ -409,7 +412,7 @@ void Shop::clearHighlightedCells()
 {
     for (int i = 0; i < 10; ++i) {
         for (int j = 0; j < 10; ++j) {
-            ui->shootingRangeTable->item(i, j)->setBackgroundColor(WHITE);
+            ui->shootingRangeTable->item(i, j)->setBackground(WHITE);
         }
     }
 }
@@ -429,7 +432,7 @@ void Shop::highlightCell(QTableWidgetItem *t_item)
         for (int y = y_start; y < y_start + m_currentRange[1]; ++ y) {
             QTableWidgetItem *item = ui->shootingRangeTable->item(x, y);
             if (item != nullptr) {
-                item->setBackgroundColor(YELLOW);
+                item->setBackground(YELLOW);
             }
         }
     }
@@ -458,4 +461,39 @@ void Shop::rearrangeWeaponsInStockTable(int t_fromRow)
     }
 
     ui->weaponsInStockTableWidget->setRowCount(totalRowCount - 1);
+}
+
+/*! @brief Обработка перемещения мыши
+ *
+ *  @details Меняет переменную delta и перемещает окно к её координатам
+ *
+ *  @param *event Указатель на событие поведения мыши
+ *
+ *  @return void
+*/
+void Shop::mouseMoveEvent(QMouseEvent* event)
+{
+    const QPointF delta = event->globalPos() - m_mouse_point;
+    move(delta.toPoint());
+
+    event->accept();
+}
+
+/*! @brief Обработка нажатия кнопки мыши
+ *
+ *  @details При нажатии на левую, правую или среднюю кнопку мыши
+ *  меняет приватную переменную m_mouse_point
+ *
+ *  @param *event Указатель на событие поведения мыши
+ *
+ *  @return void
+*/
+void Shop::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton ||
+        event->button() == Qt::RightButton ||
+        event->button() == Qt::MiddleButton) {
+        m_mouse_point = event->pos();
+        event->accept();
+    }
 }

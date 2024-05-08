@@ -22,8 +22,8 @@ from WebsocketRequests.JSON_RESPONSES import (
 
 from typing import List
 
-MAX_LIMIT = 1000
 
+MAX_LIMIT = 1000
 
 TRASNSLATED_COLUMN_NAMES = {
     "user_name": "Имя пользователя",
@@ -37,17 +37,18 @@ AVAILABLE_TOP_LENGTH = [3, 5, 10, 25]
 known_ips = list()
 
 
-"""
-    ViewSet кораблей
 
-    Описывает поведение при запросе на адрес адрес_сервера/ships/имя_метода
-
-    @author     ChazGrant
-    @version    1.0
-"""
 class ShipViewSet(ViewSet):
+    """
+        ViewSet кораблей
+
+        Описывает поведение при запросе на адрес адрес_сервера/ships/имя_метода
+
+        @author     ChazGrant
+        @version    1.0
+    """
     @action(detail=False, methods=["get"])
-    def get_ships(self, request) -> Response:
+    async def get_ships(self, request) -> Response:
         """
             Возвращает все корабли
 
@@ -317,7 +318,6 @@ class FriendsViewSet(ViewSet):
             Возвращает:
                 Список имён пользователей, которые отправили запрос на друзья
         """
-        print("get_incoming_friend_requests accessed")
         try:
             user_id = int(request.data["user_id"])
         except KeyError:
