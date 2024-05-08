@@ -164,6 +164,7 @@ class GameCreatorConsumer(AsyncJsonWebsocketConsumer):
         """
             Обрабатывает поведение при отключении сокета от сервера
         """
+        print("Disconnected GameCreatorConsumer")
         user_id = self.reversed_listeners[self]
 
         self.listeners.pop(user_id)

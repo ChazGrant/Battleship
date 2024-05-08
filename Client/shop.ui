@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Магазин</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QTableWidget" name="shootingRangeTable">

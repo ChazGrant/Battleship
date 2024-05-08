@@ -21,7 +21,7 @@ MainWindow::MainWindow(const QString t_gameId, const int t_userId,
     , m_userId(t_userId)
     , m_gameInviteId(t_gameInviteId)
 {
-    m_closeEventIsAccepted = false;
+    initSockets();
 
     ui->setupUi(this);
 
@@ -55,7 +55,6 @@ MainWindow::MainWindow(const QString t_gameId, const int t_userId,
     m_gameStarted = false;
 
     createTablesWidgets();
-    initSockets();
 
     secondsToConnectPassed = 0;
     secondsToMakeTurnPassed = 0;
@@ -122,6 +121,7 @@ void MainWindow::onGameSocketConnected()
 */
 void MainWindow::onGameSocketDisconnected()
 {
+    qDebug() << "Disconnected";
     showMessage("Вы были отключены от сервера", QMessageBox::Icon::Critical);
     close();
 }
@@ -570,6 +570,7 @@ void MainWindow::autoPlaceShips()
 //! @brief Деструктор класса
 MainWindow::~MainWindow()
 {
+    m_gameSocket->close();
     delete ui;
 }
 

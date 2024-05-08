@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Запрос на дуэль</string>
   </property>
   <widget class="QLabel" name="gameInviteLabel">
    <property name="geometry">

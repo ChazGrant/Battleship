@@ -24,6 +24,7 @@ MainMenu::MainMenu(int t_userId, QString t_userName, QWidget *parent) :
     ui->setupUi(this);
 
     setWindowFlags(Qt::FramelessWindowHint);
+    // setAttribute(Qt::WA_DeleteOnClose);
 
     ui->userDataLabel->setText(QString("Ваш ID:%1 \nВаше имя пользователя: %2").
                                arg(QString::number(m_userId), m_userName));
@@ -129,6 +130,7 @@ void MainMenu::showFriendRequestsContextMenu(const QPoint &t_point)
 
     menu->exec(actions, ui->friendRequestsListWidget->mapToGlobal(t_point));
 }
+
 
 /*! @brief Вывод контекстного меню на виджет
  *
@@ -380,6 +382,11 @@ void MainMenu::connectToRandomGame()
 void MainMenu::showNotImplementedFeature()
 {
     return showMessage("В будущих обновлениях...", QMessageBox::Icon::Information);
+}
+
+void MainMenu::closeEvent(QCloseEvent *event)
+{
+    m_gameCreatorSocket->disconnect();
 }
 
 /*! @brief Инициалиализация сокетов

@@ -19,9 +19,7 @@ from WebsocketRequests.DatabaseAccessors.FieldDatabaseAccessor import FieldDatab
 class GameDatabaseAccessor:
     @staticmethod
     async def deleteGame(game: Game) -> None:
-        print(game)
-        await sync_to_async(game.delete())
-        await sync_to_async(game.save)()
+        await sync_to_async(game.delete)()
 
     @staticmethod
     async def getRandomWaitingGameId() -> Union[str, None]:

@@ -2,11 +2,13 @@ from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 from typing import Dict, Callable, Tuple, List
 import random
-import copy
+from copy import deepcopy
 
+import threading
+import asyncio
 
 from WebsocketRequests.JSON_RESPONSES import (NOT_ENOUGH_ARGUMENTS_JSON, INVALID_ARGUMENTS_TYPE_JSON,
-                            INVALID_ACTION_TYPE_JSON, USER_DOES_NOT_EXIST_JSON,
+                            INVALID_ACTION_TYPE_JSON, USER_DOES_NOT_EXIST_JSON, USER_IS_ALREADY_IN_GAME,
                             GAME_DOES_NOT_EXIST, NOT_YOUR_TURN, NOT_ENOUGH_WEAPONS_IN_STOCK)
 
 from WebsocketRequests.DatabaseAccessors.ShipDatabaseAccessor import ShipDatabaseAccessor
@@ -65,8 +67,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
 
             Аргументы:
 
-            Возвращает:
-            
+            Возвращает: 
         """
         try:
             user_id = int(json_object["user_id"])
@@ -81,16 +82,8 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             "action_type": "available_weapons",
             "available_weapons": available_weapons
         })
-    # БОТ
-    async def generateField(self, json_object: dict, bot_requested:bool=False):
-        try:
-            user_id = int(json_object["user_id"])
-            game_id = json_object["game_id"]
-        except KeyError:
-            return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
-        except ValueError:
-            return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
-
+    
+    async def _generateField(self, user_id: int, bot_requested: bool):
         ships_amounts = {
             4: 1,
             3: 2,
@@ -98,7 +91,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             1: 4
         }
 
-        copy_ships_amount = copy.deepcopy(ships_amounts)
+        copy_ships_amount = deepcopy(ships_amounts)
         await ShipDatabaseAccessor.deleteShips(user_id)
         await FieldDatabaseAccessor.resetField(user_id)
 
@@ -116,6 +109,26 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                         "three_deck_left": copy_ships_amount[3],
                         "four_deck_left": copy_ships_amount[4]
                     })
+
+    def _callGenerateFieldForThread(self, user_id, bot_requested):
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+        loop.run_until_complete(self._generateField(user_id, bot_requested))
+        loop.close()
+
+    # БОТ
+    async def generateField(self, json_object: dict, bot_requested:bool=False):
+        try:
+            user_id = int(json_object["user_id"])
+            game_id = json_object["game_id"]
+        except KeyError:
+            return await self.send_json(NOT_ENOUGH_ARGUMENTS_JSON)
+        except ValueError:
+            return await self.send_json(INVALID_ARGUMENTS_TYPE_JSON)
+
+        self.thread = threading.Thread(target=lambda: self._callGenerateFieldForThread(user_id, bot_requested))
+        self.thread.start()
 
         if not bot_requested:
             await self.send_json({
@@ -412,7 +425,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             return await self._available_actions[action_type](json_object)
         
         await self.send_json(INVALID_ACTION_TYPE_JSON)
-    # БОТ
+
     async def connectToGame(self, json_object: dict) -> None:
         """
             Подключает к игре
@@ -436,9 +449,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             return await self.send_json(USER_DOES_NOT_EXIST_JSON)
 
         if not (await FieldDatabaseAccessor.getField(user_id)) == None:
-            # *DEBUG
-            await GameDatabaseAccessor.deleteGames()
-            # return await self.send_json(USER_IS_ALREADY_IN_GAME)
+            return await self.send_json(USER_IS_ALREADY_IN_GAME)
 
         game = await GameDatabaseAccessor.getGame(game_id, game_invite_id)
         if not game:
@@ -491,12 +502,17 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         """
             Отключает пользователя от игры
         """
+        print("Disconnected GameConsumer")
         user_id = self.reversed_listeners[self]
+        print(user_id)
+
         game = await GameDatabaseAccessor.getGameByPlayerId(user_id)
         opponent_id = await FieldDatabaseAccessor.getOpponentId(game, user_id)
+        print(game.opponent_is_ai)
         # Если победителя нет(игра не закончена по количеству кораблей)
         if game.opponent_is_ai:
             await UserDatabaseAccessor.deleteTemporaryUser(opponent_id)
+            await GameDatabaseAccessor.deleteGame(game)
         elif not game.game_is_over:
             # Устанавливаем победителем оппонента               
             if opponent_id:

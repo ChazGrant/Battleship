@@ -12,8 +12,8 @@ import json
 import hashlib
 from typing import Any, Dict
 
-from .models import Game, Ship, User, FriendRequest, Friends, Weapon, WeaponType, PlayerLeague
-from .serializers import GameSerializer, ShipSerializer, UserSerializer
+from .models import Game, Ship, User, FriendRequest, Friends, Weapon, WeaponType, PlayerLeague, Field
+from .serializers import GameSerializer, ShipSerializer, UserSerializer, FieldSerializer
 
 from WebsocketRequests.JSON_RESPONSES import (
     USER_DOES_NOT_EXIST_JSON, NOT_ENOUGH_ARGUMENTS_JSON, INVALID_ARGUMENTS_TYPE_JSON, 
@@ -83,6 +83,11 @@ class GameViewSet(ViewSet):
         serialzer = GameSerializer(queryset, many=True)
 
         return Response(serialzer.data)
+
+    @action(detail=False, methods=["get"])
+    def delete_games(self, request) -> Response:
+        Game.objects.all().delete()
+        return Response({"deleted": True})
 
 
 class UserViewSet(ViewSet):
@@ -254,6 +259,12 @@ class UserViewSet(ViewSet):
         })
 
 
+class FieldViewSet(ViewSet):
+    @action(detail=False, methods=["get", "post"])
+    def get_fields(self, request) -> Response:
+        fields = Field.objects.all()
+        return Response(FieldSerializer(fields, many=True).data)
+
 class FriendsViewSet(ViewSet):
     """
         ViewSet друзей
@@ -263,7 +274,7 @@ class FriendsViewSet(ViewSet):
         @author     ChazGrant
         @version    1.0
     """
-    @action(detail=False, methods=["get"])
+    @action(detail=False, methods=["get", "post"])
     def get_incoming_friend_requests(self, request) -> Response:
         """
             Получает входящие запросы в друзья
@@ -289,7 +300,7 @@ class FriendsViewSet(ViewSet):
             "friend_requests": friend_requests
         })
 
-    @action(detail=False, methods=["get"])
+    @action(detail=False, methods=["get", "post"])
     def get_friends(self, request) -> Response:
         """
             Получает друзей

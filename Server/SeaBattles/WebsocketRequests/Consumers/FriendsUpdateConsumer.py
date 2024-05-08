@@ -208,5 +208,3 @@ class FriendsUpdateConsumer(AsyncJsonWebsocketConsumer):
         user_id = self.reversed_listeners[self]
         self.listeners.pop(user_id)
         self.reversed_listeners.pop(self)
-
-        print("User({}) has been disconnected".format(user_id))

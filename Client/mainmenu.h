@@ -121,6 +121,10 @@ private:
     const int m_userId;
     //! Имя пользователя
     const QString m_userName;
+    //! Если пользователь отключился сам
+    bool m_disconnectedByUser = false;
+
+    void closeEvent(QCloseEvent *event);
 
     // Сокеты
     //! Сокет обновления друзей
