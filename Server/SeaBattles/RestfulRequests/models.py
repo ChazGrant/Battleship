@@ -26,17 +26,27 @@ class User(models.Model):
 
 
 class PlayerLeague(models.Model):
+    class LeaguesNames(models.Choices):
+        BRONZE_LEAGUE = "Бронзовая лига"
+        SILVER_LEAGUE = "Серебряная лига"
+        GOLDEN_LEAGUE = "Золотая лига"
+        DIAMOND_LEAGUE = "Алмазная лига"
+
+    
     class LeagueCriteria:
         league_criteria = {
             "Бронзовая лига": [0, 50],
-            "Серебряная лига": [50, 150],
-            "Золотая лига": [150, 300],
-            "Алмазная лига": [300, 9999],
+            "Серебряная лига": [51, 150],
+            "Золотая лига": [151, 300],
+            "Алмазная лига": [301, 9999],
         }
-    league_name = models.CharField(max_length=15, validators=[MinLengthValidator(4)])
 
-    min_cups_required = models.IntegerField(validators=[MinValueValidator(0)])
-    max_cups_required = models.IntegerField(validators=[MinValueValidator(0)])
+
+    league_name = models.CharField(max_length=15, choices=LeaguesNames, 
+                                    validators=[MinLengthValidator(4)])
+
+    min_cups_required = models.IntegerField(validators=[MinValueValidator(0)], unique=True)
+    max_cups_required = models.IntegerField(validators=[MinValueValidator(0)], unique=True)
 
     def __str__(self):
         return f"Лига {self.league_name}: ({self.min_cups_required} - {self.max_cups_required})"
@@ -45,13 +55,13 @@ class PlayerLeague(models.Model):
 class Game(models.Model):
     game_id = models.CharField(max_length=30, unique=True)
     user_id_turn = models.IntegerField(unique=True)
-    game_is_over = models.BooleanField(default=False)
-    winner_id = models.IntegerField(null=True)
+    game_is_over = models.BooleanField(default=False, blank=True)
+    winner_id = models.IntegerField(default=0, blank=True)
 
-    is_friendly = models.BooleanField(default=False)
-    game_invite_id = models.CharField(max_length=30, default="")
+    is_friendly = models.BooleanField(default=False, blank=True)
+    game_invite_id = models.CharField(max_length=30, default="", blank=True)
 
-    opponent_is_ai = models.BooleanField(default=False)
+    opponent_is_ai = models.BooleanField(default=False, blank=True)
 
     class Meta:
         verbose_name = "Game"
@@ -108,8 +118,8 @@ class WeaponType(models.Model):
     weapon_type_name = models.CharField(max_length=30, choices=WeaponTypesNames.choices, unique=True)
     weapon_x_range = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(9)])
     weapon_y_range = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(9)])
-    weapon_price = models.FloatField(default=0.0)
-    massive_damage = models.BooleanField(default=False)
+    weapon_price = models.FloatField(default=0.0, validators=[MinValueValidator(1)])
+    massive_damage = models.BooleanField(default=False, blank=True)
 
 
 class Weapon(models.Model):
@@ -128,6 +138,7 @@ class Friends(models.Model):
             raise ValidationError({
                 "title": "Вы не можете добавить самого себя в друзья"
             })
+
 
 class FriendRequest(models.Model):
     from_user = models.ForeignKey(User, related_name='from_user', on_delete=models.CASCADE)

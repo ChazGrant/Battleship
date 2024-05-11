@@ -4,7 +4,8 @@ from django.db.utils import IntegrityError
 
 from asgiref.sync import sync_to_async
 
-from RestfulRequests.models import User, Field, Game, ShipPart, FriendRequest, WeaponType, Weapon, Ship
+from RestfulRequests.models import (User, Field, Game, ShipPart, FriendRequest, WeaponType, Weapon, Ship, 
+                                    Friends, PlayerLeague)
 
 from typing import List
 import random
@@ -161,44 +162,7 @@ class UserModelTest(TestCase):
         self.assertEqual(user.full_clean(), None)
 
 
-class FieldModelTest(TestCase):
-    async def testDummy(self):
-        return
-        game = await sync_to_async(Game.objects.create)(
-            game_id="12951925u9125asf",
-            user_id_turn=1
-        )
-
-        user = await sync_to_async(User.objects.create)(
-            user_id=1,
-            user_name="username",
-            user_password="password",
-            user_email="bot@bot.ru"
-        )
-
-        user2 = await sync_to_async(User.objects.create)(
-            user_id=2,
-            user_name="username2",
-            user_password="password2",
-            user_email="bot2@bot.ru"
-        )
-
-        await sync_to_async(Field.objects.create)(
-            owner=user,
-            game=game
-        )
-        await sync_to_async(Field.objects.create)(
-            owner=user2,
-            game=game
-        )
-
-        player = await UserDatabaseAccessor.getUserById(user.user_id)
-        found_fields = (await sync_to_async(
-                        (await sync_to_async(Field.objects.filter)(game=game))
-                                   .exclude)(owner=player))
-        owner_field = (await sync_to_async(found_fields.first)())
-        owner: User = await sync_to_async(getattr)(owner_field, "owner")
-    
+class FieldModelTest(TestCase):   
     def testOnUniqueOwner(self):
         game = Game.objects.create(
             game_id="12951925u9125asf",
@@ -232,10 +196,17 @@ class FieldModelTest(TestCase):
         new_field.owner = new_user
         self.assertEqual(new_field.full_clean(), None)
 
-    def testOnEmptyOwner(self):
+    def testOnEmptyFields(self):
         game = Game.objects.create(
             game_id="12951925u9125asf",
             user_id_turn=1
+        )
+
+        user = User.objects.create(
+            user_id=1,
+            user_name="username",
+            user_password="password",
+            user_email="bot@bot.ru"
         )
 
         with self.assertRaises(IntegrityError):
@@ -243,17 +214,207 @@ class FieldModelTest(TestCase):
                 game=game
             )
 
+            Field.objects.create(
+                user=user
+            )
+
+            Field.objects.create(
+                one_deck=1,
+                two_deck=1,
+                three_deck=1,
+                four_deck=1,
+                user=user
+            )
+
+    def testOnInvalidDecks(self):
+        game = Game.objects.create(
+            game_id="12951925u9125asf",
+            user_id_turn=1
+        )
+
+        user = User.objects.create(
+            user_id=1,
+            user_name="username",
+            user_password="password",
+            user_email="bot@bot.ru"
+        )
+        
+        field = Field(
+            one_deck=-1,
+            two_deck=1,
+            three_deck=1,
+            four_deck=1,
+            owner=user,
+            game=game
+        )
+
+        self.assertRaises(ValidationError, field.full_clean)
+
+
+class GameModelTest(TestCase):
+    def testOnEmptyFields(self):
+        game = Game(
+            user_id_turn=3
+        )
+        self.assertRaises(ValidationError, game.full_clean)
+
+        game.game_id="random_id"
+        game.full_clean()
+
+    
+    def testOnFieldsLength(self):
+        with self.assertRaises(ValidationError):
+            game = Game(
+                game_id="".join(["1" for _ in range(45)]),
+                user_id_turn=1
+            )
+            game.full_clean()
+
+            game = Game(
+                game_id="".join(["1" for _ in range(25)]),
+                user_id_turn=1,
+                game_invite_id="".join(["1" for _ in range(45)])
+            )
+            game.full_clean()
+        
+        Game.objects.create(
+            game_id="".join(["1" for _ in range(25)]),
+            user_id_turn=1,
+            game_invite_id="".join(["1" for _ in range(25)])
+        ).full_clean()
+            
+
+class FriendsModelTest(TestCase):
+    def testOnTheSameUsers(self):
+        user = User.objects.create(
+            user_name="username",
+            user_password="user_password",
+            user_id=1
+        )
+
+        friends = Friends(
+            first_friend=user,
+            second_friend=user)
+
+        self.assertRaises(ValidationError, friends.full_clean)
+
+
+class FriendRequestTest(TestCase):
+    def testSameFriendRequest(self):
+        user = User.objects.create(
+            user_name="username",
+            user_password="user_password",
+            user_id=1
+        )
+
+        friend_request = FriendRequest(
+            from_user=user,
+            to_user=user
+        )
+        
+        self.assertRaises(ValidationError, friend_request.full_clean)
+
+
+class WeaponModelTest(TestCase):
+    def testValue(self):
+        weapon = Weapon(
+            weapon_amount=-1
+        )
+        self.assertRaises(ValidationError, weapon.full_clean)
+
+
+class WeaponTypeModelTest(TestCase):
+    def testCreating(self):
+        for type in WeaponType.WeaponTypesNames:
+            weapon_type = WeaponType(
+                weapon_type_name=type,
+                weapon_x_range=1,
+                weapon_y_range=1,
+                weapon_price=50.0
+            )
+            weapon_type.full_clean()
+
+    def testValues(self):
+        with self.assertRaises(ValidationError):
+            weapon_type = WeaponType(
+                weapon_type_name="".join(["f" for _ in range(31)]),
+                weapon_x_range=1,
+                weapon_y_range=1,
+                weapon_price=50.0
+            )
+            weapon_type.full_clean()
+            
+            for x_range in [0, 10]:
+                weapon_type = WeaponType(
+                    weapon_type_name="".join(["f" for _ in range(24)]),
+                    weapon_x_range=x_range,
+                    weapon_y_range=1,
+                    weapon_price=50.0
+                )
+                weapon_type.full_clean()
+            for y_range in [0, 10]:
+                weapon_type = WeaponType(
+                    weapon_type_name="".join(["f" for _ in range(24)]),
+                    weapon_x_range=1,
+                    weapon_y_range=y_range,
+                    weapon_price=50.0
+                )
+                weapon_type.full_clean()
+
+                weapon_type = WeaponType(
+                    weapon_type_name="".join(["f" for _ in range(24)]),
+                    weapon_x_range=1,
+                    weapon_y_range=2,
+                    weapon_price=-1
+                )
+                weapon_type.full_clean()
+
+    def testOnUniqueNames(self):
+        WeaponType.objects.create(
+            weapon_type_name=WeaponType.WeaponTypesNames.AIRPLANE,
+            weapon_x_range=1,
+            weapon_y_range=1,
+            weapon_price=50.0
+        )
+        weapon_type = WeaponType(
+            weapon_type_name=WeaponType.WeaponTypesNames.AIRPLANE,
+            weapon_x_range=1,
+            weapon_y_range=1,
+            weapon_price=50.0
+        )
+
+        self.assertRaises(ValidationError, weapon_type.full_clean)
+
+
+class PlayerLeagueModelTest(TestCase):
+    def testOnInvalidName(self):
+        league = PlayerLeague(
+            league_name="league#1",
+            min_cups_required=0,
+            max_cups_required=0
+        )
+
+        self.assertRaises(ValidationError, league.full_clean)
+    
+    def testInvalidValues(self):
+        league = PlayerLeague(
+            league_name=PlayerLeague.LeaguesNames.BRONZE_LEAGUE,
+            min_cups_required=-1,
+            max_cups_required=50
+        )
+
+        self.assertRaises(ValidationError, league.full_clean)
 
 class ShipModelTest(TestCase):
     def testCreation(self):
         with self.assertRaises(ValueError):
-            ShipPart(ship=5, x_pos=2, y_pos=3)
+            ShipPart.objects.create(ship=5, x_pos=2, y_pos=3)
         
         with self.assertRaises(ValueError):
-            ShipPart(ship=5, x_pos=2, y_pos="f")
+            ShipPart.objects.create(ship=5, x_pos=2, y_pos="f")
 
         with self.assertRaises(ValueError):
-            ShipPart(ship=5, x_pos="f", y_pos=3)
+            ShipPart.objects.create(ship=5, x_pos="f", y_pos=3)
 
     def coordinatesInOnePlace(self, ship_parts_coordinates):
         x_one_place = all(map(lambda x: x == ship_parts_coordinates[0][0], 
@@ -303,26 +464,6 @@ class ShipModelTest(TestCase):
         ship_parts_coordinates = [[coords[1], coords[0]] for coords in ship_parts_coordinates]
         x_in_one_place, y_in_one_place = self.coordinatesInOnePlace(ship_parts_coordinates)
         self.assertEqual(x_in_one_place + y_in_one_place, 1)
-
-
-class FriendRequestTest(TestCase):
-    def testSameUsers(self):
-        user = User.objects.create(
-            user_name="username",
-            user_password="user_password",
-            user_id=1
-        )
-
-        friend_request = FriendRequest(
-            from_user=user,
-            to_user=user
-        )
-        
-        self.assertRaises(ValidationError, friend_request.full_clean)
-
-    def testInvalidType(self):
-        with self.assertRaises(ValueError):
-            FriendRequest.objects.create(from_user="")
 
 
 class GameTest(TestCase):
@@ -478,21 +619,3 @@ class DummyTest(TestCase):
                 ship=ship
             )
             self.assertEqual(await sync_to_async(dead_ship_parts), 5)
-
-
-class WeaponsTest(TestCase):
-    async def testAccessing(self):
-        weapon_types = await sync_to_async(WeaponType.objects.all)()
-        async for weapon_type in weapon_types:
-            print(weapon_type.weapon_type_name)
-
-    def testCreating(self):
-        for type in WeaponType.WeaponTypesNames:
-            weapon_type = WeaponType(
-                weapon_type_name=type,
-                weapon_x_range=1,
-                weapon_y_range=1,
-                weapon_price=50.0
-            )
-            weapon_type.full_clean()
-            weapon_type.save()
