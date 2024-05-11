@@ -16,6 +16,7 @@ from WebsocketRequests.DatabaseAccessors.WeaponDatabaseAccessor import WeaponDat
 
 from asgiref.sync import sync_to_async
 
+
 # Create your tests here.
 class UserModelTest(TestCase):
     def testShortUsername(self):

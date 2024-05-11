@@ -4,11 +4,6 @@ from django.core.validators import (MinLengthValidator, validate_email, MinValue
 from django.core.exceptions import ValidationError
 
 
-"""
-    ForeignKey = Many items to one item(many ship parts to one ship)
-"""
-
-
 class User(models.Model):
     user_name = models.CharField(max_length=20, validators=[MinLengthValidator(4)], unique=True)
     user_password = models.CharField(max_length=25, validators=[MinLengthValidator(8)])

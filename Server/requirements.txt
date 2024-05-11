@@ -4,5 +4,4 @@ psycopg2-binary
 pdoc3
 uvicorn
 channels
-websockets
 asyncstdlib
