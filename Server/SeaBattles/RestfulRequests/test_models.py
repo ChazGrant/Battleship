@@ -4,8 +4,8 @@ from django.db.utils import IntegrityError
 
 from asgiref.sync import sync_to_async
 
-from RestfulRequests.models import (User, Field, Game, ShipPart, FriendRequest, WeaponType, Weapon, Ship, 
-                                    Friends, PlayerLeague)
+from RestfulRequests.models import (User, Field, Game, ShipPart, FriendRequest, WeaponType, Weapon, 
+                                    Ship, Friends, PlayerLeague, MissedCell)
 
 from typing import List
 import random
@@ -405,8 +405,46 @@ class PlayerLeagueModelTest(TestCase):
 
         self.assertRaises(ValidationError, league.full_clean)
 
+
+class MissedCellModelTest(TestCase):
+    def testCoordinates(self):
+        game = Game.objects.create(
+            game_id="12951925u9125asf",
+            user_id_turn=1
+        )
+        user = User.objects.create(
+            user_id=1,
+            user_name="username",
+            user_password="password",
+            user_email="bot@bot.ru"
+        )
+        field = Field(
+            one_deck=-1,
+            two_deck=1,
+            three_deck=1,
+            four_deck=1,
+            owner=user,
+            game=game
+        )
+
+        for x in [-1, 10]:
+            missed_cell = MissedCell(
+                x_pos=x,
+                y_pos=2,
+                field=field
+            )
+            self.assertRaises(ValidationError, missed_cell.full_clean)
+        for y in [-1, 10]:
+            missed_cell = MissedCell(
+                x_pos=2,
+                y_pos=y,
+                field=field
+            )
+            self.assertRaises(ValidationError, missed_cell.full_clean)
+
+
 class ShipModelTest(TestCase):
-    def testCreation(self):
+    def testShipPart(self):
         with self.assertRaises(ValueError):
             ShipPart.objects.create(ship=5, x_pos=2, y_pos=3)
         
@@ -464,6 +502,77 @@ class ShipModelTest(TestCase):
         ship_parts_coordinates = [[coords[1], coords[0]] for coords in ship_parts_coordinates]
         x_in_one_place, y_in_one_place = self.coordinatesInOnePlace(ship_parts_coordinates)
         self.assertEqual(x_in_one_place + y_in_one_place, 1)
+
+    def testValues(self):
+        game = Game.objects.create(
+            game_id="12951925u9125asf",
+            user_id_turn=1
+        )
+        user = User.objects.create(
+            user_id=1,
+            user_name="username",
+            user_password="password",
+            user_email="bot@bot.ru"
+        )
+        field = Field(
+            one_deck=-1,
+            two_deck=1,
+            three_deck=1,
+            four_deck=1,
+            owner=user,
+            game=game
+        )
+
+        for ship_length in [0, 5]:
+            ship = Ship(
+                ship_length=ship_length,
+                is_dead=False,
+                field=field
+            )
+            self.assertRaises(ValidationError, ship.full_clean)
+
+    def testShipPartValues(self):
+        game = Game.objects.create(
+            game_id="12951925u9125asf",
+            user_id_turn=1
+        )
+        user = User.objects.create(
+            user_id=1,
+            user_name="username",
+            user_password="password",
+            user_email="bot@bot.ru"
+        )
+        field = Field(
+            one_deck=-1,
+            two_deck=1,
+            three_deck=1,
+            four_deck=1,
+            owner=user,
+            game=game
+        )
+
+        ship = Ship(
+            ship_length=4,
+            is_dead=False,
+            field=field
+        )
+        for x in [-1, 10]:
+            ship_part = ShipPart(
+                x_pos=x,
+                y_pos=2,
+                is_damaged=False,
+                ship=ship
+            )
+            self.assertRaises(ValidationError, ship_part.full_clean)
+
+        for y in [-1, 10]:
+            ship_part = ShipPart(
+                x_pos=2,
+                y_pos=y,
+                is_damaged=False,
+                ship=ship
+            )
+            self.assertRaises(ValidationError, ship_part.full_clean)
 
 
 class GameTest(TestCase):
