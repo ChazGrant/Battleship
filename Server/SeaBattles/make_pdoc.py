@@ -10,9 +10,9 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', SETTINGS_MODULE)
 import django
 django.setup()
 
-cmdline_args = ["--html", "-o" , OUTPUT_DIR, "RestfulRequests.views"]
+cmdline_args = ["--html", "--force", "-o", OUTPUT_DIR, "RestfulRequests.views"]
 
-needed_files = ["RestfulRequests.views", "WebsocketRequests.consumers"]
+needed_files = ["RestfulRequests.views", "WebsocketRequests.Consumers"]
 
 if __name__ == "__main__":
     for needed_file in needed_files:

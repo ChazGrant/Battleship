@@ -68,7 +68,7 @@ class ShipDatabaseAccessor:
             Возвращает:
                 True, если в области вокруг клеток есть корабль, иначе False
             
-            @TODO Оптимизировать цикл поиска коллизий
+            @TODO Оптимизировать цикл поиска коллизий(см. GameConsumer.generateField)
         """
         # Поиск клеток, заполненных кораблями
         async for ship in ships:

@@ -201,10 +201,20 @@ class FriendsUpdateConsumer(AsyncJsonWebsocketConsumer):
         
         await self.send_json(INVALID_ACTION_TYPE_JSON)
 
-    async def disconnect(self, event) -> Coroutine:
+    async def disconnect(self, code) -> Coroutine:
         """
             Обрабатывает поведение при отключении сокета от сервера
+
+            Аргументы:
+                code - Код отключения
+
+            Возвращает:
+                None
         """
-        user_id = self.reversed_listeners[self]
+        try:
+            user_id = self.reversed_listeners[self]
+        except KeyError:
+            return
+
         self.listeners.pop(user_id)
         self.reversed_listeners.pop(self)

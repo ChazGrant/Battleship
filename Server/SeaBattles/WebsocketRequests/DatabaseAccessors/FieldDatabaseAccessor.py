@@ -1,7 +1,7 @@
 from os import environ
 from json import loads
 from asgiref.sync import sync_to_async
-from typing import Tuple, Union, List
+from typing import Tuple, List
 
 from django import setup
 from django.core.exceptions import ValidationError
@@ -23,6 +23,7 @@ class FieldDatabaseAccessor:
 
             Аргументы:
                 user_id - Идентификатор пользователя
+
             Возвращает:
                 None
         """
@@ -40,7 +41,7 @@ class FieldDatabaseAccessor:
     @staticmethod
     async def getFieldsParents() -> List[Tuple[int]]:
         """
-            Возвращает все игры, у которых есть хотя бы одно поле
+            Получает все игры, у которых есть хотя бы одно поле
 
             Возвращает:
                 Список, содержащих идентификаторы игр
@@ -56,6 +57,7 @@ class FieldDatabaseAccessor:
 
             Аргументы:
                 user_id - Идентификатор пользователя
+
             Возвращает:
                 Указатель о том, все ли корабли на поле размещены
         """
@@ -72,6 +74,7 @@ class FieldDatabaseAccessor:
             Аргументы:
                 field - Поле, которому нужно добавить повреждённые клетки
                 dead_cells - Координаты частей уничтоженного корабля
+
             Возвращает:
                 Список координат повреждённых клеток вокруг уничтоженного корабля
         """
@@ -108,6 +111,7 @@ class FieldDatabaseAccessor:
             Аргументы:
                 field - Поле, в котором нужно создать повреждённые клетки
                 missed_cells - Координаты повреждённых клеток
+
             Возвращает:
                 None
         """
@@ -118,13 +122,14 @@ class FieldDatabaseAccessor:
                 await sync_to_async(MissedCell.objects.create)(field=field, x_pos=x, y_pos=y)        
 
     @staticmethod
-    async def getOpponentId(game: Game, player_id: int) -> Union[int, None]:
+    async def getOpponentId(game: Game, player_id: int) -> int | None:
         """
             Получает идентификатор оппонента
 
             Аргументы:
                 game - Игра, в которой находится игрок
                 player_id - Идентификатор игрока
+
             Возвращает:
                 Идентификатор оппонента или None
         """
@@ -140,12 +145,13 @@ class FieldDatabaseAccessor:
         return opponent_owner.user_id
 
     @staticmethod
-    async def getShipsLeft(user_id: int) -> Tuple[Tuple[int], str]:
+    async def getShipsLeft(user_id: int) -> Tuple[int | None]:
         """
             Получает количество неразмещённых кораблей
 
             Аргументы:
                 user_id - Идентификатор пользователя
+
             Возвращает:
                 Кортеж, содержащий количество оставшихся кораблей или None
         """
@@ -164,19 +170,21 @@ class FieldDatabaseAccessor:
             Аргументы:
                 field - Поле игрока
                 ship_length_str - Наименование необходимого корабля
+
             Возвращает:
                 Указатель на то, остались ли корабли
         """
         return field.__dict__[ship_length_str] > 0
 
     @staticmethod
-    async def createField(user_id: int, game: Game) -> Tuple[Field, str]:
+    async def createField(user_id: int, game: Game) -> Tuple[Field | str]:
         """
             Создаёт поле
 
             Аргументы:
                 user_id - Идентификатор пользователя
                 game - Игра, в которой находится пользователь
+
             Возвращает:
                 Кортеж содержащий созданное поля и текст ошибки
         """
@@ -204,6 +212,7 @@ class FieldDatabaseAccessor:
             Аргументы:
                 field - Поле, у которого нужно уменьшить корабли
                 ship_length_str - Наименование корабля
+
             Возвращает:
                 None
         """
@@ -212,12 +221,13 @@ class FieldDatabaseAccessor:
         await sync_to_async(field.save)()
 
     @staticmethod
-    async def getField(user_id: int) -> Union[Field, None]:
+    async def getField(user_id: int) -> Field | None:
         """
             Получает поле
 
             Аргументы:
                 user_id - Идентификатор пользователя
+
             Возвращает:
                 Поле, которым владеет указанный пользователь, или None
         """

@@ -27,7 +27,7 @@ class GameCreatorConsumer(AsyncJsonWebsocketConsumer):
         """
             Конструктор класса
 
-            Создаём список доступных действий и присваиваем им соответствующие методы
+            Создаёт список доступных действий и присваивает им соответствующие методы
         """
         self._available_actions: Dict[str, Callable] = {
             "subscribe": self.subscribe,
@@ -143,7 +143,7 @@ class GameCreatorConsumer(AsyncJsonWebsocketConsumer):
         """
             Получает информацию от сокета
 
-            text_data может содержать следующие параметры
+            json_object содержит
             action_type - Тип действия
             user_id - Идентификатор пользователя
             from_user_id - Идентификатор пользователя, отправившего вызов на дуэль
@@ -151,7 +151,7 @@ class GameCreatorConsumer(AsyncJsonWebsocketConsumer):
             game_id - Идентификатор игры для дуэли
 
             Аргументы:
-                text_data - Полученная информация
+                json_object - Словарь, содержащий необходимые параметры
 
             Возвращает:
                 Текст ошибки или результат об успешной обработке
@@ -166,12 +166,20 @@ class GameCreatorConsumer(AsyncJsonWebsocketConsumer):
 
         await self.send_json(INVALID_ACTION_TYPE_JSON)
 
-    async def disconnect(self, event) -> None:
+    async def disconnect(self, code) -> None:
         """
             Обрабатывает поведение при отключении сокета от сервера
+
+            Аргументы:
+                code - Код отключения
+
+            Возвращает:
+                None
         """
-        print("Disconnected GameCreatorConsumer")
-        user_id = self.reversed_listeners[self]
+        try:
+            user_id = self.reversed_listeners[self]
+        except KeyError:
+            return
 
         self.listeners.pop(user_id)
         self.reversed_listeners.pop(self)

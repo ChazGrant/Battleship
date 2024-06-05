@@ -76,6 +76,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
 
             Аргументы:
                 json_object - Словарь, содержащий необходимые параметры
+
             Возвращает:
                 None
         """
@@ -100,6 +101,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             Аргументы:
                 user_id - Идентификатор пользователя, для которого нужно создать поле
                 bot_requested - Указатель на то, что запрос пошёл от бота
+
             Возвращает:
                 None
         """
@@ -129,13 +131,14 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                         "four_deck_left": copy_ships_amount[4]
                     })
 
-    def _callGenerateFieldForThread(self, user_id, bot_requested) -> None:
+    def _callGenerateFieldForThread(self, user_id: int, bot_requested: bool) -> None:
         """
             Вызывает метод создания поля в отдельном потоке
 
             Аргументы:
                 user_id - Идентификатор пользователя, для которого нужно создать поле
                 bot_requested - Указатель на то, что запрос пошёл от бота
+
             Возвращает:
                 None
         """
@@ -153,6 +156,10 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             json_object содержит
             user_id - Идентификатор пользователя
             game_id - Идетнификатор игры
+
+            Аргументы:
+                json_object - Словарь, содержащий необходимые параметры
+                bot_requested - Указатель на то, что метод вызван для бота
 
             Возвращает:
                 Информацию о том, что все корабли установлены и то что игра начата или нет
@@ -197,6 +204,12 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             user_id - Идентификатор игрока,
             game_id - Идентификатор игры,
             cells - Клетки, в которых нужно поместить корабль
+
+            Аргументы:
+                json_object - Словарь, содержащий необходимые параметры
+
+            Возвращает:
+                None
         """
         try:
             user_id = json_object["user_id"]
@@ -271,6 +284,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                 y_pos - Начальная позиция по y для выстрела
                 weapon_name - Наименование оружия которое было выбрано для выстрела
                 massive_damage - Является ли у данного оружия массивное попадание
+
             Возвращает:
                 Кортеж, содержащий список клеток по которым промахнулись, клеток по которым попали и 
                 клеток которые были уничтожены
@@ -296,11 +310,11 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             Аргументы:
                 game - Игра, к которой относится бот
                 opponent_id - Идентификатор игрока, с которым играет бот
-            
-                Возвращает:
-                    Кортеж из списков, содержащих ячейки по которым не попали, 
-                    ячейки по которым попали 
-                    и уничтоженные ячейки
+
+            Возвращает:
+                Кортеж из списков, содержащих ячейки по которым не попали, 
+                ячейки по которым попали 
+                и уничтоженные ячейки
         """
         opponent_field = await FieldDatabaseAccessor.getField(opponent_id)
         x_pos, y_pos = await self.ai_opponents[opponent_id].makeNextTurn()
@@ -318,6 +332,9 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             weapon_type - Оружие, которое использует пользователь
             user_id - Идентификатор пользователя, который стреляет
             game_id - Идентификатор игры
+
+            Аргументы:
+                json_object - Словарь, содержащий необходимые параметры
 
             Возвращает:
                 Словарь, содержащий ошибку, если ход невозможен, или клетки, которые помечены как промах, 
@@ -441,8 +458,12 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         """
             Обрабатывает поведение при отключении сокета от сервера
 
+            json_object содержит
+            user_id - Идентификатор пользователя
+            
             Аргументы:
-                json_object - Полученная информация
+                json_object - Словарь, содержащий необходимые параметры
+
             Возвращает:
                 Ответ о том, что пользователь подписан на обновления
         """
@@ -464,11 +485,11 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         """
             Получает информацию от сокета
 
-            json_object содержит action_type, отвечающий за тип действия
+            json_object содержит
             action_type - Тип действия
             
             Аргументы:
-                json_object - Полученная информация
+                json_object - Словарь, содержащий необходимые параметры
 
             Возвращает:
                 Текст ошибки или результат об успешной обработке
@@ -487,11 +508,15 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         """
             Подключает к игре
 
+            json_object содержит
+            user_id - Идентификатор пользователя, который подключается,
+            game_id - Идентификатор игры, к которой подключаются,
+            game_invite_id - Идентификатор приглашения в игру
+
             Аргументы:
-                json_object - Словарь, содержащий
-                идентификатор пользователя, который подключается,
-                идентификатор игры, к которой подключаются,
-                идентификатор приглашения в игру
+                json_object - Словарь, содержащий необходимые параметры
+            Возращает:
+                None
         """
         try:
             user_id = int(json_object["user_id"])
@@ -555,21 +580,27 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                 "action_type": "opponent_connected"
             })
 
-    async def disconnect(self, event) -> None:
+    async def disconnect(self, code: int) -> None:
         """
             Отключает пользователя от игры
+
+            Аргументы:
+                code - Код отключения
+
+            Возвращает:
+                None
         """
-        print("Disconnected GameConsumer")
-        user_id = self.reversed_listeners[self]
-        print(user_id)
+        try:
+            user_id = self.reversed_listeners[self]
+        except KeyError:
+            return
 
         game = await GameDatabaseAccessor.getGameByPlayerId(user_id)
         opponent_id = await FieldDatabaseAccessor.getOpponentId(game, user_id)
-        print(game.opponent_is_ai)
         # Если победителя нет(игра не закончена по количеству кораблей)
         if game.opponent_is_ai:
             await UserDatabaseAccessor.deleteTemporaryUser(opponent_id)
-            await GameDatabaseAccessor.deleteGame(game)
+            game.delete()
         elif not game.game_is_over:
             # Устанавливаем победителем оппонента               
             if opponent_id:

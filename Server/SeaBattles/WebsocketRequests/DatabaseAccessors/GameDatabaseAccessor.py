@@ -18,13 +18,9 @@ from WebsocketRequests.DatabaseAccessors.FieldDatabaseAccessor import FieldDatab
 
 class GameDatabaseAccessor:
     @staticmethod
-    async def deleteGame(game: Game) -> None:
-        await sync_to_async(game.delete)()
-
-    @staticmethod
-    async def getRandomWaitingGameId() -> Union[str, None]:
+    async def getRandomWaitingGameId() -> str | None:
         """
-            Возвращает идентификатор случайной игры, которая не началась
+            Получает идентификатор случайной игры, которая не началась
 
             Возвращает:
                 Идентификатор игры или None, если нет игр, которые не начались
@@ -47,6 +43,15 @@ class GameDatabaseAccessor:
 
     @staticmethod
     async def setWinner(user_id: int) -> None:
+        """
+            Устанавливает победителя игры
+
+            Аргументы:
+                user_id - Идентификатор пользователя, который выиграл
+
+            Возвращает:
+                None
+        """
         game = await GameDatabaseAccessor.getGameByPlayerId(user_id)
         game.game_is_over = True
         game.winner_id = user_id
