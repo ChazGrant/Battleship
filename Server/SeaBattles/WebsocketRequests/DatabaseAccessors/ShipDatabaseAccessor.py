@@ -231,7 +231,7 @@ class ShipDatabaseAccessor:
                              x_start: int, x_end: int, 
                              y_start: int, y_end: int,
                              massive_damage: bool) -> \
-                                Tuple[List[int], List[int], List[int]]:
+                                Tuple[List[List[int]], List[List[int]], List[List[int]]]:
         missed_cells = []
         dead_cells = []
         damaged_cells = []

@@ -24,7 +24,6 @@ MainMenu::MainMenu(int t_userId, QString t_userName, QWidget *parent) :
     ui->setupUi(this);
 
     setWindowFlags(Qt::FramelessWindowHint);
-    // setAttribute(Qt::WA_DeleteOnClose);
 
     ui->userDataLabel->setText(QString("Ваш ID:%1 \nВаше имя пользователя: %2").
                                arg(QString::number(m_userId), m_userName));

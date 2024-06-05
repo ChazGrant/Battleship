@@ -118,6 +118,12 @@ class GameCreatorConsumer(AsyncJsonWebsocketConsumer):
         })
 
     async def findGame(self) -> None:
+        """
+            Поиск игры
+
+            Возвращает:
+                Идентификатор случайной игры, которая ещё не началась
+        """
         game_id = await GameDatabaseAccessor.getRandomWaitingGameId()
         if game_id == None:
             return await self.send_json(NO_AVAILABLE_GAMES)

@@ -18,6 +18,14 @@ from WebsocketRequests.DatabaseAccessors.UserDatabaseAccessor import UserDatabas
 class FieldDatabaseAccessor:
     @staticmethod
     async def resetField(user_id: int) -> None:
+        """
+            Восстанавливает поле игрока, обнуляя количество использованных кораблей
+
+            Аргументы:
+                user_id - Идентификатор пользователя
+            Возвращает:
+                None
+        """
         try:
             field = await FieldDatabaseAccessor.getField(user_id)
 
@@ -31,19 +39,42 @@ class FieldDatabaseAccessor:
 
     @staticmethod
     async def getFieldsParents() -> List[Tuple[int]]:
+        """
+            Возвращает все игры, у которых есть хотя бы одно поле
+
+            Возвращает:
+                Список, содержащих идентификаторы игр
+        """
         return await sync_to_async((await sync_to_async(Field.objects.annotate)(
             article_count=Count('game_id')
         )).values_list)("game_id")
 
     @staticmethod
     async def allShipsArePlaced(user_id: int) -> bool:
+        """
+            Получает информацию о том, все ли корабли размещены
+
+            Аргументы:
+                user_id - Идентификатор пользователя
+            Возвращает:
+                Указатель о том, все ли корабли на поле размещены
+        """
         (one_deck, two_deck, three_deck, four_deck) = \
             await FieldDatabaseAccessor.getShipsLeft(user_id)
         
         return (one_deck + two_deck + three_deck + four_deck) == 0
         
     @staticmethod
-    async def createMissedCellsAroundDeadCells(field: Field, dead_cells: List[int]) -> List[int]:
+    async def createMissedCellsAroundDeadCells(field: Field, dead_cells: List[List[int]]) -> List[List[int]]:
+        """
+            Создаёт повреждённые клетки вокруг корабля, который был уничтожен
+
+            Аргументы:
+                field - Поле, которому нужно добавить повреждённые клетки
+                dead_cells - Координаты частей уничтоженного корабля
+            Возвращает:
+                Список координат повреждённых клеток вокруг уничтоженного корабля
+        """
         x_cells = [cell[0] for cell in dead_cells]
         y_cells = [cell[1] for cell in dead_cells]
         min_x = min(x_cells) - 1
@@ -70,7 +101,16 @@ class FieldDatabaseAccessor:
         return missed_cells
 
     @staticmethod
-    async def createMissedCells(field: Field, missed_cells: List[int]) -> None:
+    async def createMissedCells(field: Field, missed_cells: List[List[int]]) -> None:
+        """
+            Создаёт повреждённые клетки
+
+            Аргументы:
+                field - Поле, в котором нужно создать повреждённые клетки
+                missed_cells - Координаты повреждённых клеток
+            Возвращает:
+                None
+        """
         for x, y in missed_cells:
             try:
                 await sync_to_async(MissedCell.objects.get)(field=field, x_pos=x, y_pos=y)
@@ -79,6 +119,15 @@ class FieldDatabaseAccessor:
 
     @staticmethod
     async def getOpponentId(game: Game, player_id: int) -> Union[int, None]:
+        """
+            Получает идентификатор оппонента
+
+            Аргументы:
+                game - Игра, в которой находится игрок
+                player_id - Идентификатор игрока
+            Возвращает:
+                Идентификатор оппонента или None
+        """
         player = await UserDatabaseAccessor.getUserById(player_id)
         found_fields = (await sync_to_async(
                         (await sync_to_async(Field.objects.filter)(game=game))
@@ -92,6 +141,14 @@ class FieldDatabaseAccessor:
 
     @staticmethod
     async def getShipsLeft(user_id: int) -> Tuple[Tuple[int], str]:
+        """
+            Получает количество неразмещённых кораблей
+
+            Аргументы:
+                user_id - Идентификатор пользователя
+            Возвращает:
+                Кортеж, содержащий количество оставшихся кораблей или None
+        """
         try:
             user = await UserDatabaseAccessor.getUserById(user_id)
             field = await sync_to_async(Field.objects.get)(owner=user)
@@ -100,11 +157,29 @@ class FieldDatabaseAccessor:
             return (None, None, None, None)
         
     @staticmethod
-    async def areShipsLeft(field: Field, ship_length_str: str) -> Tuple[bool, str]:
+    async def areShipsLeft(field: Field, ship_length_str: str) -> bool:
+        """
+            Получает информацию о том, остались ли корабли данного типа
+
+            Аргументы:
+                field - Поле игрока
+                ship_length_str - Наименование необходимого корабля
+            Возвращает:
+                Указатель на то, остались ли корабли
+        """
         return field.__dict__[ship_length_str] > 0
 
     @staticmethod
     async def createField(user_id: int, game: Game) -> Tuple[Field, str]:
+        """
+            Создаёт поле
+
+            Аргументы:
+                user_id - Идентификатор пользователя
+                game - Игра, в которой находится пользователь
+            Возвращает:
+                Кортеж содержащий созданное поля и текст ошибки
+        """
         try:
             user = await UserDatabaseAccessor.getUserById(user_id)
             field = await sync_to_async(Field)(owner=user, game=game)
@@ -122,13 +197,30 @@ class FieldDatabaseAccessor:
                 return None, error_json[list(error_json.keys())[0]][0]
 
     @staticmethod
-    async def decreaseShipsAmount(field: Field, ship_length_str: str):
+    async def decreaseShipsAmount(field: Field, ship_length_str: str) -> None:
+        """
+            Уменьшает количество указанных кораблей на 1
+
+            Аргументы:
+                field - Поле, у которого нужно уменьшить корабли
+                ship_length_str - Наименование корабля
+            Возвращает:
+                None
+        """
         current_value = getattr(field, ship_length_str)
         setattr(field, ship_length_str, current_value - 1)
         await sync_to_async(field.save)()
 
     @staticmethod
     async def getField(user_id: int) -> Union[Field, None]:
+        """
+            Получает поле
+
+            Аргументы:
+                user_id - Идентификатор пользователя
+            Возвращает:
+                Поле, которым владеет указанный пользователь, или None
+        """
         try:
             user = await UserDatabaseAccessor.getUserById(user_id)
             return await sync_to_async(Field.objects.get)(owner=user)

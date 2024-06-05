@@ -25,6 +25,8 @@ MainWindow::MainWindow(const QString t_gameId, const int t_userId,
 
     ui->setupUi(this);
 
+    setWindowFlags(Qt::FramelessWindowHint);
+
     connect(ui->makeTurnButton, &QPushButton::clicked, this, &MainWindow::makeTurn);
     connect(ui->placeShipButton, &QPushButton::clicked, this, &MainWindow::sendPlaceShipRequest);
     connect(ui->hideButton, &QPushButton::clicked, this, &MainWindow::showMinimized);
@@ -232,6 +234,42 @@ void MainWindow::onTimeOut(QTimer *t_timer)
         close();
     }
 }
+
+/*! @brief Обработка перемещения мыши
+ *
+ *  @details Меняет переменную delta и перемещает окно к её координатам
+ *
+ *  @param *event Указатель на событие поведения мыши
+ *
+ *  @return void
+*/
+void MainWindow::mouseMoveEvent(QMouseEvent* event)
+{
+    const QPointF delta = event->globalPos() - m_mouse_point;
+    move(delta.toPoint());
+
+    event->accept();
+}
+
+/*! @brief Обработка нажатия кнопки мыши
+ *
+ *  @details При нажатии на левую, правую или среднюю кнопку мыши
+ *  меняет приватную переменную m_mouse_point
+ *
+ *  @param *event Указатель на событие поведения мыши
+ *
+ *  @return void
+*/
+void MainWindow::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton ||
+        event->button() == Qt::RightButton ||
+        event->button() == Qt::MiddleButton) {
+        m_mouse_point = event->pos();
+        event->accept();
+    }
+}
+
 
 /*! @brief Вывод текущего состояния игры на экран
  *

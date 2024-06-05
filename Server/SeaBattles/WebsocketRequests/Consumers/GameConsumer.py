@@ -26,6 +26,12 @@ from RestfulRequests.models import Field
 CHARS = "+-/*!&$#?=@<>abcdefghijklnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
 
 async def generatePassword() -> str:
+    """
+        Генерирует пароль
+
+        Возвращает:
+            Сгенерированный пароль
+    """
     password = ""
     for _ in range(24):
         password += random.choice(CHARS)
@@ -65,9 +71,13 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         """
             Получение оружий, которые в наличии у игрока
 
-            Аргументы:
+            json_object содержит
+            user_id - Идентификатор пользователя
 
-            Возвращает: 
+            Аргументы:
+                json_object - Словарь, содержащий необходимые параметры
+            Возвращает:
+                None
         """
         try:
             user_id = int(json_object["user_id"])
@@ -83,7 +93,16 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             "available_weapons": available_weapons
         })
     
-    async def _generateField(self, user_id: int, bot_requested: bool):
+    async def _generateField(self, user_id: int, bot_requested: bool) -> None:
+        """
+            Метод создания поля
+
+            Аргументы:
+                user_id - Идентификатор пользователя, для которого нужно создать поле
+                bot_requested - Указатель на то, что запрос пошёл от бота
+            Возвращает:
+                None
+        """
         ships_amounts = {
             4: 1,
             3: 2,
@@ -110,7 +129,16 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                         "four_deck_left": copy_ships_amount[4]
                     })
 
-    def _callGenerateFieldForThread(self, user_id, bot_requested):
+    def _callGenerateFieldForThread(self, user_id, bot_requested) -> None:
+        """
+            Вызывает метод создания поля в отдельном потоке
+
+            Аргументы:
+                user_id - Идентификатор пользователя, для которого нужно создать поле
+                bot_requested - Указатель на то, что запрос пошёл от бота
+            Возвращает:
+                None
+        """
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
 
@@ -119,6 +147,16 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
 
     # БОТ
     async def generateField(self, json_object: dict, bot_requested:bool=False):
+        """
+            Создаёт поле
+
+            json_object содержит
+            user_id - Идентификатор пользователя
+            game_id - Идетнификатор игры
+
+            Возвращает:
+                Информацию о том, что все корабли установлены и то что игра начата или нет
+        """
         try:
             user_id = int(json_object["user_id"])
             game_id = json_object["game_id"]
@@ -224,6 +262,20 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
                         x_pos: int, y_pos: int, 
                         weapon_name:str="", massive_damage:bool=False) \
         -> Tuple[List[int], List[int], List[int]]:
+        """
+            Делает ход игрока, поле которого было передано
+
+            Аргументы:
+                opponent_field - Поле оппонента
+                x_pos - Начальная позиция по x для выстрела
+                y_pos - Начальная позиция по y для выстрела
+                weapon_name - Наименование оружия которое было выбрано для выстрела
+                massive_damage - Является ли у данного оружия массивное попадание
+            Возвращает:
+                Кортеж, содержащий список клеток по которым промахнулись, клеток по которым попали и 
+                клеток которые были уничтожены
+
+        """
         x_range, y_range = await WeaponTypeDatabaseAccessor.getWeaponRange(weapon_name)
 
         missed_cells, damaged_cells, dead_cells = await ShipDatabaseAccessor.\
@@ -388,6 +440,11 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
     async def subscribe(self, json_object: dict) -> None:
         """
             Обрабатывает поведение при отключении сокета от сервера
+
+            Аргументы:
+                json_object - Полученная информация
+            Возвращает:
+                Ответ о том, что пользователь подписан на обновления
         """
         try:
             user_id = int(json_object["user_id"])

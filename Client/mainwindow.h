@@ -73,6 +73,10 @@ private slots:
 
     void onTimeOut(QTimer *t_timer);
 private:
+    //! Точка на экране
+    QPoint m_mouse_point;
+    void mouseMoveEvent(QMouseEvent* event);
+    void mousePressEvent(QMouseEvent *event);
     //! Указатель на виджет класса
     Ui::MainWindow *ui;
     //! Указатель на обработчик запросов

@@ -23,6 +23,12 @@ class GameDatabaseAccessor:
 
     @staticmethod
     async def getRandomWaitingGameId() -> Union[str, None]:
+        """
+            Возвращает идентификатор случайной игры, которая не началась
+
+            Возвращает:
+                Идентификатор игры или None, если нет игр, которые не начались
+        """
         game_ids = await FieldDatabaseAccessor.getFieldsParents()
         waiting_games_id = list()
 
