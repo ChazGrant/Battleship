@@ -59,7 +59,17 @@ class GameDatabaseAccessor:
         await sync_to_async(game.save)()
 
     @staticmethod
-    async def getGame(game_id: str, game_invite_id:str="") -> Union[Game, None]:
+    async def getGame(game_id: str, game_invite_id:str="") -> Game | None:
+        """
+            Получает игру
+
+            Аргументы:
+                game_id - Идентификатор игры
+                game_invite_id - Идентификатор приглашения в игру
+
+            Возвращает:
+                Игру или None
+        """
         try:
             return await sync_to_async(Game.objects.get)(
                 game_id=game_id,
@@ -68,7 +78,18 @@ class GameDatabaseAccessor:
             return None
     
     @staticmethod
-    async def createGame(creator_id: int, opponent_is_ai: bool, another_user_id:int=0) -> Tuple[str, str, str]:
+    async def createGame(creator_id: int, opponent_is_ai: bool, another_user_id:int=0) -> Tuple[str]:
+        """
+            Создаёт игру
+
+            Аргументы:
+                creator_id - Идентификатор создателя игры
+                opponent_is_ai - Указатель на то, что оппонент является ботом
+                another_user_id - Идентификатор оппонента
+
+            Возвращает:
+                Кортеж, содержащий идентификатор игры, идентификатор приглашения в игру и текст ошибки
+        """
         field = await FieldDatabaseAccessor.getField(creator_id)
         if field:
             return "", "", "Игрок уже находится в игре"
@@ -96,7 +117,16 @@ class GameDatabaseAccessor:
         return created_game.game_id, created_game.game_invite_id, ""
 
     @staticmethod
-    async def getGameByPlayerId(player_id: int) -> Union[Game, None]:
+    async def getGameByPlayerId(player_id: int) -> Game | None:
+        """
+            Получает игру по идентификатору игрока
+
+            Аргументы:
+                player_id - Идентификатор игрока
+            
+            Возвращает:
+                Игру или None если такой игры не существует
+        """
         field = await FieldDatabaseAccessor.getField(player_id)
         try:
             return await sync_to_async(getattr)(field, "game")
@@ -105,6 +135,16 @@ class GameDatabaseAccessor:
 
     @staticmethod
     async def opponentPlacedAllShips(game_id: str, player_id: int) -> bool:
+        """
+            Проверяет разместил ли оппонент все корабли
+
+            Аргументы:
+                game_id - Идентификатор игры
+                player_id - Идентификатор игрока
+            
+            Возвращает:
+                Информацию о том, разместил ли оппонент все корабли
+        """
         game = await GameDatabaseAccessor.getGame(game_id)
         opponent_id = await FieldDatabaseAccessor.getOpponentId(game, player_id)
 
@@ -115,6 +155,12 @@ class GameDatabaseAccessor:
 
     @staticmethod
     async def switchCurrentTurn(game: Game) -> None:
+        """
+            Меняет игрока который сейчас ходит
+
+            Аргументы:
+                game - Игра, в котором нужно сменить ход
+        """
         opponent_id = await FieldDatabaseAccessor.getOpponentId(game, game.user_id_turn)
 
         game.user_id_turn = opponent_id
