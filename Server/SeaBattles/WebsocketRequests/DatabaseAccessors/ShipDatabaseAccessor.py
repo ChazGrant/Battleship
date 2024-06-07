@@ -30,6 +30,15 @@ SHIP_LENGTHS_NAMES = {
 
 
 def coordinatesInOnePlace(ship_parts_coordinates: List[List[int]]) -> Tuple[bool]:
+    """
+        Проверяет находятся ли все координаты в одной плоскости
+
+        Аргументы:
+            ship_parts_coordinates - Список координат кораблей
+
+        Возвращает:
+            Кортеж, содержащий информацию о том, что x находится в одной плоскости и y
+    """
     x_one_place = all(map(lambda x: x == ship_parts_coordinates[0][0], 
                     [x[0] for x in ship_parts_coordinates]))
     y_one_place = all(map(lambda y: y == ship_parts_coordinates[0][1], 
@@ -38,6 +47,15 @@ def coordinatesInOnePlace(ship_parts_coordinates: List[List[int]]) -> Tuple[bool
     return x_one_place, y_one_place
 
 def isOutOfField(cells: List[List[int]]) -> bool:
+    """
+        Проверяет находится ли одна из координат за пределами поля
+
+        Аргументы:
+            cells - Список координат
+
+        Возвращает:
+            Информацию о том, что одна из координат выходит за пределы поля
+    """
     for x, y in cells:
         if x > MAX_ROW_SHIP_PART_PLACEMENT or y > MAX_COLUMN_SHIP_PART_PLACEMENT or \
         x < 0 or y < 0:
@@ -45,7 +63,18 @@ def isOutOfField(cells: List[List[int]]) -> bool:
         
     return False
 
-def isSequence(x_equal, y_equal, ship_parts_coordinates):            
+def isSequence(x_equal: bool, y_equal: bool, ship_parts_coordinates: List[List[int]]) -> bool:
+    """
+        Проверяет идут ли координаты последовательно
+
+        Аргументы:
+            x_equal - Информация о том, что x в одной плоскости
+            y_equal - Информация о том, что y в одной плоскости
+            ship_parts_coordinates - Координаты корабля
+
+        Возвращает:
+            Информацию о том, что координаты, которые находятся в одной плоскости идут последовательно
+    """
     start_num = ship_parts_coordinates[0][not y_equal]
     for idx, coords in enumerate(ship_parts_coordinates):
         if not (start_num + idx == coords[x_equal]) and \
@@ -84,13 +113,38 @@ class ShipDatabaseAccessor:
         return False
 
     @staticmethod
-    async def deleteShips(user_id: int):
+    async def deleteShips(user_id: int) -> None:
+        """
+            Удаляет все корабли пользователя
+
+            Аргументы:
+                user_id - Идентификатор пользователя
+        """
         field = await FieldDatabaseAccessor.getField(user_id)
         await sync_to_async((await sync_to_async(Ship.objects.filter)(field=field)).delete)()
 
     @staticmethod
-    async def generateShip(user_id: int, ship_length: int) -> List[int]:
+    async def generateShip(user_id: int, ship_length: int) -> List[List[int]]:
+        """
+            Создаёт корабль указанной длины
+
+            Аргументы:
+                user_id - Идентификатор пользователя, у которого нужно создать корабль
+                ship_length - Длина корабля
+
+            Возвращает:
+                Список координат корабля
+        """
         async def generateCells(orientation: str) -> List[List[int]]:
+            """
+                Генерирует части корабля
+
+                Аргументы:
+                    orientation - Ориентация корабля
+
+                Возвращает:
+                    Координаты корабля
+            """
             cells = []
             if orientation == 'horizontal':
                 x = random.randint(0, 9 - ship_length)
@@ -136,11 +190,20 @@ class ShipDatabaseAccessor:
                     orientation_changed = False
                 
     @staticmethod
-    async def getShips(field: Field):
+    async def getShips(field: Field) -> BaseManager[Ship]:
+        """
+            Получает все корабли, которые имеет указанное поле
+
+            Аргументы:
+                field - Поле, корабли которого нужно вернуть
+
+            Возвращает:
+                Список кораблей
+        """
         return await sync_to_async(Ship.objects.filter)(field=field)
 
     @staticmethod
-    async def createShip(cells: List[List[int]], user_id: str) -> Tuple[bool, str]:
+    async def createShip(cells: List[List[int]], user_id: str) -> bool | str:
         """
             Создаёт корабль
 
@@ -215,15 +278,19 @@ class ShipDatabaseAccessor:
 
     @staticmethod
     async def allShipsAreDead(field: Field) -> bool:
-        print("============allShipsAreDead============")
-        owner = await sync_to_async(getattr)(field, "owner")
-        print(owner.user_id)
+        """
+            Проверяет все ли корабли переданного поля были уничтожены
+
+            Аргументы:
+                field - Поле, в котором нужно проверить корабли
+
+            Возвращает:
+                Информацию о том все ли корабли были уничтожены
+        """
         alive_ships = await sync_to_async(Ship.objects.filter)(
             field=field,
             is_dead=False
         )
-        print(await sync_to_async(len)(alive_ships))
-        print("============allShipsAreDead============")
         return await sync_to_async(len)(alive_ships) == 0
 
     @staticmethod
@@ -232,6 +299,19 @@ class ShipDatabaseAccessor:
                              y_start: int, y_end: int,
                              massive_damage: bool) -> \
                                 Tuple[List[List[int]], List[List[int]], List[List[int]]]:
+        """
+            Помечает клетки на поле
+
+            Аргументы:
+                field - Поле, которое нужно помечать
+                x_start - Начальная координата по x
+                y_start - Начальная координата по y
+                massive_damage - Задевает ли выстрел все части кораблей или только первые, по которым попали
+
+            Возвращает:
+                Кортеж, содержащий список клеток по котором промазали, по которым попали 
+                и которые были уничтожены
+        """
         missed_cells = []
         dead_cells = []
         damaged_cells = []

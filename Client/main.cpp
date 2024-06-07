@@ -12,8 +12,8 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    // LoginForm form;
-    MainMenu form(1, "user");
+    LoginForm form;
+    // MainMenu form(1, "user");
     form.show();
     return a.exec();
 }
