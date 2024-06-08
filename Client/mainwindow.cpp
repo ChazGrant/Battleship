@@ -450,11 +450,8 @@ void MainWindow::clearHighlightedCells(QColor t_avoidColor)
 */
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    // Пока не нашёл альтернативы как это сделать более грамотно,
-    // поэтому пока так
-    event->accept();
-    return;
     if (this->m_closeEventIsAccepted) {
+        emit widgetClosed();
         return event->accept();
     }
 
@@ -470,7 +467,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     QUrl queryUrl;
     queryUrl.setQuery(query);
 
-    QObject::connect(m_manager, &QNetworkAccessManager::finished, this, &MainWindow::acceptCloseEvent);
+    // QObject::connect(m_manager, &QNetworkAccessManager::finished, this, &MainWindow::acceptCloseEvent);
     m_manager->post(request, queryUrl.toEncoded().remove(0, 1));
     event->ignore();
 }

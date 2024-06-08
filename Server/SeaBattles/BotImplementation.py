@@ -104,7 +104,7 @@ def drawField():
                 print(Fore.WHITE + "&", end=" ")
         print(Fore.WHITE)
 
-def getNextPotentionalCell(field, damaged_ship_cells, damaged_cells):
+def getNextPotentionalCell(damaged_ship_cells, damaged_cells):
     x_one_place = all(map(lambda x: x == damaged_ship_cells[0][1], 
                     [x[1] for x in damaged_ship_cells]))
     y_one_place = all(map(lambda y: y == damaged_ship_cells[0][0], 

@@ -2,7 +2,7 @@
 #include "ui_loginform.h"
 
 
-/*! @brief Констркутор класса
+/*! @brief Конструктор класса
  *
  *  @param *parent Указатель на родительский виджет
  *
@@ -146,7 +146,10 @@ void LoginForm::getLoginStatus(QNetworkReply *reply)
 
         window = new MainMenu(userId, userName);
         window->show();
-        close();
+        hide();
+
+        disconnect(window, &MainMenu::widgetClosed, this, &LoginForm::show);
+        connect(window, &MainMenu::widgetClosed, this, &LoginForm::show);
     } else {
         QMessageBox msgBox;
         msgBox.setWindowTitle("Вход не успешен");

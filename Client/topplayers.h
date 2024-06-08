@@ -25,6 +25,10 @@ public:
                         QJsonObject t_playersByWinstreak,
                         QWidget *parent = nullptr);
     ~TopPlayers();
+    virtual void closeEvent(QCloseEvent *event) override;
+
+signals:
+    void widgetClosed();
 
 private slots:
     void onFilterChanged();

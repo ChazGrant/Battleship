@@ -210,7 +210,10 @@ void MainMenu::openMainWindow(QString t_gameId, QString t_gameInviteId)
 {
     m_mainWindow = new MainWindow(t_gameId, m_userId, t_gameInviteId);
     m_mainWindow->show();
-    close();
+    hide();
+
+    disconnect(m_mainWindow, &MainWindow::widgetClosed, this, &MainMenu::show);
+    connect(m_mainWindow, &MainWindow::widgetClosed, this, &MainMenu::show);
 }
 
 /*! @brief Открытие виджета магазина
@@ -221,7 +224,10 @@ void MainMenu::openShopWidget()
 {
     m_shopWindow = new Shop(m_userId);
     m_shopWindow->show();
-    close();
+    hide();
+
+    disconnect(m_shopWindow, &Shop::widgetClosed, this, &MainMenu::show);
+    connect(m_shopWindow, &Shop::widgetClosed, this, &MainMenu::show);
 }
 
 /*! @brief Получение друзей пользователя
@@ -386,6 +392,8 @@ void MainMenu::showNotImplementedFeature()
 void MainMenu::closeEvent(QCloseEvent *event)
 {
     m_gameCreatorSocket->disconnect();
+    emit widgetClosed();
+    event->accept();
 }
 
 /*! @brief Инициалиализация сокетов
@@ -678,7 +686,9 @@ void MainMenu::openTopPlayersWidget(QNetworkReply *t_reply)
     QJsonObject playersByWinstreak = jsonResponse["player_by_winstreak"].toObject();
     m_topPlayersWidget = new TopPlayers(leagues, playersByCups, playersBySilverCoins, playersByWinstreak);
     hide();
-    connect(m_topPlayersWidget, &QWidget::destroyed, this, &MainMenu::show);
+
+    disconnect(m_topPlayersWidget, &TopPlayers::widgetClosed, this, &MainMenu::show);
+    connect(m_topPlayersWidget, &TopPlayers::widgetClosed, this, &MainMenu::show);
 
     m_topPlayersWidget->show();
 }

@@ -144,6 +144,13 @@ class UserViewSet(ViewSet):
         serializer = UserSerializer(User.objects.all(), many=True)
         return Response(serializer.data)
 
+    @action(detail=False, methods=["get"])
+    def delete_bots(self, request) -> Response:
+        User.objects.filter(is_temporary=True).delete()
+        return Response({
+            "bots_deleted": True
+        })
+
     @action(detail=False, methods=["post"])
     def login(self, request) -> Response:
         """

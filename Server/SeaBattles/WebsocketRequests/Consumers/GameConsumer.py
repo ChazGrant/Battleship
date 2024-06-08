@@ -7,6 +7,8 @@ from copy import deepcopy
 import threading
 import asyncio
 
+from asgiref.sync import sync_to_async
+
 from WebsocketRequests.JSON_RESPONSES import (NOT_ENOUGH_ARGUMENTS_JSON, INVALID_ARGUMENTS_TYPE_JSON,
                             INVALID_ACTION_TYPE_JSON, USER_DOES_NOT_EXIST_JSON, USER_IS_ALREADY_IN_GAME,
                             GAME_DOES_NOT_EXIST, NOT_YOUR_TURN, NOT_ENOUGH_WEAPONS_IN_STOCK)
@@ -401,7 +403,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         if not damaged_cells and not dead_cells:
             await GameDatabaseAccessor.switchCurrentTurn(game)
             
-            if game.opponent_is_ai:
+            if await sync_to_async(getattr)(game, "opponent_is_ai"):
                 opponent_id = user_id
                 missed_cells, damaged_cells, dead_cells = [], [], []
                 while True:
@@ -551,7 +553,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             "four_deck_left": field.four_deck
         })
 
-        if game.opponent_is_ai:
+        if await sync_to_async(getattr)(game, "opponent_is_ai"):
             last_user_id = await UserDatabaseAccessor.getLastUserId()
             await UserDatabaseAccessor.createTemporaryUser(
                 user_name="bot" + str(user_id),
@@ -598,9 +600,9 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         game = await GameDatabaseAccessor.getGameByPlayerId(user_id)
         opponent_id = await FieldDatabaseAccessor.getOpponentId(game, user_id)
         # Если победителя нет(игра не закончена по количеству кораблей)
-        if game.opponent_is_ai:
+        if await sync_to_async(getattr)(game, "opponent_is_ai"):
             await UserDatabaseAccessor.deleteTemporaryUser(opponent_id)
-            game.delete()
+            await sync_to_async(game.delete)()
         elif not game.game_is_over:
             # Устанавливаем победителем оппонента               
             if opponent_id:

@@ -59,6 +59,9 @@ public:
 
     virtual void closeEvent(QCloseEvent *event) override;
 
+signals:
+    void widgetClosed();
+
 private slots:
     void sendPlaceShipRequest();
 

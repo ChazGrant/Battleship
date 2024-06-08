@@ -56,6 +56,7 @@ public:
 
 signals:
     void friendsPulled();
+    void widgetClosed();
 
 private slots:
     void showFriendRequestsContextMenu(const QPoint &t_point);

@@ -42,6 +42,12 @@ TopPlayers::~TopPlayers()
     delete ui;
 }
 
+void TopPlayers::closeEvent(QCloseEvent *event)
+{
+    emit widgetClosed();
+    event->accept();
+}
+
 void TopPlayers::onFilterChanged()
 {
     const QString selectedCriteria = ui->availableTopSortingComboBox->currentText();

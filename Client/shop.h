@@ -30,6 +30,10 @@ class Shop : public QMainWindow
 public:
     explicit Shop(int t_userId, QWidget *parent = nullptr);
     ~Shop();
+    virtual void closeEvent(QCloseEvent *event) override;
+
+signals:
+    void widgetClosed();
 
 private slots:
     void fillWeaponsComboBoxes(QNetworkReply *);

@@ -57,6 +57,12 @@ Shop::~Shop()
     delete ui;
 }
 
+void Shop::closeEvent(QCloseEvent *event)
+{
+    emit widgetClosed();
+    event->accept();
+}
+
 /*! @brief Заполнение ComboBox купленными оружиями
  *
  *  @param t_reply Указатель на ответ от сервера
