@@ -14,9 +14,6 @@ LoginForm::LoginForm(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ui->loginUserIdLineEdit->setText("1");
-    ui->loginPasswordLineEdit->setText("password");
-
     m_manager = new QNetworkAccessManager(this);
 
     setWindowFlags(Qt::FramelessWindowHint);

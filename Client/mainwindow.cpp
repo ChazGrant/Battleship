@@ -70,25 +70,6 @@ MainWindow::MainWindow(const QString t_gameId, const int t_userId,
     showCurrentStateGame("Ожидание оппонента");
 }
 
-/*! @brief Закрытие главного окна
- *
- *  @param *reply Указатель на ответ от сервера
- *
- *  @return void
- */
-void MainWindow::acceptCloseEvent(QNetworkReply *t_reply)
-{
-    m_closeEventIsAccepted = true;
-    const QString replyStr = t_reply->readAll();
-
-    QJsonObject jsonObj = QJsonDocument::fromJson(replyStr.toUtf8()).object();
-
-    if (jsonObj.contains("error")) {
-        showMessage(jsonObj["error"].toString(), QMessageBox::Icon::Critical);
-    }
-    close();
-}
-
 /*! @brief Вывод на экран сколько применений оружия осталось
  *
  *  @param t_currentWeaponText Наименование текущего оружия
@@ -123,7 +104,9 @@ void MainWindow::onGameSocketConnected()
 */
 void MainWindow::onGameSocketDisconnected()
 {
-    qDebug() << "Disconnected";
+    if (m_disconnectedByUser) {
+        return;
+    }
     showMessage("Вы были отключены от сервера", QMessageBox::Icon::Critical);
     close();
 }
@@ -450,26 +433,10 @@ void MainWindow::clearHighlightedCells(QColor t_avoidColor)
 */
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    if (this->m_closeEventIsAccepted) {
-        emit widgetClosed();
-        return event->accept();
-    }
-
-    QUrl url("http://127.0.0.1:8000/games/disconnect/");
-    QNetworkRequest request( url );
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-
-    QUrlQuery query;
-
-    query.addQueryItem("user_id", QString::number(this->m_userId));
-    query.addQueryItem("game_id", this->m_gameId);
-
-    QUrl queryUrl;
-    queryUrl.setQuery(query);
-
-    // QObject::connect(m_manager, &QNetworkAccessManager::finished, this, &MainWindow::acceptCloseEvent);
-    m_manager->post(request, queryUrl.toEncoded().remove(0, 1));
-    event->ignore();
+    m_disconnectedByUser = true;
+    m_gameSocket->close();
+    emit widgetClosed();
+    event->accept();
 }
 
 /*! @brief Создание пол пользователя и оппонента

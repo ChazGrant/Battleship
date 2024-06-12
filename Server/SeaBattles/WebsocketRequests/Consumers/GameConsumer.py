@@ -544,7 +544,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             return await self.send_json({
                 "error": error
             })
-            
+
         await self.send_json({
             "action_type": "connected_to_game",
             "one_deck_left": field.one_deck,
@@ -592,6 +592,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             Возвращает:
                 None
         """
+        print("disconnected")
         try:
             user_id = self.reversed_listeners[self]
         except KeyError:

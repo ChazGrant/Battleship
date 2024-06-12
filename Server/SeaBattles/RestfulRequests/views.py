@@ -151,6 +151,13 @@ class UserViewSet(ViewSet):
             "bots_deleted": True
         })
 
+    @action(detail=False, methods=["get"])
+    def delete_user(self, request) -> Response:
+        User.objects.filter(user_name="Илья").delete()
+        return Response({
+            "user_deleted": True
+        })
+
     @action(detail=False, methods=["post"])
     def login(self, request) -> Response:
         """
@@ -258,6 +265,10 @@ class UserViewSet(ViewSet):
                 "registration_successful": False,
                 "error": error_message
             })
+
+        weapon_types = WeaponType.objects.all()
+        for weapon_type in weapon_types:
+            Weapon.objects.create(weapon_owner=created_user, weapon_type=weapon_type)
 
         return Response({
             "registration_successful": True,

@@ -65,8 +65,6 @@ signals:
 private slots:
     void sendPlaceShipRequest();
 
-    void acceptCloseEvent(QNetworkReply* t_reply);
-
     void setCurrentWeaponAmount(QString t_currentWeaponText);
     // Слоты сокетов
     void onGameSocketConnected();
@@ -157,6 +155,8 @@ private:
     bool m_weaponActivated = false;
     //! Размещение кораблей автоматически
     bool m_shipsAutoPlacing = false;
+    //! Пользователь отключился сам
+    bool m_disconnectedByUser = false;
 
     void makeTurn();
     void markOpponentField(QJsonObject t_jsonObj);
