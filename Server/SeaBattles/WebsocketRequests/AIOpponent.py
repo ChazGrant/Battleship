@@ -62,9 +62,9 @@ class AIOpponent:
                 y_pos = random.randint(0, 9)
                 if [x_pos, y_pos] not in self._damaged_cells:
                     break
-        
+
         return [x_pos, y_pos]
-    
+
     async def updateDamagedCells(self, 
                                  new_damaged_cell: List[int], 
                                  new_damaged_ship_part: List[int],

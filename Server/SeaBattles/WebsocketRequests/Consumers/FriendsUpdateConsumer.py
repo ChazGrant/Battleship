@@ -185,8 +185,9 @@ class FriendsUpdateConsumer(AsyncJsonWebsocketConsumer):
         """
             Получает информацию от сокета
 
-            json_object содержит
-            action_type - Тип действия
+            Аргументы:
+                json_object - Словарь содержит
+                action_type - Тип действия
 
             Возвращает:
                 Текст ошибки или результат об успешной обработке
