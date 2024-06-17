@@ -6,6 +6,13 @@ MAX_ITERATION = 10
 
 class AIOpponent:
     def __init__(self, user_id: int, game_id: int) -> None:
+        """
+            Конструктор класса
+
+            Аргументы:
+                user_id - Идентификатор бота
+                game_id - Идентификатор игры, в которой находится бот
+        """
         self.game_id = game_id
         self.user_id = user_id
         self._damaged_cells: List[int] = []
@@ -13,17 +20,26 @@ class AIOpponent:
         self._unknown_cells = [[0 for _ in range(10)] for _ in range(10)]
 
     async def _getFirstUnknownCell(self):
+        """
+            Получает первую неизвестную ячейку
+        """
         for row in range(len(self._unknown_cells)):
             for column in range(len(self._unknown_cells[row])):
                 if self._unknown_cells[column][row] == 0:
                     return [column, row]
 
-    async def _getNextPotentionalCell(self) -> List[List[int]]:
+    async def _getNextPotentionalCell(self) -> List[int]:
+        """
+            Получает следующую клетку, где может находиться корабль
+
+            Возвращает:
+                Координаты клетки по x и y
+        """
         x_one_place = all(map(lambda x: x == self._damaged_ship_parts[0][1], 
                         [x[1] for x in self._damaged_ship_parts]))
         y_one_place = all(map(lambda y: y == self._damaged_ship_parts[0][0], 
                         [y[0] for y in self._damaged_ship_parts]))
-        potentional_ship_part_cells = []
+        potentional_ship_part_cells: List[List[int]] = []
 
         # Это значит что координата одна
         if x_one_place and y_one_place:
@@ -48,6 +64,12 @@ class AIOpponent:
             return potentional_ship_part_cell
 
     async def makeNextTurn(self) -> List[int]:
+        """
+            Совершает ход
+
+            Возвращает:
+                Координаты, по котором будет произведён ход
+        """
         if self._damaged_ship_parts:
             x_pos, y_pos = await self._getNextPotentionalCell()
         else:
@@ -65,11 +87,16 @@ class AIOpponent:
 
         return [x_pos, y_pos]
 
-    async def updateDamagedCells(self, 
-                                 new_damaged_cell: List[int], 
-                                 new_damaged_ship_part: List[int],
-                                 killed_ship_cells: List[List[int]]
-    ) -> None:
+    async def updateDamagedCells(self, new_damaged_cell: List[int], new_damaged_ship_part: List[int],
+                                 killed_ship_cells: List[List[int]]) -> None:
+        """
+            Обновляет клетки, по которым был произведён ход
+
+            Аргументы:
+                new_damaged_cell - Координаты клетки, на которой ничего не было
+                new_damaged_ship_part - Координаты клетки, на которой находилась часть корабля
+                killed_ship_cells - Список клеток, на которых был уничтожен корабль
+        """
         if new_damaged_cell:
             for cell_pos in new_damaged_cell:
                 self._unknown_cells[cell_pos[0]][cell_pos[1]] = 1
