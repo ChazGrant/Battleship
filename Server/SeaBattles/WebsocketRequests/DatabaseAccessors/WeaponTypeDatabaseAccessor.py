@@ -13,6 +13,15 @@ from RestfulRequests.models import WeaponType
 class WeaponTypeDatabaseAccessor:
     @staticmethod
     async def getWeaponRange(weapon_name: str) -> Tuple[int]:
+        """
+            Получает радиус поражения заданног орудия
+
+            Аргументы:
+                weapon_name - Наименование оружия
+        
+            Возвращает:
+                Кортеж, содержащий дальность поражения орудия по x и y
+        """
         if weapon_name == "":
             return 1, 1
         print(weapon_name)
