@@ -15,6 +15,15 @@ from WebsocketRequests.DatabaseAccessors.UserDatabaseAccessor import UserDatabas
 class WeaponDatabaseAccessor:
     @staticmethod
     async def getAvailableWeapons(user_id: int) -> Dict[str, Dict[str, int]]:
+        """
+            Получает орудия, которые доступны указанному пользователю
+
+            Аргументы:
+                user_id - Идентификатор пользователя
+
+            Возвращает:
+                Словаь, содержащий информацию об оружии
+        """
         user = await UserDatabaseAccessor.getUserById(user_id)
         weapons = await sync_to_async(Weapon.objects.filter)(weapon_owner=user)
         available_weapons: Dict[str, int] = dict()
@@ -30,6 +39,17 @@ class WeaponDatabaseAccessor:
 
     @staticmethod
     async def decreaseWeaponAmount(user_id: int, weapon_name: str) -> int:
+        """
+            Уменьшает количество орудий, доступных заданному пользователю, на 1
+
+            Аргументы:
+                user_id - Идентификатор пользователя
+
+                weapon_name - Имя орудия, которое нужно уменьшить
+
+            Возвращает:
+                Оставшееся количество орудий для использования
+        """
         user = await UserDatabaseAccessor.getUserById(user_id)
         weapon = await sync_to_async(Weapon.objects.get)(
             weapon_owner=user, 
@@ -40,9 +60,18 @@ class WeaponDatabaseAccessor:
         await sync_to_async(weapon.save)()
 
         return weapon.weapon_amount
-    
+
     @staticmethod
     async def hasMassiveDamageProperty(weapon_type_name: str) -> bool:
+        """
+            Получает информацию о том, имеет ли орудие свойство массового урона
+
+            Аргументы:
+                weapon_type_name - Имя типа орудия
+
+            Возвращает:
+                Информацию о том, что орудие имеет свойство массового урона
+        """
         try:
             weapon = await sync_to_async(WeaponType.objects.get)(weapon_type_name=weapon_type_name)
         except WeaponType.DoesNotExist:
@@ -52,6 +81,17 @@ class WeaponDatabaseAccessor:
 
     @staticmethod
     async def getWeaponAmountLeft(user_id: int, weapon_name: str) -> int:
+        """
+            Получает оставшееся количество использований орудий у данного пользователя
+
+            Аргументы:
+                user_id - Идентификатор пользователя
+
+                weapon_name - Наименование орудия
+            
+            Возвращает:
+                Количество оставшегося орудия у пользователя
+        """
         user = await UserDatabaseAccessor.getUserById(user_id)
         try:
             weapon: Weapon = await sync_to_async(Weapon.objects.get)(
